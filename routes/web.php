@@ -7,7 +7,8 @@ Route::get('/', function () {
 });
 
 Route::get('/inicio', [LoginController::class, 'index']);
-
+Route::get('/registro', [LoginController::class, 'registro']);
+//Route::post('/login', [LoginController::class, 'login']);
 
 
 

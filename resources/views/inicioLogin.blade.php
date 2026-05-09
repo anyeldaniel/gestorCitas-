@@ -437,6 +437,16 @@
             box-shadow: 0 0 0 4px rgba(255,90,125,0.1) !important;
         }
     </style>
+
+
+
+
+
+
+
+
+
+
 </head>
 <body>
 
@@ -547,11 +557,20 @@
 
         <!-- Footer -->
         <p class="card-footer">
-            ¿No tienes cuenta? <a href="#">Regístrate gratis</a>
+            ¿No tienes cuenta? <a href="registro">Regístrate gratis</a>
         </p>
 
     </div>
 </div>
+
+
+
+
+
+
+
+
+
 
 <script>
     /* =============================================
