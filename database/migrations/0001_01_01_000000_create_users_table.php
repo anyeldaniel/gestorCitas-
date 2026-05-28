@@ -3,6 +3,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 return new class extends Migration
 {
@@ -17,11 +19,20 @@ return new class extends Migration
             $table->string('correo')->unique(); // correo unico
             $table->string('telefono')-> nullable();
             $table->timestamp('verificacion')->nullable(); // verificacion de seguridad
-            $table->string('password'); // contraseña encriptada
+            $table->string('contraseña'); // contraseña encriptada
             $table->enum('rol',['admin','recepcion','trabajador','cliente'])->default('cliente'); //por defecto todos entran como cliente
             $table->rememberToken(); // para mantener la sesion iniciada
             $table->timestamps(); // fechas de registro
         });
+
+        DB::table('usuarios')-> insert([ //Usuario administrador
+            'nombre' => 'administrador',
+            'correo' => 'syncrostyle732@gmail.com',
+            'contraseña' => Hash:: make ('admin1829'),
+            'rol' => 'admin',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
