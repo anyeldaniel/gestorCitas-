@@ -458,7 +458,7 @@
         <!-- Logo -->
         <div class="logo-wrap">
             <div class="logo-icon">⚡</div>
-            <span class="logo-name">Sincrostyle</span>
+            <span class="logo-name">Syncrostyle</span>
         </div>
 
         <!-- Títulos -->

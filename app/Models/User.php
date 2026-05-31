@@ -18,10 +18,15 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
+
+    protected $table = 'usuarios'; // Especifica el nombre de la tabla
+
     protected $fillable = [
-        'name',
-        'email',
-        'password',
+        'nombre',
+        'correo',
+        'telefono',
+        'contraseña',
+        'rol'
     ];
 
     /**
@@ -30,7 +35,7 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $hidden = [
-        'password',
+        'contraseña',
         'remember_token',
     ];
 
@@ -43,7 +48,14 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'contraseña' => 'hashed',
         ];
     }
+
+     public function getAuthPassword()
+{
+    return $this->contraseña; // Le indicamos a Laravel que tu columna tiene la "ñ"
+}
+
+
 }
