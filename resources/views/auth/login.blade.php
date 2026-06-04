@@ -49,7 +49,7 @@
 						<button type="submit" class="btn-zen">Entrar</button>
 
 						<div class="form-footer-link">
-							<a href="{{ url('/registro') }}">Registrarme</a>
+							<a href="{{ route('registro.view') }}">Registrarme</a>
 						</div>
 					</footer>
 				</form>

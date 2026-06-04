@@ -17,10 +17,10 @@ class LoginController extends Controller
         return view('auth.login');
     }
 
-    public function registro()
+  /*  public function registro()
     {
         return view('auth.Registro');
-    }   
+    }   */
 
      public function RegistroController(RegisterUserRequest $request){
 
@@ -58,7 +58,6 @@ class LoginController extends Controller
         ];
 
         // 3. Buscar el usuario por correo primero
-        // esta linea funciona pero se porque queda en rojo
     
         $user = User::query()->where('correo', $request->input('email'))->first();
 
@@ -69,27 +68,34 @@ class LoginController extends Controller
                     'email' => 'Credenciales invalidas.',
                 ])->withInput($request->only('email'));
             }
-        
-       /*
-       -----ES EL MISMO CODIGO DE ARRIBA PERO SEPARADO, PERO EL DE ARRIBA ES POR TEMAS DE SEGURIDAD-----
-       if (! $user) {
-            return back()->withErrors([
-                'email' => 'La cuenta no existe.',
-            ])->withInput($request->only('email'));
-        }
-
-        // 4. Verificar contraseña manualmente para dar un mensaje específico
-        if (! Hash::check($request->input('password'), $user->getAuthPassword())) {
-            return back()->withErrors([
-                'password' => 'Contraseña equivocada.',
-            ])->withInput($request->only('email'));
-        }*/
 
         // 5. Autenticación exitosa
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('catalogo');
+       // 6. Filtro para identificar el rol y asignar la ruta
+    
+    $rutaDestino = match ($user->rol) {
+        'admin'         => 'admin.dashboard',    // Nombre de la ruta para el admin
+        'recepcionista' => 'recepcion.agenda',    // Nombre de la ruta para el recepcionista
+        'trabajador'    => 'especialista.tablero',   // Nombre de la ruta para el trabajador
+        'cliente'       => 'catalogo',           // El cliente va al catálogo
+        default         => 'login',              // Por si hay un usuario sin rol o con rol erróneo
+    };
+
+    // 7. Medida de seguridad: Si el rol no existe, cerramos la sesión y lo devolvemos
+    if ($rutaDestino === 'login') {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        
+        return redirect()->route('login')->withErrors([
+            'email' => 'Usuario sin permisos asignados.',
+        ]);
+    }
+
+    // 8. Redirección final a la ruta que le corresponde
+    return redirect()->route($rutaDestino);
 
     }
     }

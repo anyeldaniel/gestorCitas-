@@ -182,7 +182,7 @@ body {
             <button type="submit" class="btn-register">Registrarse</button>
 
             
-            <p class="login-link">¿Ya tienes cuenta? <a href="inicio">Inicia sesión aquí</a></p>
+            <p class="login-link">¿Ya tienes cuenta? <a href="{{ route('inicio') }}">Inicia sesión aquí</a></p>
         </form>
     </div>
 

@@ -25,7 +25,7 @@
             <a href="{{ url('/admin/dashboard') }}" class="{{ Request::is('admin/dashboard') ? 'active' : '' }}">Administración</a>
             <a href="{{ url('/admin/reportes') }}" class="{{ Request::is('admin/reportes') ? 'active' : '' }}">Reportes</a>
             <a href="{{ url('/clientes/catalogo') }}" class="{{ Request::is('clientes/catalogo') ? 'active' : '' }}">Catálogo Zen</a>
-            <a href="{{ url('/clientes/reserva') }}" class="{{ Request::is('clientes/reserva') ? 'active' : '' }}">Reservas</a>
+            <a href="{{ route('clientes.reserva') }}" class="{{ Request::is('clientes/reserva') ? 'active' : '' }}">Reservas</a>
 
         </nav>
     </header>
