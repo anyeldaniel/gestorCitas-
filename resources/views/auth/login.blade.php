@@ -43,7 +43,6 @@
                         @error('password')
                             <span class="error-message">{{ $message }}</span>
                         @enderror
-                    </div>
 					</div>
 
 					<footer>

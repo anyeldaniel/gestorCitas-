@@ -32,7 +32,7 @@ class LoginController extends Controller
             'nombre' => $validatedData['username'],
             'correo' => $validatedData['email'],
             'telefono' => $validatedData['telefono'],
-            'contraseña' => Hash::make($validatedData['password']),
+            'contraseña' =>$validatedData['password'],//Te quité el hash::make anyel, para que se haga la encriptación de la contraseña directamente desde el modelo, como buena práctica de MVC
             'rol' => 'cliente',
         ]);
 

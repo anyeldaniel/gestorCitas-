@@ -48,7 +48,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'contraseña' => 'hashed',
+            'contraseña' => 'hashed', //Voy a dejar la encriptación solo aquí anyel, para no tener que encriptar cada vez que se necesite en un controlador, solo llamando al modelo
         ];
     }
 
