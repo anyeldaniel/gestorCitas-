@@ -9,18 +9,23 @@
         <p>Selecciona el tratamiento ideal para restaurar tu equilibrio corporal y estético.</p>
     </header>
 
+    @if(session('success'))
+        <div class="alert-success-spa">
+            <span class="icono-zen">✨</span> {{ session('success') }}
+        </div>
+    @endif
+
     <section class="rejilla-catalogo" id="catalogo-tratamientos">
         
         @php
-            // Escanea la carpeta public/img/parts
-            $directorio = public_path('img/parts');
-            // Verifica que la carpeta exista antes de intentar leerla
+            $directorio = public_path('asset/img/parts');
+            
             $imagenes = File::exists($directorio) ? File::files($directorio) : [];
         @endphp
 
         @forelse($imagenes as $imagen)
             <article class="tarjeta-componente">
-                <img src="{{ asset('img/parts/' . $imagen->getFilename()) }}" 
+                <img src="{{ asset('asset/img/parts/' . $imagen->getFilename()) }}" 
                      alt="{{ pathinfo($imagen->getFilename(), PATHINFO_FILENAME) }}" 
                      class="img-portada">
                 
@@ -33,11 +38,11 @@
                 
                 <footer class="flex justify-between items-center mt-2">
                     <span class="precio-tag">Consultar</span>
-                    <a href="#" class="btn-zen">Reservar</a>
+                    <a href="{{ route('clientes.reserva') }}" class="btn-zen">Reservar</a>
                 </footer>
             </article>
         @empty
-            <p>No se encontraron imágenes en la carpeta de servicios. Por favor, añade tus fotos a <code>public/img/parts/</code>.</p>
+            <p>No se encontraron imágenes en la carpeta de servicios. Por favor, verifica la ruta en tu proyecto local.</p>
         @endforelse
 
     </section>

@@ -15,18 +15,53 @@
 
     <header class="header-spa">
         <picture class="logo-contenedor">
-            <img src="{{ asset('img/logo-the-beauty-room.png') }}" alt="Logotipo Oficial de The Beauty Room Spa" width="180" height="45">
+            <img src="{{ asset('logo/logo-the-beauty-room.PNG') }}" alt="Logotipo Oficial de The Beauty Room Spa" class="logo-spa">
         </picture>
 
+        <!--Aquí estoy añadiendo la navbar con condicionales, para que se muestren las funcionalidades según el rol del usuario-->
+        
         <nav class="nav-roles" aria-label="Navegación de Roles Operativos">
-            <a href="{{ url('/recepcion/agenda') }}" class="{{ Request::is('recepcion/agenda') ? 'active' : '' }}">Agenda</a>
-            <a href="{{ url('/recepcion/admisiones') }}" class="{{ Request::is('recepcion/admisiones') ? 'active' : '' }}">Sala de Espera</a>
-            <a href="{{ url('/especialistas/kanban') }}" class="{{ Request::is('especialistas/kanban') ? 'active' : '' }}">Terapeutas</a>
-            <a href="{{ url('/admin/dashboard') }}" class="{{ Request::is('admin/dashboard') ? 'active' : '' }}">Administración</a>
-            <a href="{{ url('/admin/reportes') }}" class="{{ Request::is('admin/reportes') ? 'active' : '' }}">Reportes</a>
-            <a href="{{ url('/clientes/catalogo') }}" class="{{ Request::is('clientes/catalogo') ? 'active' : '' }}">Catálogo Zen</a>
-            <a href="{{ route('clientes.reserva') }}" class="{{ Request::is('clientes/reserva') ? 'active' : '' }}">Reservas</a>
+            @auth
+                @if(auth()->user()->rol === 'admin' || auth()->user()->rol === 'recepcionista' || auth()->user()->rol === 'trabajador')
+                    <a href="{{ url('/agenda') }}" class="{{ Request::is('agenda*') ? 'active' : '' }}">Agenda</a>
+                @endif
 
+                @if(auth()->user()->rol === 'admin' || auth()->user()->rol === 'recepcionista')
+                    <a href="{{ url('/sala-espera') }}" class="{{ Request::is('sala-espera*') ? 'active' : '' }}">Sala de Espera</a>
+                @endif
+
+                @if(auth()->user()->rol === 'admin' || auth()->user()->rol === 'recepcionista' || auth()->user()->rol === 'cliente')
+                    <a href="{{ url('/terapeutas') }}" class="{{ Request::is('terapeutas*') ? 'active' : '' }}">Terapeutas</a>
+                @endif
+
+                @if(auth()->user()->rol === 'admin')
+                    <a href="{{ url('/admin/dashboard') }}" class="{{ Request::is('admin/dashboard*') ? 'active' : '' }}">Administración</a>
+                @endif
+
+                @if(auth()->user()->rol === 'admin')
+                    <a href="{{ url('/admin/reportes') }}" class="{{ Request::is('admin/reportes*') ? 'active' : '' }}">Reportes</a>
+                @endif
+
+                @if(auth()->user()->rol === 'recepcionista' || auth()->user()->rol === 'trabajador' || auth()->user()->rol === 'cliente')
+                    <a href="{{ url('/catalogo') }}" class="{{ Request::is('catalogo*') ? 'active' : '' }}">Catálogo Zen</a>
+                @endif
+
+                @if(auth()->user()->rol === 'recepcionista' || auth()->user()->rol === 'admin')
+                    <a href="{{ url('/recepcion/pagos') }}" class="{{ Request::is('recepcion/pagos*') ? 'active' : '' }}">Verificar Pagos</a>
+                @endif
+
+                @if(auth()->user()->rol === 'cliente')
+                    <a href="{{ url('/reservas') }}" class="{{ Request::is('reservas*') ? 'active' : '' }}">Reservas</a>
+                @endif
+
+                <a href="#" class="btn-logout" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    Cerrar Sesión
+                </a>
+
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                    @csrf
+                </form>
+            @endauth
         </nav>
     </header>
 

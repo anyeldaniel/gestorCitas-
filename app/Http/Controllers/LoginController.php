@@ -36,7 +36,7 @@ class LoginController extends Controller
             'rol' => 'cliente',
         ]);
 
-        return redirect()->route('inicio')->with('success', 'Registro exitoso. Ahora puedes iniciar sesión.');
+       return redirect()->route('login')->with('success', 'Registro exitoso. Ahora puedes iniciar sesión.');
      }
 
 
@@ -98,6 +98,24 @@ class LoginController extends Controller
     return redirect()->route($rutaDestino);
 
     }
+
+// función para cerrar la sesión del usuario
+
+    public function logout(Request $request)
+    {
+        // El Controlador le ordena al Modelo/Auth limpiar la sesión activa
+        Auth::logout();
+
+        // Destruye los datos de la sesión en el servidor
+        $request->session()->invalidate();
+
+        // Regenera el token CSRF para evitar vulnerabilidades en formularios futuros
+        $request->session()->regenerateToken();
+
+        // Redirige a la ruta de inicio o login usando el nombre asignado
+        return redirect()->route('login');
+    }
+
     }
 
 

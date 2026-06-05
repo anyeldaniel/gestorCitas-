@@ -13,7 +13,7 @@
         <form class="formulario-spa" 
               id="form-reserva-spa" 
               method="POST" 
-              action="/api/cliente/reservas" 
+              action="{{ route('clientes.reserva.store') }}" 
               enctype="multipart/form-data" 
               autocomplete="off">
             @csrf
@@ -77,10 +77,14 @@
                 <input type="file" name="adjunto_receta" id="adjunto_receta" accept="image/*,application/pdf">
             </div>
 
+            <div id="contenedor-errores-js" class="alert-errores-spa" style="display: none;"></div>
+
             <footer class="pie-formulario">
                 <button type="submit" class="btn-zen w-full">Confirmar y Agendar mi Cita</button>
             </footer>
         </form>
     </div>
 </section>
+
+<script src="{{ asset('js/reserva-spa.js') }}"></script>
 @endsection
