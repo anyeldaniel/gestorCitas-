@@ -25,11 +25,14 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // hay que esperar a que el admin los pueda registrar
 
 
+
 // Aquí Andrés: Agregando rutas del controlador del admin para cada módulo (CORREGIDO) ------------------
 Route::prefix('admin')->group(function () {
     // Como ya tiene el prefijo 'admin', la ruta se deja solo como '/' o '/dashboard'
-    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-    Route::get('/reportes', [AdminController::class, 'reportes'])->name('admin.reportes');
+    Route::view('/dashboard', 'admin.dashboard')->name('admin.dashboard');
+    Route::view('/reportes', 'admin.reportes')->name('admin.reportes');
+    //hagan asi para las vistas, no es necesario crear un método en el controlador si solo van a retornar una vista, con la función Route::view es suficiente
+    //solo si muestra vista si la vista incluye lógica o datos dinámicos, entonces sí es necesario crear un método en el controlador para procesar esa lógica y pasarle los datos a la vista
     Route::get('/servicios', [AdminController::class, 'servicios'])->name('admin.servicios');
 });
 
