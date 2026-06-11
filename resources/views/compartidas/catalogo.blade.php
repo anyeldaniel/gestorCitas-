@@ -20,7 +20,9 @@
         @php
             $directorio = public_path('asset/img/parts');
             
-            $imagenes = File::exists($directorio) ? File::files($directorio) : [];
+            $imagenes = \Illuminate\Support\Facades\File::exists($directorio) 
+                ? \Illuminate\Support\Facades\File::files($directorio) 
+                : [];
         @endphp
 
         @forelse($imagenes as $imagen)
