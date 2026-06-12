@@ -56,7 +56,7 @@ class LoginController extends Controller
             // 4. Mapeo de roles según tus rutas actuales
             $rutaDestino = match ($user->rol) {
                 'admin'         => 'admin.dashboard',
-                'recepcion' => 'agenda', // Apunta al name('agenda') global que tienes en web.php
+                'recepcionista' => 'agenda', // Apunta al name('agenda') global que tienes en web.php
                 'trabajador'    => 'especialista.tablero',
                 'cliente'       => 'catalogo', // Tu ruta de catálogo corregida
                 default         => 'login',
