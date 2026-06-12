@@ -1,0 +1,18 @@
+@import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap');
+
+
+@import '_variables.css';
+
+
+@import 'layouts/main.css';
+
+
+@import 'compartidas/components.css';
+
+
+@import 'auth/login.css';
+@import 'admin/admin.css';
+@import 'recepcion/recepcion.css';
+@import 'clientes/catalogo.css';
+@import 'especialistas/terapeutas.css'
