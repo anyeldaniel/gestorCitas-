@@ -16,7 +16,7 @@
 					<p>Accede con tu correo y contrasena.</p>
 				</header>
 
-				<form id="login-form" method="POST" action="{{ route('login') }}">
+                <form id="login-form" method="POST" action="{{ route('login.post') }}">
 					@csrf
 
                     @if ($errors->any())
