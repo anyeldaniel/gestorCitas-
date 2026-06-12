@@ -39,7 +39,7 @@
                 @endif
 
                 @if(auth()->user()->rol === 'admin')
-                    <a href="{{ url('/admin/reportes') }}" class="{{ Request::is('admin/reportes*') ? 'active' : '' }}">Reportes</a>
+                    <a href="{{ route('admin.reportes') }}" class="{{ Request::is('admin/reportes*') ? 'active' : '' }}">Reportes</a>
                 @endif
 
                 @if(auth()->user()->rol === 'recepcionista' || auth()->user()->rol === 'trabajador' || auth()->user()->rol === 'cliente')

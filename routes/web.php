@@ -7,6 +7,8 @@ use App\Http\Controllers\ReservaController; // Añadí el controlador de reserva
 use App\Http\Controllers\RecepcionController; // Controlador para la recepción.
 use App\Http\Controllers\EspecialistaController; // Controlador para el especialista (masajista/esteticista).
 use App\Http\Controllers\ServicioController; // Controlador para el módulo de servicios (tratamientos).
+use App\Http\Controllers\AgendaController; // Controlador para manejar la agenda de citas en la recepción.
+use App\Http\Controllers\TerapeutaController; // Controlador para manejar las funciones del terapeuta (masajista/esteticista).
 
 Route::get('/', function () { 
     return view('auth.login');
@@ -29,11 +31,14 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // Ya no faltam las rutas de recepcionista y especialista :D.
 
+
 // Aquí Andrés: Agregando rutas del controlador del admin para cada módulo (CORREGIDO) ------------------
 Route::prefix('admin')->group(function () {
     // Como ya tiene el prefijo 'admin', la ruta se deja solo como '/' o '/dashboard'
-    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-    Route::get('/reportes', [AdminController::class, 'reportes'])->name('admin.reportes');
+    Route::view('/dashboard', 'admin.dashboard')->name('admin.dashboard');
+    Route::view('/reportes', 'admin.reportes')->name('admin.reportes');
+    //hagan asi para las vistas, no es necesario crear un método en el controlador si solo van a retornar una vista, con la función Route::view es suficiente
+    //solo si muestra vista si la vista incluye lógica o datos dinámicos, entonces sí es necesario crear un método en el controlador para procesar esa lógica y pasarle los datos a la vista
     Route::get('/servicios', [AdminController::class, 'servicios'])->name('admin.servicios');
 });
 
@@ -56,18 +61,23 @@ Route::prefix('especialista')->group(function () {
 
 // Rutas para el CRUD de Servicios (Solo el Admin debería poder entrar aquí).
 Route::prefix('admin/servicios')->group(function () {
-
     // Esta ruta muestra el formulario (Falta la vista).
     Route::get('/crear', [ServicioController::class, 'create'])->name('servicios.crear');
-    
+
     // Esta ruta recibe los datos del formulario y los guarda en la base de datos.
     Route::post('/guardar', [ServicioController::class, 'store'])->name('servicios.guardar');
 });
 
+// Rutas de Agenda (Recepción).
+Route::middleware(['auth'])->group(function () {
+    Route::get('/recepcion/agenda', [AgendaController::class, 'index'])->name('recepcion.agenda');
+    Route::post('/recepcion/cita/{id}/actualizar', [AgendaController::class, 'updateStatus'])->name('cita.update');
+});
 
-
-
-
+// Rutas de Terapeuta (Especialista).
+Route::middleware(['auth'])->group(function () {
+    Route::get('/especialista/tablero', [TerapeutaController::class, 'tablero'])->name('especialista.tablero');
+});
 
 
 
