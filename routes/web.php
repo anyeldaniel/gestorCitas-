@@ -16,21 +16,14 @@ Route::get('/', function () {
 
 
 // Rutas de autenticación (auth) --------------------------------------------------------------------------
-
-
 Route::view('/Registro', 'auth.Registro')->name('registro.view'); 
 Route::get('/login', [LoginController::class, 'index'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/registrado', [LoginController::class, 'RegistroController'])->name('registro.create');
 Route::view('/catalogo', 'clientes.catalogo')->name('catalogo');
+
 // Ruta para procesar el cierre de sesión
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
-
-// faltarian las dos rutas del recepcionista y especialista pero
-// hay que esperar a que el admin los pueda registrar
-
-// Ya no faltam las rutas de recepcionista y especialista :D.
-
 
 // Aquí Andrés: Agregando rutas del controlador del admin para cada módulo (CORREGIDO) ------------------
 Route::prefix('admin')->group(function () {
@@ -70,13 +63,13 @@ Route::prefix('admin/servicios')->group(function () {
 
 // Rutas de Agenda (Recepción).
 Route::middleware(['auth'])->group(function () {
-    Route::get('/recepcion/agenda', [AgendaController::class, 'index'])->name('recepcion.agenda');
+    Route::get('/agenda', [AgendaController::class, 'index'])->name('recepcion.agenda');
     Route::post('/recepcion/cita/{id}/actualizar', [AgendaController::class, 'updateStatus'])->name('cita.update');
 });
 
 // Rutas de Terapeuta (Especialista).
 Route::middleware(['auth'])->group(function () {
-    Route::get('/especialista/tablero', [TerapeutaController::class, 'tablero'])->name('especialista.tablero');
+    Route::get('/terapeutas', [TerapeutaController::class, 'tablero'])->name('especialista.tablero');
 });
 
 
