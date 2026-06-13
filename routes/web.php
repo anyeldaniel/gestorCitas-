@@ -12,7 +12,8 @@ use App\Http\Controllers\EspecialistaController; // Controlador para el especial
 use App\Http\Controllers\ServicioController; // Controlador para el módulo de servicios (tratamientos).
 
 // La raíz redirige o carga directamente el método index del Login para mantener la consistencia
-Route::get('/', [LoginController::class, 'index'])->name('login');
+Route::get('/', [LoginController::class, 'index']);
+Route::get('/login', [LoginController::class, 'index'])->name('login');
 
 
 // Rutas de autenticación (auth) --------------------------------------------------------------------------
