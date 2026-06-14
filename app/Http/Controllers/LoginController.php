@@ -26,7 +26,7 @@ class LoginController extends Controller
             'rol' => 'cliente',
         ]);
 
-        return redirect()->route('login')->with('success', 'Registro exitoso. Ahora puedes iniciar sesión.');
+        return redirect()->route('login.view')->with('success', 'Registro exitoso. Ahora puedes iniciar sesión.');
     }
 
     public function login(Request $request)
@@ -67,7 +67,7 @@ class LoginController extends Controller
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
                 
-                return redirect()->route('login')->withErrors([
+                return redirect()->route('login.view')->withErrors([
                     'email' => 'Usuario sin permisos asignados.',
                 ]);
             }
