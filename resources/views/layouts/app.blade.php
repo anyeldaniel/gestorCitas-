@@ -23,7 +23,7 @@
         <nav class="nav-roles" aria-label="Navegación de Roles Operativos">
             @auth
                 @if(auth()->user()->rol === 'admin' || auth()->user()->rol === 'recepcionista' || auth()->user()->rol === 'trabajador')
-                    <a href="{{ url('/agenda') }}" class="{{ Request::is('agenda*') ? 'active' : '' }}">Agenda</a>
+                    <a href="{{ route('agenda') }}" class="{{ Request::is('agenda*') ? 'active' : '' }}">Agenda</a>
                 @endif
 
                 @if(auth()->user()->rol === 'admin' || auth()->user()->rol === 'recepcionista')

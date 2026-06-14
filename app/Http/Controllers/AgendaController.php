@@ -2,40 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use Illuminate\Http\Request;   // Controlador para manejar la agenda de citas en la recepción.
+use App\Models\Cita; // Importamos el modelo de Cita para interactuar con la base de datos de citas.
 
-class AgendaController extends Controller
+
+class AgendaController extends Controller // Controlador para manejar la agenda de citas en la recepción.
 {
-     public function agenda() //Agrego la función para mostrar la agenda del admin 
+    // Muestra todas las citas programadas.
+    public function index()
     {
-        // Estoy inyectando estos datos en el controlador, para poder mostrarlos y ver que tal
-        $citas = [
-            [
-                'id' => 1,
-                'hora' => '08:00 AM',
-                'cliente' => 'Yennifer Pérez',
-                'terapeuta' => 'Dra. Alana Ramos',
-                'servicio' => 'Plasma Rico en Plaquetas (PRP)',
-                'estado' => 'Confirmado'
-            ],
-            [
-                'id' => 2,
-                'hora' => '09:30 AM',
-                'cliente' => 'Carlos Mendoza',
-                'terapeuta' => 'Dra. Alana Ramos',
-                'servicio' => 'Masaje Descontracturante Profundo',
-                'estado' => 'Pendiente'
-            ],
-            [
-                'id' => 3,
-                'hora' => '11:00 AM',
-                'cliente' => 'María Valentina',
-                'terapeuta' => 'Lic. Andrés García',
-                'servicio' => 'Ritual Supremo Beauty & Luxury',
-                'estado' => 'Confirmado'
-            ]
-        ];
+        // Traemos todas las citas con los datos del usuario que la pidió.
+        $citas = Cita::all(); 
+        return view('recepcion.agenda', compact('citas'));
+    }
 
-        return view('compartidas.agenda', compact('citas'));
+    // Cambiar el estado de una cita (ejemplo: de pendiente a confirmada).
+    public function updateStatus(Request $request, $id)
+    {
+        $cita = Cita::findOrFail($id);
+        $cita->estado = $request->estado;
+        $cita->save();
+
+        return redirect()->back()->with('success', 'Estado de la cita actualizado.');
     }
 }
