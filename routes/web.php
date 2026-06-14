@@ -18,6 +18,9 @@ Route::get('/login', [LoginController::class, 'index'])->name('login');
 // Rutas de autenticación (auth) --------------------------------------------------------------------------
 
 Route::view('/Registro', 'auth.Registro')->name('registro.view'); 
+
+// SE CORRIGIÓ: Se añadió la ruta GET para que no dé error al cargar el login
+Route::get('/login', [LoginController::class, 'index'])->name('login.view'); 
 Route::post('/login', [LoginController::class, 'login'])->name('login.post'); // Ruta para procesar el inicio de sesión
 Route::post('/registrado', [LoginController::class, 'RegistroController'])->name('registro.create');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout'); // Ruta para procesar el cierre de sesión
