@@ -9,6 +9,8 @@ use App\Http\Controllers\EspecialistaController; // Controlador para el especial
 use App\Http\Controllers\ServicioController; // Controlador para el módulo de servicios (tratamientos).
 use App\Http\Controllers\AgendaController; // Controlador para manejar la agenda de citas en la recepción.
 use App\Http\Controllers\TerapeutaController; // Controlador para manejar las funciones del terapeuta (masajista/esteticista).
+use App\Http\Controllers\SalaEsperaController; // Controlador para manejar la sala de espera (si es que se implementa esa funcionalidad).
+use App\Http\Controllers\PagoController; // Controlador para manejar la verificación de pagos (si es que se implementa esa funcionalidad).
 
 // La raíz redirige o carga directamente el método index del Login para mantener la consistencia
 Route::get('/', [LoginController::class, 'index']);
@@ -28,13 +30,6 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout'); // R
 // Corregi ruta compartida, ahora apunta a compartidas.catalogo en vez de clientes.catalogo
 Route::view('/catalogo', 'compartidas.catalogo')->name('catalogo');
 
-// Ya no faltam las rutas de recepcionista y especialista :D.
-
-
-
-
-
-
 // TODAS LAS RUTAS DE ABAJO SE PROTEGEN PARA USUARIOS AUTENTICADOS ----------------------------------------
 Route::middleware(['auth'])->group(function () {
 
@@ -47,20 +42,10 @@ Route::middleware(['auth'])->group(function () {
     // faltarian las dos rutas del recepcionista y especialista pero
     // hay que esperar a que el admin los pueda registrar
 
-
-
     // RUTAS DEL CLIENTE ------------------------------------
 Route::get('/reservas', [ReservaController::class, 'index'])->name('clientes.reserva');
 Route::post('/reservas', [ReservaController::class, 'store'])->name('clientes.reserva.store');
-
 });
-
-
-
-
-
-
-
 
 // Aquí Andrés: Agregando rutas del controlador del admin para cada módulo (CORREGIDO) ------------------
 Route::prefix('admin')->group(function () {
@@ -73,8 +58,6 @@ Route::prefix('admin')->group(function () {
     Route::post('/crear-trabajador', [AdminController::class, 'CreateTrabajador'])->name('admin.create-trabajador');
 });
 
-
-
 // RUTAS DE LA RECEPCIÓN --------------------------------
 Route::prefix('recepcion')->group(function () {
     Route::get('/agenda', [RecepcionController::class, 'agenda'])->name('recepcion.agenda');
@@ -83,20 +66,10 @@ Route::middleware(['auth'])->prefix('recepcion')->group(function () {
     Route::get('/agenda', [RecepcionController::class, 'agenda'])->name('recepcion.agenda');
 });
 
-
-
-
-
-
-
 // RUTAS DE LOS ESPECIALISTAS (TRABAJADORES) ------------
 Route::prefix('especialista')->group(function () {
     Route::get('/tablero', [EspecialistaController::class, 'tablero'])->name('especialista.tablero');
 });
-
-
-
-
 
 // Rutas para el CRUD de Servicios (Solo el Admin debería poder entrar aquí).
 Route::prefix('admin/servicios')->group(function () {
@@ -107,13 +80,10 @@ Route::prefix('admin/servicios')->group(function () {
     Route::post('/guardar', [ServicioController::class, 'store'])->name('servicios.guardar');
 });
 
-
-
-
-
 // Rutas de Agenda (Recepción).
 Route::middleware(['auth'])->group(function () {
-    Route::get('/agenda', [AgendaController::class, 'index'])->name('recepcion.agenda');
+    // Cambia "recepcion.agenda" por "agenda"
+    Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda');
     Route::post('/recepcion/cita/{id}/actualizar', [AgendaController::class, 'updateStatus'])->name('cita.update');
 });
 
@@ -122,15 +92,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/terapeutas', [TerapeutaController::class, 'tablero'])->name('especialista.tablero');
 });
 
-
-
-
-
-
-
-
-
-
-
-
-
+// Rutas añadidas para arreglar el error 404.
+Route::middleware(['auth'])->group(function () {
+    Route::get('/sala-espera', [SalaEsperaController::class, 'index'])->name('sala.espera');
+    Route::get('/verificar-pagos', [PagoController::class, 'index'])->name('pago.verificar');
+});

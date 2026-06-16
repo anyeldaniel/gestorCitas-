@@ -2,11 +2,6 @@
 
 @section('title', 'Dashboard Administrativo - Syncrostyle')
 
-<!--Cargo los estilos del modal y de los terapeutas en el dashboard sin alterar el app.css :)-->
-@push('styles')
-    @vite(['resources/css/terapeutas.css'])
-@endpush
-
 @section('content')
 <main class="modulo-vista dashboard-admin">
     <header class="encabezado-modulo">
@@ -107,8 +102,3 @@
     @include('compartidas.modal-terapeuta')
 </main>
 @endsection
-
-<!--Muchachos aquí cargo ambos scripts. terapeutas.js le da las funciones de los modales y dashboard.js maneja el form express -->
-@push('scripts')
-    @vite(['resources/js/terapeutas.js', 'resources/js/dashboard.js'])
-@endpush
