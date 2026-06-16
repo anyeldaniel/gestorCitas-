@@ -19,10 +19,10 @@ Route::get('/login', [LoginController::class, 'index'])->name('login');
 
 // Rutas de autenticación (auth) --------------------------------------------------------------------------
 
-Route::view('/Registro', 'auth.Registro')->name('registro.view'); 
+Route::view('/Registro', 'auth.Registro')->name('registro.view');
 
 // SE CORRIGIÓ: Se añadió la ruta GET para que no dé error al cargar el login
-Route::get('/login', [LoginController::class, 'index'])->name('login.view'); 
+Route::get('/login', [LoginController::class, 'index'])->name('login.view');
 Route::post('/login', [LoginController::class, 'login'])->name('login.post'); // Ruta para procesar el inicio de sesión
 Route::post('/registrado', [LoginController::class, 'RegistroController'])->name('registro.create');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout'); // Ruta para procesar el cierre de sesión
@@ -34,17 +34,17 @@ Route::view('/catalogo', 'compartidas.catalogo')->name('catalogo');
 Route::middleware(['auth'])->group(function () {
 
     //         RUTAS DE COMPARTIDAS (Movidas a su nueva carpeta)
-    
+
     // Agrego la ruta de la agenda, es una ruta global para que funcione con los otros roles
-    Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda'); 
+    Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda');
     //Ruta compartida de terapeutas, para que tanto admin como recepcionista puedan verla (y el admin pueda gestionar desde ahí)
     Route::get('/terapeutas', [TerapeutaController::class, 'index'])->name('terapeutas.index');
     // faltarian las dos rutas del recepcionista y especialista pero
     // hay que esperar a que el admin los pueda registrar
 
     // RUTAS DEL CLIENTE ------------------------------------
-Route::get('/reservas', [ReservaController::class, 'index'])->name('clientes.reserva');
-Route::post('/reservas', [ReservaController::class, 'store'])->name('clientes.reserva.store');
+    Route::get('/reservas', [ReservaController::class, 'index'])->name('clientes.reserva');
+    Route::post('/reservas', [ReservaController::class, 'store'])->name('clientes.reserva.store');
 });
 
 // Aquí Andrés: Agregando rutas del controlador del admin para cada módulo (CORREGIDO) ------------------
@@ -56,6 +56,7 @@ Route::prefix('admin')->group(function () {
     //solo si muestra vista si la vista incluye lógica o datos dinámicos, entonces sí es necesario crear un método en el controlador para procesar esa lógica y pasarle los datos a la vista
     Route::get('/servicios', [AdminController::class, 'servicios'])->name('admin.servicios');
     Route::post('/crear-trabajador', [AdminController::class, 'CreateTrabajador'])->name('admin.create-trabajador');
+    Route::post('/crear-recepcionista', [AdminController::class, 'CreateRecepcionista'])->name('admin.create-recepcionista');
 });
 
 // RUTAS DE LA RECEPCIÓN --------------------------------

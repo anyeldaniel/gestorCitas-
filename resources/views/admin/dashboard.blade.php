@@ -1,317 +1,312 @@
 @extends('layouts.app')
- 
+
 @section('title', 'Dashboard Administrativo - Syncrostyle')
 @push('styles')
- 
-  @vite(['resources/css/terapeutas.css'])
+
+@vite(['resources/css/terapeutas.css'])
 @endpush
- 
+
 @section('content')
 <main class="modulo-vista dashboard-admin">
     <header class="encabezado-modulo">
- 
-      <h1>Panel de Control Administrativo</h1>
- 
-      <p>Gestione el personal de "The Beauty
-Room", supervise el estado del negocio y controle los accesos de la
-plataforma.</p>
- 
-  </header>
- 
+        <h1>Panel de Control Administrativo</h1>
+        <p>Gestione el personal de "The Beauty
+            Room", supervise el estado del negocio y controle los accesos de la
+            plataforma.</p>
+    </header>
+
+
+@if(session('success'))
+        <div class="alert-success-spa" style="margin-bottom: 2rem; background-color: #d1fae5; color: #065f46; padding: 1rem; border-radius: 8px; border-left: 5px solid #10b981;">
+            <strong>¡Éxito!</strong> {{ session('success') }}
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="alert-errores-spa" style="margin-bottom: 2rem; background-color: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 8px; border-left: 5px solid #ef4444;">
+            <strong>¡Atención! No se pudo guardar:</strong>
+            <ul style="margin-top: 0.5rem; margin-bottom: 0;">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+
     <section
-class="tarjetas-resumen-admin">
+        class="tarjetas-resumen-admin">
         <article
-class="tarjeta-kpi">
+            class="tarjeta-kpi">
             <small>Citas
-Totales</small>
-            
-<h2>1,240</h2>
+                Totales</small>
+
+            <h2>1,240</h2>
         </article>
- 
+
         <article
-class="tarjeta-kpi">
-            
-<small>Especialistas Activos</small>
-            
-<h2>8</h2>
+            class="tarjeta-kpi">
+
+            <small>Especialistas Activos</small>
+
+            <h2>8</h2>
         </article>
- 
+
         <article
-class="tarjeta-kpi kpi-ingresos">
-            
-<small>Ingresos Estimados</small>
-            
-<h2>$3,450</h2>
+            class="tarjeta-kpi kpi-ingresos">
+
+            <small>Ingresos Estimados</small>
+
+            <h2>$3,450</h2>
         </article>
     </section>
- 
+
     <div
-class="contenedor-doble-columnas">
-        
+        class="contenedor-doble-columnas">
+
         <section
-class="lista-admisiones">
+            class="lista-admisiones">
             <header
-class="encabezado-registro" style="display: flex;
+                class="encabezado-registro" style="display: flex;
 justify-content: space-between; align-items: center; flex-wrap: wrap; gap:
 0.5rem;">
                 <h2>Equipo de
-Recepción</h2>
- 
-              <button
-type="button" class="btn-terapeuta-agregar"
-onclick="abrirModalRecepcionista()">
-                
-    + Agregar recepcionista
-                
-</button>
+                    Recepción</h2>
+
+                <button
+                    type="button" class="btn-terapeuta-agregar"
+                    onclick="abrirModalRecepcionista()">
+
+                    + Agregar recepcionista
+
+                </button>
             </header>
- 
+
             <section
-id="contenedor-recepcionistas" class="grid-personal"
-style="display:flex; flex-direction:column; gap:1rem;
+                id="contenedor-recepcionistas" class="grid-personal"
+                style="display:flex; flex-direction:column; gap:1rem;
 min-height:150px;">
                 <article
-class="tarjeta-admision tarjeta-recepcionista-item"
-data-id="2" data-correo="carlos@thebeautyroom.com"
-data-telefono="0414-123-4567">
- 
-                  <figure
-class="terapeuta-foto-contenedor" style="margin-bottom:0.5rem;
+                    class="tarjeta-admision tarjeta-recepcionista-item"
+                    data-id="2" data-correo="carlos@thebeautyroom.com"
+                    data-telefono="0414-123-4567">
+
+                    <figure
+                        class="terapeuta-foto-contenedor" style="margin-bottom:0.5rem;
 display:flex; justify-content:center;">
-                
-        <div class="foto-avatar-simulado"
-style="width:50px; height:50px; border-radius:50%; background:#cbd5e1;
+
+                        <div class="foto-avatar-simulado"
+                            style="width:50px; height:50px; border-radius:50%; background:#cbd5e1;
 display:flex; align-items:center; justify-content:center; font-weight:bold;
 overflow:hidden;">CM</div>
-                
-    </figure>
-                
-    <header class="info-cliente"
-style="text-align:center;">
-                
-        <h3>Carlos
-Mendoza</h3>
- 
-                    
-<p>Rol: <span class="tag-rol
+
+                    </figure>
+
+                    <header class="info-cliente"
+                        style="text-align:center;">
+
+                        <h3>Carlos
+                            Mendoza</h3>
+
+
+                        <p>Rol: <span class="tag-rol
 recepcionista">Recepcionista</span></p>
- 
-                  </header>
-                
-    <footer style="display: flex; gap: 0.5rem; padding: 0;
+
+                    </header>
+
+                    <footer style="display: flex; gap: 0.5rem; padding: 0;
 background: none; border: none; margin-top: auto;
 justify-content:center;">
-                
-        <button type="button"
-class="btn-zen" onclick="editarRecepcionista(2)"
-style="background: #ffffff; color: #475569; border: 1px solid #cbd5e1;
+
+                        <button type="button"
+                            class="btn-zen" onclick="editarRecepcionista(2)"
+                            style="background: #ffffff; color: #475569; border: 1px solid #cbd5e1;
 padding: 0.35rem 0.75rem; font-size: 0.85rem; border-radius: 0.375rem;
 font-weight: 600; cursor: pointer;">Editar</button>
-                
-        <button type="button"
-class="btn-zen btn-baja"
-onclick="eliminarRecepcionista(2)">Baja</button>
-                
-    </footer>
-                
-</article>
+
+                        <button type="button"
+                            class="btn-zen btn-baja"
+                            onclick="eliminarRecepcionista(2)">Baja</button>
+
+                    </footer>
+
+                </article>
             </section>
- 
+
             <div
-class="paginador-ui">
-                
-<button type="button" id="prev-recepcionistas"
-class="btn-paginacion">&laquo; Ant</button>
+                class="paginador-ui">
+
+                <button type="button" id="prev-recepcionistas"
+                    class="btn-paginacion">&laquo; Ant</button>
                 <span
-id="info-recepcionistas" class="info-paginacion">Pág. 1
-de 1</span>
- 
-              <button
-type="button" id="next-recepcionistas"
-class="btn-paginacion">Sig &raquo;</button>
+                    id="info-recepcionistas" class="info-paginacion">Pág. 1
+                    de 1</span>
+
+                <button
+                    type="button" id="next-recepcionistas"
+                    class="btn-paginacion">Sig &raquo;</button>
             </div>
         </section>
- 
+
         <section
-class="lista-admisiones">
+            class="lista-admisiones">
             <header
-class="encabezado-registro" style="display: flex;
+                class="encabezado-registro" style="display: flex;
 justify-content: space-between; align-items: center; flex-wrap: wrap; gap:
 0.5rem;">
                 <h2>Especialistas
-Registrados</h2>
- 
-              <button
-type="button" class="btn-terapeuta-agregar"
-onclick="abrirModalAgregar()">
-                
-    + Agregar
-especialista
- 
-              </button>
- 
-          </header>
- 
-          
- 
-          <section
-id="contenedor-trabajadores" class="grid-personal"
-style="display:flex; flex-direction:column; gap:1rem;">
- 
-              <article
-class="tarjeta-admision tarjeta-terapeuta" data-id="1"
-data-especialidades="Rejuvenecimiento Facial, Peeling Químico, Masajes
+                    Registrados</h2>
+
+                <button
+                    type="button" class="btn-terapeuta-agregar"
+                    onclick="abrirModalAgregar()">
+
+                    + Agregar
+                    especialista
+
+                </button>
+
+            </header>
+
+
+
+            <section
+                id="contenedor-trabajadores" class="grid-personal"
+                style="display:flex; flex-direction:column; gap:1rem;">
+
+                <article
+                    class="tarjeta-admision tarjeta-terapeuta" data-id="1"
+                    data-especialidades="Rejuvenecimiento Facial, Peeling Químico, Masajes
 Relajantes">
- 
-                  <figure
-class="terapeuta-foto-contenedor" style="margin-bottom:0.5rem;
+
+                    <figure
+                        class="terapeuta-foto-contenedor" style="margin-bottom:0.5rem;
 display:flex; justify-content:center;">
-                
-        <div class="foto-avatar-simulado"
-style="width:50px; height:50px; border-radius:50%; background:#cbd5e1;
+
+                        <div class="foto-avatar-simulado"
+                            style="width:50px; height:50px; border-radius:50%; background:#cbd5e1;
 display:flex; align-items:center; justify-content:center; font-weight:bold;
 overflow:hidden;">AR</div>
-                
-    </figure>
-                
-    <header class="info-cliente"
-style="text-align:center;">
-                
-        <h3>Dra.
-Alana Ramos</h3>
- 
-                    
-<p>Rol: <span class="tag-rol
+
+                    </figure>
+
+                    <header class="info-cliente"
+                        style="text-align:center;">
+
+                        <h3>Dra.
+                            Alana Ramos</h3>
+
+
+                        <p>Rol: <span class="tag-rol
 especialista">Especialista</span></p>
- 
-                    
-<div class="contenedor-tags-especialidades"
-style="justify-content:center;">
- 
-                    
-    <span class="tag-especialidad">Rejuvenecimiento
-Facial</span>
- 
-                    
-    <span class="tag-especialidad">Peeling
-Químico</span>
-                
-        </div>
-                
-        <p class="terapeuta-telefono"
-style="display:none;">123-456-7890</p>
-                
-        <p class="terapeuta-email"
-style="display:none;">alana@thebeautyroom.com</p>
-                
-        <p
-class="terapeuta-descripcion"
-style="display:none;">Especialista en rejuvenecimiento facial,
-peeling químico y masajes relajantes premium.</p>
- 
-                  </header>
-                
-    <footer style="display: flex; gap: 0.5rem; padding: 0;
+
+
+                        <div class="contenedor-tags-especialidades"
+                            style="justify-content:center;">
+
+
+                            <span class="tag-especialidad">Rejuvenecimiento
+                                Facial</span>
+
+
+                            <span class="tag-especialidad">Peeling
+                                Químico</span>
+
+                        </div>
+
+                        <p class="terapeuta-telefono"
+                            style="display:none;">123-456-7890</p>
+
+                        <p class="terapeuta-email"
+                            style="display:none;">alana@thebeautyroom.com</p>
+
+                        <p
+                            class="terapeuta-descripcion"
+                            style="display:none;">Especialista en rejuvenecimiento facial,
+                            peeling químico y masajes relajantes premium.</p>
+
+                    </header>
+
+                    <footer style="display: flex; gap: 0.5rem; padding: 0;
 background: none; border: none; margin-top: auto;
 justify-content:center;">
-                
-        <button type="button"
-class="btn-zen btn-ver-especialista"
-onclick="verTerapeutaDetalle(1)">Ver Terapeuta</button>
-                
-        <button type="button"
-class="btn-zen" onclick="editarTerapeuta(1)"
-style="background: #ffffff; color: #475569; border: 1px solid #cbd5e1;
+
+                        <button type="button"
+                            class="btn-zen btn-ver-especialista"
+                            onclick="verTerapeutaDetalle(1)">Ver Terapeuta</button>
+
+                        <button type="button"
+                            class="btn-zen" onclick="editarTerapeuta(1)"
+                            style="background: #ffffff; color: #475569; border: 1px solid #cbd5e1;
 padding: 0.35rem 0.75rem; font-size: 0.85rem; border-radius: 0.375rem;
 font-weight: 600; cursor: pointer;">Editar</button>
-                
-        <button type="button"
-class="btn-zen btn-baja"
-onclick="eliminarTerapeuta(1)">Baja</button>
-                
-    </footer>
-                
-</article>
+
+                        <button type="button"
+                            class="btn-zen btn-baja"
+                            onclick="eliminarTerapeuta(1)">Baja</button>
+
+                    </footer>
+
+                </article>
             </section>
- 
+
             <div
-class="paginador-ui">
-                
-<button type="button" id="prev-terapeutas"
-class="btn-paginacion">&laquo; Ant</button>
-                
-<span id="info-terapeutas"
-class="info-paginacion">Pág. 1 de 1</span>
-                
-<button type="button" id="next-terapeutas"
-class="btn-paginacion">Sig &raquo;</button>
+                class="paginador-ui">
+
+                <button type="button" id="prev-terapeutas"
+                    class="btn-paginacion">&laquo; Ant</button>
+
+                <span id="info-terapeutas"
+                    class="info-paginacion">Pág. 1 de 1</span>
+
+                <button type="button" id="next-terapeutas"
+                    class="btn-paginacion">Sig &raquo;</button>
             </div>
         </section>
- 
+
     </div>
- 
+
     <dialog id="modal-recepcionista"
-class="modal-zen">
+        class="modal-zen">
         <header
-class="modal-header">
+            class="modal-header">
             <h2
-id="modal-recepcionista-titulo">Agregar Nuevo
-Recepcionista</h2>
- 
-          <button type="button"
-class="btn-cerrar-modal"
-onclick="document.getElementById('modal-recepcionista').close()">&times;</button>
+                id="modal-recepcionista-titulo">Agregar Nuevo
+                Recepcionista</h2>
+
+            <button type="button"
+                class="btn-cerrar-modal"
+                onclick="document.getElementById('modal-recepcionista').close()">&times;</button>
         </header>
-        <form
-id="form-recepcionista" autocomplete="off"
-class="modal-form">
-            <fieldset
-class="campo-formulario">
- 
-              <label
-for="recep_foto">Foto de Perfil (Opcional)</label>
- 
-              <div
-class="campo-foto-previsualizacion">
- 
-                  <div
-id="previsualizacion-avatar-recepcionista" class="avatar-preview">RE</div>
- 
-                  <input
-type="file" accept="image/*"
-onchange="previsualizarImagen(this,
-'previsualizacion-avatar-recepcionista')">
-                
-</div>
+        <form id="form-recepcionista" method="POST" action="{{ route('admin.create-recepcionista') }}" autocomplete="off" class="modal-form">
+            @csrf
+
+            <fieldset class="campo-formulario">
+                <label for="recep_foto">Foto de Perfil (Opcional)</label>
+                <div class="campo-foto-previsualizacion">
+                    <div id="previsualizacion-avatar-recepcionista" class="avatar-preview">RE</div>
+                    <input type="file" name="foto" accept="image/*" onchange="previsualizarImagen(this, 'previsualizacion-avatar-recepcionista')">
+                </div>
             </fieldset>
- 
-            <fieldset
-class="campo-formulario">
-                
-<label for="recep_name">Nombre Completo</label>
-                
-<input type="text" id="recep_name" required
-placeholder="Ej. Carlos Mendoza">
+
+            <fieldset class="campo-formulario">
+                <label for="recep_name">Nombre Completo</label>
+                <input type="text" name="nombre" id="recep_name" required minlength="3" maxlength="255" value="{{ old('nombre') }}" placeholder="Ej. Carlos Mendoza">
+                <small style="color: #64748b; font-size: 0.8rem;">Mínimo 3 caracteres, solo letras.</small>
             </fieldset>
- 
-            <fieldset
-class="campo-formulario">
-                
-<label for="recep_phone">Teléfono de Contacto</label>
-                
-<input type="text" id="recep_phone" required
-placeholder="Ej. 0414-111-2233">
+
+            <fieldset class="campo-formulario">
+                <label for="recep_phone">Teléfono de Contacto</label>
+                <input type="tel" name="telefono" id="recep_phone" required pattern="[0-9]{7,20}" title="Debe contener entre 7 y 20 números, sin espacios ni guiones" value="{{ old('telefono') }}" placeholder="Ej. 04141112233">
+                <small style="color: #64748b; font-size: 0.8rem;">Solo números seguidos, sin guiones ni espacios (Ej. 04141234567).</small>
             </fieldset>
- 
-            <fieldset
-class="campo-formulario">
-                
-<label for="recep_email">Correo Electrónico</label>
-                
-<input type="email" id="recep_email" required
-placeholder="carlos@thebeautyroom.com">
+
+            <fieldset class="campo-formulario">
+                <label for="recep_email">Correo Electrónico</label>
+                <input type="email" name="email" id="recep_email" required value="{{ old('email') }}" placeholder="carlos@thebeautyroom.com">
+                <small style="color: #64748b; font-size: 0.8rem;">Debe ser un correo válido y no estar registrado previamente.</small>
             </fieldset>
- 
+
             <div id="error-password-recep" class="aviso-error-password" style="display: none; color: var(--color-error); font-size: 0.85rem; font-weight: 600; margin-bottom: -0.5rem;">
                 Las contraseñas no coinciden. Por favor, verifíquelas.
             </div>
@@ -320,7 +315,7 @@ placeholder="carlos@thebeautyroom.com">
                 <fieldset class="campo-formulario campo-password-contenedor">
                     <label for="recep_password">Contraseña de Acceso</label>
                     <div class="input-icono-wrapper">
-                        <input type="password" id="recep_password" placeholder="Mínimo 8 caracteres">
+                        <input type="password" name="password" id="recep_password" required minlength="8" placeholder="Mínimo 8 caracteres">
                         <button type="button" class="btn-alternar-password" onclick="alternarVisibilidad('recep_password', this)" aria-label="Mostrar contraseña">
                             <svg class="svg-ojo" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
@@ -333,7 +328,7 @@ placeholder="carlos@thebeautyroom.com">
                 <fieldset class="campo-formulario campo-password-contenedor">
                     <label for="recep_password_confirmation">Confirmar Contraseña</label>
                     <div class="input-icono-wrapper">
-                        <input type="password" id="recep_password_confirmation" placeholder="Repita la contraseña">
+                        <input type="password" name="password_confirmation" id="recep_password_confirmation" required minlength="8" placeholder="Repita la contraseña">
                         <button type="button" class="btn-alternar-password" onclick="alternarVisibilidad('recep_password_confirmation', this)" aria-label="Mostrar contraseña">
                             <svg class="svg-ojo" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
@@ -343,24 +338,24 @@ placeholder="carlos@thebeautyroom.com">
                     </div>
                 </fieldset>
             </section>
- 
+
+
             <footer
-class="modal-acciones">
-                
-<button type="button" class="btn-zen btn-secundario"
-onclick="document.getElementById('modal-recepcionista').close()">Cancelar</button>
-                
-<button type="submit" class="btn-zen
-btn-primario">Guardar Recepcionista</button>
+                class="modal-acciones">
+
+                <button type="button" class="btn-zen btn-secundario"
+                    onclick="document.getElementById('modal-recepcionista').close()">Cancelar</button>
+
+                <button type="button" onclick="this.form.action='{{ route("admin.create-recepcionista") }}'; this.form.submit();" class="btn-zen btn-primario">Forzar Guardado</button>
             </footer>
- 
-      </form>
- 
-  </dialog>
-@include('compartidas.modal-terapeuta')
+
+        </form>
+
+    </dialog>
+    @include('compartidas.modal-terapeuta')
 </main>
 @endsection
 @push('scripts')
-    @vite(['resources/js/terapeutas.js',
+@vite(['resources/js/terapeutas.js',
 'resources/js/dashboard.js'])
 @endpush

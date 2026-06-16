@@ -1,5 +1,5 @@
 /* ==========================================================================
-   MÓDULO: Especialistas (Terapeutas) - Vista Compartida para Admin y Recepcionista
+    MÓDULO: Especialistas (Terapeutas) - Vista Compartida para Admin y Recepcionista
     Descripción: Estilos para la presentación de los terapeutas, con enfoque en claridad, profesionalismo y usabilidad.
    ========================================================================== */
 
@@ -110,7 +110,7 @@
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
 /* Tag de Disponibilidad */
@@ -219,19 +219,19 @@
 }
 
 /* ==========================================================================
-   MEDIA QUERIES (Ajustes responsivos específicos para el Header)
+    MEDIA QUERIES (Ajustes responsivos específicos para el Header)
    ========================================================================== */
 @media (max-width: 640px) {
     .modulo-terapeutas {
         padding: 1rem;
     }
-    
+
     .terapeutas-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 1rem;
     }
-    
+
     .btn-terapeuta-agregar {
         width: 100%;
         justify-content: center;

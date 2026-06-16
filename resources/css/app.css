@@ -1,5 +1,5 @@
-@import 'tailwindcss';
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap');
+@import 'tailwindcss';
 
 /* --- VARIABLES DE TEMA --- */
 @theme {
@@ -691,7 +691,7 @@ body {
 }
 
 /* ==========================================================================
-   MÓDULO DE AGENDA GLOBAL - "THE BEAUTY ROOM"
+    MÓDULO DE AGENDA GLOBAL - "THE BEAUTY ROOM"
    ========================================================================== */
 
 .modulo-agenda {
@@ -911,7 +911,7 @@ body {
 }
 
 /* ==========================================================================
-   VISTA RESPONSIVA (Media Queries para Teléfonos)
+    VISTA RESPONSIVA (Media Queries para Teléfonos)
    ========================================================================== */
 @media (max-width: 768px) {
     .grupo-filtro {
