@@ -4,7 +4,7 @@
 
 @push('styles')
     @vite(['resources/css/terapeutas.css'])
-@endpush
+@endpush 
 
 @section('content')
 <section class="modulo-terapeutas">
@@ -12,9 +12,10 @@
     <header class="terapeutas-header">
         <div>
             <h1>Especialistas en Bienestar</h1>
-            <p>Conoce al equipo profesional detrás de las experiencias exclusivas de The Beauty Room.</p>
+            <p>Conoce al equipo profesional detrás de las experiences exclusivas de The Beauty Room.</p>
         </div>
-         <!-- Añado condicional para que, dependieno del rol, se muestren las opcionesde gestion de personal-->
+
+        <!-- Añado condicional para que, dependieno del rol, se muestren las opcionesde gestion de personal-->
         @if($userRole === 'admin')
             <button type="button" class="btn-terapeuta-agregar" onclick="abrirModalAgregar()">
                 <span class="icono-mas">+</span> Registrar Especialista
@@ -27,29 +28,35 @@
             <article class="tarjeta-terapeuta" data-id="{{ $terapeuta['id'] }}">
                 
                 <figure class="terapeuta-foto-contenedor">
-                    <div class="foto-avatar-simulado">{{ substr($terapeuta['nombre'], 5, 2) }}</div>
+                    <div class="foto-avatar-simulado">{{ substr($terapeuta['nombre'], 0, 2) }}</div>
                     <span class="tag-disponibilidad">{{ $terapeuta['disponibilidad'] }}</span>
                 </figure>
 
                 <div class="terapeuta-info">
                     <h2>{{ $terapeuta['nombre'] }}</h2>
                     <p class="terapeuta-especialidad">{{ $terapeuta['especialidad'] }}</p>
-                    <small class="terapeuta-experiencia">{{ $terapeuta['experiencia'] }}</small>
+                    <small class="terapeuta-experiencia">Experiencia: {{ $terapeuta['experiencia'] ?? '3 años' }}</small>
                     <p class="terapeuta-descripcion">{{ $terapeuta['descripcion'] }}</p>
                 </div>
-<!--Lo mismo que arriba, condicional para mostrar acciones de gestión solo al admin-->
+
                 @if($userRole === 'admin')
                     <footer class="terapeuta-acciones">
                         <button type="button" class="btn-terapeuta-editar" onclick="editarTerapeuta({{ $terapeuta['id'] }})">Editar Info</button>
-                        <button type="button" class="btn-terapeuta-eliminar" onclick="eliminarTerapeuta({{ $terapeuta['id'] }})">Remover</button>
+                        <button type="button" class="btn-terapeuta-eliminar" onclick="eliminarTerapeuta({{ $terapeuta['id'] }})">Dar de Baja</button>
                     </footer>
                 @endif
 
             </article>
         @empty
-            <p class="grid-vacio">No hay terapeutas registrados en el sistema actualmente.</p>
+            {{-- Caja contenedora estilizada que vimos en tu captura --}}
+            <div class="contenedor-vacio">
+                <p class="grid-vacio">No hay terapeutas registrados en el sistema actualmente.</p>
+            </div>
         @endforelse
     </main>
+
+    <!--Inyecto el archivo parcial reutilizable del modal para crear y editar terapeutas, evitando código duplicado y manteniendo la estructura ordenada -->
+    @include('compartidas.modal-terapeuta')
 
 </section>
 @endsection
