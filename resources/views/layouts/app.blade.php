@@ -10,6 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    @stack('styles')<!--Acá añado estilos específicos de cada vista, att: Andrés -->
 </head>
 <body>
 
@@ -17,13 +19,11 @@
         <picture class="logo-contenedor">
             <img src="{{ asset('logo/logo-the-beauty-room.PNG') }}" alt="Logotipo Oficial de The Beauty Room Spa" class="logo-spa">
         </picture>
-
-        <!--Aquí estoy añadiendo la navbar con condicionales, para que se muestren las funcionalidades según el rol del usuario-->
-        
+<!--Aquì estoy añadiendo el nav para que se muestre en todas las vistas, y se adapte segun el rol del usuario logueado, mostrando solo las opciones correspondientes a su rol.-->
         <nav class="nav-roles" aria-label="Navegación de Roles Operativos">
             @auth
                 @if(auth()->user()->rol === 'admin' || auth()->user()->rol === 'recepcionista' || auth()->user()->rol === 'trabajador')
-                    <a href="{{ url('/agenda') }}" class="{{ Request::is('agenda*') ? 'active' : '' }}">Agenda</a>
+                    <a href="{{ route('agenda') }}" class="{{ Request::is('agenda*') ? 'active' : '' }}">Agenda</a>
                 @endif
 
                 @if(auth()->user()->rol === 'admin' || auth()->user()->rol === 'recepcionista')
@@ -43,7 +43,7 @@
                 @endif
 
                 @if(auth()->user()->rol === 'recepcionista' || auth()->user()->rol === 'trabajador' || auth()->user()->rol === 'cliente')
-                    <a href="{{ url('/catalogo') }}" class="{{ Request::is('catalogo*') ? 'active' : '' }}">Catálogo Zen</a>
+                    <a href="{{ route('catalogo') }}" class="{{ Request::is('catalogo*') ? 'active' : '' }}">Catálogo Zen</a>
                 @endif
 
                 @if(auth()->user()->rol === 'recepcionista' || auth()->user()->rol === 'admin')
@@ -73,6 +73,6 @@
         <p>&copy; {{ date('Y') }} <strong>The Beauty Room Spa</strong>. Todos los derechos reservados.</p>
         <small>Potenciado por Sistema de Gestión Operativa SyncroStyle</small>
     </footer>
-
+    @stack('scripts')
 </body>
 </html>

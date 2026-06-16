@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Cita; // Modelo de Cita para interactuar con la base de datos de citas.
 use Illuminate\Http\Request;   // Controlador para manejar la agenda de citas en la recepción.
+use App\Models\Cita; // Importamos el modelo de Cita para interactuar con la base de datos de citas.
+
 
 class AgendaController extends Controller // Controlador para manejar la agenda de citas en la recepción.
 {
