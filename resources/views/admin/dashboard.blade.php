@@ -36,7 +36,7 @@
                 <small>Cree las credenciales para nuevos especialistas o recepcionistas</small>
             </header>
 
-            <form id="form-registro-trabajador" autocomplete="off" class="formulario-express">
+            <form id="form-registro-trabajador" method="POST" action="{{ route('admin.create-trabajador') }}" autocomplete="off" class="formulario-express">
                 @csrf
                 <fieldset class="campo-formulario">
                     <label for="worker_name">Nombre Completo</label>

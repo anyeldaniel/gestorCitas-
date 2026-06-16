@@ -1,18 +1,931 @@
 @import 'tailwindcss';
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap');
 
+/* --- VARIABLES DE TEMA --- */
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    
+    --color-bg-principal: #f4f7f6;
+    --color-bg-header: #ffffff;
+    --color-texto-oscuro: #2c3e50;
+    --color-texto-claro: #7f8c8d;
+    --color-verde-zen: #a3b899;
+    --color-verde-hover: #8ba180;
+    --color-borde-suave: #e2e8f0;
+    --color-error: #c0392b;
+}
 
-@import '_variables.css';
+/* --- ESTILOS BASE --- */
+body {
+    background-color: var(--color-bg-principal);
+    color: var(--color-texto-oscuro);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    font-family: var(--font-sans);
+    margin: 0;
+}
 
+/* --- LAYOUT --- */
+.header-spa {
+    background-color: var(--color-bg-header);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--color-borde-suave);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
 
-@import 'layouts/main.css';
+/* --- ESTILIZADO DE LOGOTIPO ZEN (Estructura limpia e independiente) --- */
+.logo-contenedor {
+    display: flex;
+    align-items: center;
+}
 
+.logo-spa {
+    height: 48px;        /* Controlamos el tamaño basándonos solo en la altura */
+    width: auto;         /* ¡La magia! El ancho se calcula solo para no deformar la imagen */
+    object-fit: contain; /* Asegura que se renderice con máxima nitidez */
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.02)); /* Un toque sutil de relieve */
+}
 
-@import 'compartidas/components.css';
+.contenedor-principal {
+    flex: 1;
+    padding: 2.5rem 2rem;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
 
+.footer-spa {
+    background-color: var(--color-bg-header);
+    text-align: center;
+    padding: 1.5rem;
+    font-size: 0.85rem;
+    color: var(--color-texto-claro);
+    border-top: 1px solid var(--color-borde-suave);
+}
 
-@import 'auth/login.css';
-@import 'admin/admin.css';
-@import 'recepcion/recepcion.css';
-@import 'clientes/catalogo.css';
-@import 'especialistas/terapeutas.css'
+/* --- NAVEGACIÓN Y BOTONES --- */
+.nav-roles { display: flex; gap: 1.25rem; }
+.nav-roles a {
+    text-decoration: none;
+    color: var(--color-texto-claro);
+    font-weight: 500;
+    padding: 0.5rem 0.85rem;
+    border-radius: 6px;
+    transition: all 0.4s ease;
+}
+
+.nav-roles a:hover {
+    color: var(--color-texto-oscuro);
+    background-color: rgba(163, 184, 153, 0.15);
+}
+
+.nav-roles a.active {
+    color: var(--color-texto-oscuro);
+    background-color: rgba(163, 184, 153, 0.25);
+    font-weight: 600;
+}
+
+.btn-zen {
+    background-color: var(--color-verde-zen);
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.btn-zen:hover { background-color: var(--color-verde-hover); }
+
+/* --- FORMULARIOS (LOGIN Y MÓDULOS) --- */
+.login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 70vh;
+}
+
+.login-wrapper, .contenedor-formulario-spa {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--color-borde-suave);
+    width: 100%;
+    max-width: 450px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.form-login header { text-align: center; margin-bottom: 2rem; }
+.form-login fieldset { border: none; padding: 0; margin-bottom: 1.5rem; }
+.form-login label { display: block; font-weight: 600; margin-bottom: 0.5rem; }
+.form-login input { width: 100%; padding: 0.75rem; border: 1px solid var(--color-borde-suave); border-radius: 6px; box-sizing: border-box; }
+.form-login footer { margin-top: 2rem; }
+.form-login .form-footer-link { text-align: right; margin-top: 1rem; }
+.form-login .form-footer-link a { color: var(--color-verde-zen); font-weight: 700; text-decoration: none; }
+.form-login .form-footer-link a:hover { text-decoration: underline; }
+
+/* --- COMPONENTES --- */
+.rejilla-catalogo {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+.tarjeta-componente {
+    background-color: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: 1px solid var(--color-borde-suave);
+    transition: transform 0.3s ease;
+}
+
+.tarjeta-componente:hover { 
+    transform: translateY(-4px);
+    border-color: var(--color-verde-zen);
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+    .header-spa { flex-direction: column; gap: 1rem; }
+}
+
+/* --- ESTILOS GENERALES DEL ADMINISTRADOR --- */
+.modulo-vista {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    font-family: 'Instrument Sans', sans-serif;
+}
+
+.encabezado-modulo {
+    margin-bottom: 2.5rem;
+}
+
+.encabezado-modulo h1 {
+    font-size: 1.8rem;
+    color: #1a1f36;
+    margin-bottom: 0.5rem;
+}
+
+.encabezado-modulo p {
+    color: #5a6080;
+    margin: 0;
+}
+
+/* --- SECCIÓN DE TARJETAS KPIs --- */
+.tarjetas-resumen-admin {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.tarjeta-kpi {
+    background: #ffffff;
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid #e8eaf0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.tarjeta-kpi small {
+    color: #718096;
+    text-transform: uppercase;
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+}
+
+.tarjeta-kpi h2 {
+    font-size: 2.2rem;
+    margin: 0.5rem 0 0 0;
+    color: #1a1f36;
+    font-weight: 700;
+}
+
+.kpi-ingresos h2 {
+    color: #36e8a0;
+}
+
+/* --- DISTRIBUCIÓN EN 2 COLUMNAS SEMÁNTICAS --- */
+.distribucion-recepcion {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2.5rem;
+    align-items: start;
+}
+
+.bloque-registro {
+    background: #ffffff;
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid #e8eaf0;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.01);
+}
+
+.grid-personal, .grid-servicios {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.tarjeta-admision {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    padding: 1.25rem;
+    border-radius: 10px;
+    border: 1px solid #e8eaf0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+}
+
+.tarjeta-admision h3 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.1rem;
+    color: #2d3748;
+}
+
+.tarjeta-admision p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #718096;
+}
+
+.tag-rol {
+    font-weight: 600;
+}
+
+.tag-rol.especialista, .precio-texto {
+    color: #36e8a0;
+}
+
+.tag-rol.recepcionista {
+    color: #4f8eff;
+}
+
+/* --- BOTONES ESTILO ZEN --- */
+.btn-primario {
+    background: #a3b899;
+    color: white;
+    font-size: 1rem;
+    padding: 0.85rem;
+}
+
+.btn-exito {
+    background: #36e8a0;
+    color: #000000;
+    font-size: 1rem;
+    padding: 0.85rem;
+}
+
+.btn-baja {
+    background: rgba(255, 90, 125, 0.08);
+    color: #ff5a7d;
+    border: 1px solid rgba(255, 90, 125, 0.3);
+}
+
+.btn-baja:hover {
+    background: rgba(255, 90, 125, 0.15);
+}
+
+/* --- REPORTE CANVAS --- */
+.panel-graficas {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* --- COMPLEMENTOS REQUERIDOS PARA EL CATÁLOGO ZEN --- */
+.tarjeta-componente .img-portada {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    background-color: #f0f4f2;
+}
+
+.tarjeta-componente header {
+    margin-bottom: 1.25rem;
+}
+
+.tarjeta-componente h3 {
+    color: var(--color-texto-oscuro);
+    font-size: 1.2rem;
+    margin: 0 0 0.4rem 0;
+}
+
+.tarjeta-componente footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    padding-top: 0.75rem;
+    border-top: 1px dashed var(--color-borde-suave);
+}
+
+.precio-tag {
+    font-weight: 700;
+    color: var(--color-texto-oscuro);
+    font-size: 1.1rem;
+}
+
+/* Botón de Cerrar Sesión en el Header */
+.nav-roles .btn-logout {
+    color: #a37a7a; /* Un tono de color apropiado paara la temática de la web */
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.nav-roles .btn-logout:hover {
+    color: #d9534f; /* Cambia a un color rojizo al pasar el cursor :) */
+    text-decoration: none;
+}
+
+/* --- ESTILOS MÓDULO DE RESERVAS SPA --- */
+.modulo-vista {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 50px 20px;
+    background-color: #faf6f4; /* Tono crema sutil */
+    min-height: 85vh;
+}
+
+.encabezado-modulo h1 {
+    font-family: 'Instrument Sans', sans-serif;
+    color: #3d3332;
+    font-size: 28px;
+    text-align: center;
+    margin-bottom: 6px;
+}
+
+.encabezado-modulo p {
+    color: #7a6e6d;
+    font-size: 15px;
+    text-align: center;
+}
+
+.contenedor-formulario-spa {
+    background: #ffffff;
+    max-width: 600px;
+    width: 100%;
+    padding: 35px;
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(122, 110, 109, 0.05);
+}
+
+.formulario-spa {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.grupo-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.grupo-campo label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #524645;
+}
+
+.nota-opcional {
+    font-weight: 400;
+    color: #9c8e8d;
+}
+
+.grupo-campo select,
+.grupo-campo input[type="date"],
+.grupo-campo input[type="time"],
+.grupo-campo input[type="file"] {
+    padding: 12px 14px;
+    border: 1px solid #e6dedb;
+    border-radius: 8px;
+    background-color: #fdfdfd;
+    color: #3d3332;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.grupo-campo select:focus,
+.grupo-campo input:focus {
+    outline: none;
+    border-color: #bfa39e;
+    box-shadow: 0 0 0 3px rgba(191, 163, 158, 0.2);
+}
+
+.grid-campos-dobles {
+    display: flex;
+    gap: 20px;
+}
+
+.grid-campos-dobles .grupo-campo {
+    flex: 1;
+}
+
+.btn-zen {
+    background-color: #a68580; /* Color emblemático del Spa */
+    color: #ffffff;
+    border: none;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-zen:hover {
+    background-color: #91706c;
+}
+
+.w-full {
+    width: 100%;
+}
+
+/* Alertas de errores por JS */
+.alert-errores-spa {
+    background-color: #fdf2f2;
+    color: #b84646;
+    padding: 12px 16px;
+    border-left: 4px solid #b84646;
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* --- MEDIA QUERIES (Responsive Design) --- */
+@media (max-width: 580px) {
+    .grid-campos-dobles {
+        flex-direction: column;
+        gap: 22px;
+    }
+    
+    .contenedor-formulario-spa {
+        padding: 22px 18px;
+    }
+    
+    .encabezado-modulo h1 {
+        font-size: 24px;
+    }
+}
+
+/* --- ALERTA DE ÉXITO PREMIUM SPA --- */
+.alert-success-spa {
+    background-color: rgba(163, 184, 153, 0.15); /* Tu color verde-zen con opacidad suave */
+    border-left: 4px solid var(--color-verde-zen);
+    color: var(--color-texto-oscuro);
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 1350px; /* Se acopla al tamaño de la rejilla */
+    margin: 0 auto 2rem auto;
+    font-weight: 500;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 12px rgba(163, 184, 153, 0.05);
+}
+
+.icono-zen {
+    font-size: 16px;
+}
+
+/* ESTOY AGREGANDO ESTILOS PARA EL MÓDULO DE AGENDA*/
+.modulo-agenda {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.agenda-header h1 {
+    font-size: 28px;
+    color: #2c3e50;
+    margin-bottom: 4px;
+}
+
+.agenda-header p {
+    color: #7f8c8d;
+    font-size: 15px;
+}
+
+/* Formulario de Filtros */
+.agenda-filtros {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    padding: 20px;
+    border-radius: 12px;
+    margin: 25px 0;
+}
+
+.grupo-filtro {
+    border: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.grupo-filtro label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #4a5568;
+}
+
+.grupo-filtro select, 
+.grupo-filtro input {
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background-color: #f8fafc;
+    color: #334155;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.grupo-filtro select:focus, 
+.grupo-filtro input:focus {
+    border-color: #a3b899;
+}
+
+/* Tabla de Contenidos */
+.tabla-responsiva {
+    width: 100%;
+    overflow-x: auto;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+}
+
+.tabla-agenda {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    min-width: 800px; /* Previene el colapso de columnas en pantallas pequeñas */
+}
+
+.tabla-agenda th, 
+.tabla-agenda td {
+    padding: 16px 20px;
+    font-size: 14px;
+}
+
+.tabla-agenda th {
+    background: #f8fafc;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 12px;
+    border-bottom: 2px solid #edf2f7;
+}
+
+.tabla-agenda tr {
+    border-bottom: 1px solid #edf2f7;
+    transition: background-color 0.2s;
+}
+
+.tabla-agenda tbody tr:hover {
+    background-color: rgba(163, 184, 153, 0.04);
+}
+
+.columna-hora {
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.badge-terapeuta {
+    background: #f1f5f9;
+    color: #475569;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.texto-atenuado {
+    color: #64748b;
+}
+
+/* Estados */
+.status-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-tag.confirmado {
+    background: rgba(34, 197, 94, 0.12);
+    color: #16a34a;
+}
+
+.status-tag.pendiente {
+    background: rgba(245, 158, 11, 0.12);
+    color: #d97706;
+}
+
+/* Acciones */
+.acciones-celda {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-agenda-modificar, 
+.btn-agenda-cancelar {
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.btn-agenda-modificar {
+    background: #475569;
+    color: #ffffff;
+}
+
+.btn-agenda-cancelar {
+    background: #ef4444;
+    color: #ffffff;
+}
+
+.btn-agenda-modificar:hover, 
+.btn-agenda-cancelar:hover {
+    opacity: 0.9;
+}
+
+.texto-centrado { text-align: center; }
+.tabla-vacia {
+    text-align: center;
+    color: #94a3b8;
+    padding: 40px;
+}
+
+/* Aquí lo hago resposive para que se adapte a cuaalquier pantalla ;) */
+@media (max-width: 768px) {
+    .modulo-agenda { padding: 0.5rem; }
+    .agenda-header h1 { font-size: 22px; }
+}
+
+/* ==========================================================================
+   MÓDULO DE AGENDA GLOBAL - "THE BEAUTY ROOM"
+   ========================================================================== */
+
+.modulo-agenda {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+/* Encabezado del Módulo */
+.agenda-header {
+    margin-bottom: 24px;
+}
+
+.agenda-header h1 {
+    font-size: 1.8rem;
+    color: #2d3748;
+    margin: 0 0 6px 0;
+    font-weight: 600;
+}
+
+.agenda-header p {
+    font-size: 0.95rem;
+    color: #718096;
+    margin: 0;
+}
+
+/* Barra de Filtros (Formulario Semántico) */
+.agenda-filtros {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    /* Diseño en bloque/línea tradicional compatible */
+    display: table;
+    width: 100%;
+}
+
+.grupo-filtro {
+    border: none;
+    margin: 0;
+    padding: 0;
+    display: table-cell;
+    width: 50%;
+    vertical-align: middle;
+}
+
+.grupo-filtro:first-of-type {
+    padding-right: 15px;
+}
+
+.grupo-filtro label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #4a5568;
+    margin-bottom: 6px;
+}
+
+.grupo-filtro select,
+.grupo-filtro input[type="date"] {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    color: #2d3748;
+    background-color: #f7fafc;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.grupo-filtro select:focus,
+.grupo-filtro input[type="date"]:focus {
+    border-color: #4299e1;
+    background-color: #ffffff;
+}
+
+/* Contenedor y Tabla Responsiva */
+.tabla-responsiva {
+    width: 100%;
+    overflow-x: auto; /* Permite scroll horizontal en pantallas muy pequeñas */
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.tabla-agenda {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.tabla-agenda th {
+    background-color: #f8fafc;
+    color: #4a5568;
+    font-weight: 600;
+    padding: 14px 16px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.tabla-agenda td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #edf2f7;
+    color: #2d3748;
+    vertical-align: middle;
+}
+
+.fila-cita:hover {
+    background-color: #f8fafc;
+}
+
+/* Detalles Específicos de Columnas */
+.columna-hora time {
+    font-weight: bold;
+    color: #2b6cb0;
+    background-color: #ebf8ff;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.badge-terapeuta {
+    background-color: #f7fafc;
+    border: 1px solid #e2e8f0;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    color: #4a5568;
+}
+
+.texto-atenuado {
+    color: #718096;
+    font-size: 0.85rem;
+}
+
+.texto-centrado {
+    text-align: center;
+}
+
+/* Status Tags (Estados de las Citas) */
+.status-tag {
+    display: inline-block;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-radius: 50px;
+    letter-spacing: 0.5px;
+}
+
+.status-tag.confirmado {
+    background-color: #c6f6d5;
+    color: #22543d;
+}
+
+.status-tag.pendiente {
+    background-color: #feebc8;
+    color: #744210;
+}
+
+.status-tag.cancelado {
+    background-color: #fed7d7;
+    color: #742a2a;
+}
+
+/* Botones de Acción Internos */
+.acciones-celda {
+    text-align: center;
+    white-space: nowrap;
+}
+
+.btn-agenda-modificar,
+.btn-agenda-cancelar {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 0 2px;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn-agenda-modificar {
+    background-color: #e2e8f0;
+    color: #4a5568;
+}
+
+.btn-agenda-modificar:hover {
+    background-color: #cbd5e0;
+}
+
+.btn-agenda-cancelar {
+    background-color: #fff5f5;
+    color: #c53030;
+}
+
+.btn-agenda-cancelar:hover {
+    background-color: #fed7d7;
+}
+
+.btn-agenda-modificar:active,
+.btn-agenda-cancelar:active {
+    transform: scale(0.97);
+}
+
+.tabla-vacia {
+    text-align: center;
+    padding: 30px !important;
+    color: #a0aec0;
+    font-style: italic;
+}
+
+/* ==========================================================================
+   VISTA RESPONSIVA (Media Queries para Teléfonos)
+   ========================================================================== */
+@media (max-width: 768px) {
+    .grupo-filtro {
+        display: block;
+        width: 100%;
+        padding-right: 0 !important;
+        margin-bottom: 12px;
+    }
+    
+    .grupo-filtro:last-of-type {
+        margin-bottom: 0;
+    }
+
+    .agenda-header h1 {
+        font-size: 1.5rem;
+    }
+}
