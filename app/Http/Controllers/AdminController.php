@@ -2,25 +2,25 @@
 
 namespace App\Http\Controllers;
 use App\Models\User;
-use Illuminate\Http\Request;
+use App\Http\Requests\CreateTrabajadorRequest; // <--- Agrega esta línea
 
 class AdminController extends Controller
 {
 
-    public function CreateTrabajador(Request $request)
+    public function CreateTrabajador( CreateTrabajadorRequest $request)
     {
     
     $validatedData = $request->validated();
 
     $trabajador = User::create([
-        'nombre' => $validatedData['username'],
+        'nombre' => $validatedData['nombre'],
         'correo' => $validatedData['email'],
         'telefono' => $validatedData['telefono'],
         'contraseña' => $validatedData['password'], 
         
         // AQUÍ ESTÁ LA MAGIA:
-        // Tomas la variable 'role' que viene de tu <select> en el HTML
-        'rol' => $validatedData['role'], 
+        // lo guardamos como trabajador 
+        'rol' => 'trabajador'
     ]);
 
     return redirect()->route('admin.dashboard')->with('success', 'Trabajador registrado exitosamente.');
