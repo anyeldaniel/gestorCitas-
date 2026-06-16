@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 use App\Models\User;
-use App\Http\Requests\CreateTrabajadorRequest; // <--- Agrega esta línea
+use App\Http\Requests\CreateTrabajadorRequest; // Importamos el request personalizado para validar la creación de trabajadores
+use Illuminate\Support\Facades\Hash; // Importado para garantizar la seguridad de la contraseña encriptada
 
 class AdminController extends Controller
 {
@@ -12,13 +13,13 @@ class AdminController extends Controller
     
     $validatedData = $request->validated();
 
+    // Sincronizamos las claves del array validado según las reglas del CreateTrabajadorRequest (soportando tanto 'name' como 'nombre' de ambos formularios)
     $trabajador = User::create([
-        'nombre' => $validatedData['nombre'],
+        'nombre' => $validatedData['nombre'] ?? $validatedData['name'],
         'correo' => $validatedData['email'],
-        'telefono' => $validatedData['telefono'],
-        'contraseña' => $validatedData['password'], 
-        
-        // AQUÍ ESTÁ LA MAGIA:
+        'telefono' => $validatedData['telefono'] ?? null,
+        'contraseña' => Hash::make($validatedData['password']), // Encriptamos la contraseña antes de guardarla en la base de datos para garantizar la seguridad, utilizando el facade Hash de Laravel.
+    
         // lo guardamos como trabajador 
         'rol' => 'trabajador'
     ]);

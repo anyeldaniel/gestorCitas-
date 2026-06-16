@@ -207,3 +207,172 @@
         grid-template-columns: 1fr;
     }
 }
+
+
+/* ==========================================================================
+   MÓDULO: Extensiones UI - Personal, Recepcionistas y Alertas Personalizadas 
+   ========================================================================== */
+
+/* Contenedor de Especialidades Dinámicas */
+.contenedor-especialidades-dinamicas {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.fila-especialidad {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.fila-especialidad input {
+    flex: 1;
+}
+
+.btn-añadir-especialidad {
+    background-color: var(--color-verde-zen, #a3b899);
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-añadir-especialidad:hover {
+    background-color: var(--color-verde-hover, #8ba180);
+}
+
+.btn-remover-especialidad {
+    background-color: var(--color-error, #c0392b);
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+}
+
+/* Tags de especialidades en tarjetas */
+.contenedor-tags-especialidades {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-top: 0.35rem;
+}
+
+.tag-especialidad {
+    background-color: #e2e8f0;
+    color: #475569;
+    font-size: 0.75rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 0.25rem;
+    font-weight: 500;
+}
+
+/* Manejo de Fotos */
+.campo-foto-previsualizacion {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.avatar-preview {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #475569;
+    border: 2px solid var(--color-borde-suave, #e2e8f0);
+}
+
+/* Distribución del Dashboard con Recepcionistas */
+.contenedor-doble-columnas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+@media (max-width: 992px) {
+    .contenedor-doble-columnas {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Sección de Paginación */
+.paginador-ui {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.25rem;
+    padding-top: 0.5rem;
+}
+
+.btn-paginacion {
+    background: white;
+    border: 1px solid #cbd5e1;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.85rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    font-weight: 600;
+    color: #475569;
+}
+
+.btn-paginacion:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.info-paginacion {
+    font-size: 0.85rem;
+    color: var(--color-texto-claro, #7f8c8d);
+}
+
+/* Alerta de Confirmación Customizada en el Centro */
+.modal-alerta-custom {
+    border: none;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    text-align: center;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    background: white;
+}
+
+.modal-alerta-custom::backdrop {
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
+}
+
+.alerta-contenido h3 {
+    margin-top: 0;
+    color: var(--color-texto-oscuro, #2c3e50);
+}
+
+.alerta-contenido p {
+    color: var(--color-texto-claro, #7f8c8d);
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+}
+
+.alerta-acciones {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+}
