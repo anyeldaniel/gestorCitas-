@@ -95,5 +95,5 @@ Route::middleware(['auth'])->group(function () {
 // Rutas añadidas para arreglar el error 404.
 Route::middleware(['auth'])->group(function () {
     Route::get('/sala-espera', [SalaEsperaController::class, 'index'])->name('sala.espera');
-    Route::get('/verificar-pagos', [PagoController::class, 'index'])->name('pago.verificar');
+    Route::get('/recepcion/pagos', [PagoController::class, 'index'])->name('pago.verificar');
 });
