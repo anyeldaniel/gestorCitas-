@@ -3,7 +3,7 @@
 @section('title', 'Dashboard Administrativo - Syncrostyle')
 
 @push('styles')
-    @vite(['resources/css/terapeutas.css'])
+@vite(['resources/css/terapeutas.css'])
 @endpush
 
 @section('content')
@@ -14,20 +14,20 @@
     </header>
 
     @if(session('success'))
-        <div class="alert-success-spa" style="margin-bottom: 2rem; background-color: #d1fae5; color: #065f46; padding: 1rem; border-radius: 8px; border-left: 5px solid #10b981;">
-            <strong>¡Éxito!</strong> {{ session('success') }}
-        </div>
+    <div class="alert-success-spa" style="margin-bottom: 2rem; background-color: #d1fae5; color: #065f46; padding: 1rem; border-radius: 8px; border-left: 5px solid #10b981;">
+        <strong>¡Éxito!</strong> {{ session('success') }}
+    </div>
     @endif
 
     @if($errors->any())
-        <div class="alert-errores-spa" style="margin-bottom: 2rem; background-color: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 8px; border-left: 5px solid #ef4444;">
-            <strong>¡Atención! No se pudo guardar:</strong>
-            <ul style="margin-top: 0.5rem; margin-bottom: 0;">
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
+    <div class="alert-errores-spa" style="margin-bottom: 2rem; background-color: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 8px; border-left: 5px solid #ef4444;">
+        <strong>¡Atención! No se pudo guardar:</strong>
+        <ul style="margin-top: 0.5rem; margin-bottom: 0;">
+            @foreach($errors->all() as $error)
+            <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
     @endif
 
     <section class="tarjetas-resumen-admin">
@@ -59,29 +59,29 @@
 
             <section id="contenedor-recepcionistas" class="grid-personal" style="display:flex; flex-direction:column; gap:1rem; min-height:150px;">
                 @forelse($recepcionistas as $recep)
-                    <article class="tarjeta-admision tarjeta-recepcionista-item" 
-                             data-id="{{ $recep->id }}" 
-                             data-correo="{{ $recep->correo }}" 
-                             data-telefono="{{ $recep->telefono }}">
+                <article class="tarjeta-admision tarjeta-recepcionista-item"
+                    data-id="{{ $recep->id }}"
+                    data-correo="{{ $recep->correo }}"
+                    data-telefono="{{ $recep->telefono }}">
 
-                        <figure class="terapeuta-foto-contenedor" style="margin-bottom:0.5rem; display:flex; justify-content:center;">
-                            <div class="foto-avatar-simulado" style="width:50px; height:50px; border-radius:50%; background:#cbd5e1; display:flex; align-items:center; justify-content:center; font-weight:bold; overflow:hidden;">
-                                {{ substr($recep->nombre, 0, 2) }}
-                            </div>
-                        </figure>
+                    <figure class="terapeuta-foto-contenedor" style="margin-bottom:0.5rem; display:flex; justify-content:center;">
+                        <div class="foto-avatar-simulado" style="width:50px; height:50px; border-radius:50%; background:#cbd5e1; display:flex; align-items:center; justify-content:center; font-weight:bold; overflow:hidden;">
+                            {{ substr($recep->nombre, 0, 2) }}
+                        </div>
+                    </figure>
 
-                        <header class="info-cliente" style="text-align:center;">
-                            <h3>{{ $recep->nombre }}</h3>
-                            <p>Rol: <span class="tag-rol recepcionista">Recepcionista</span></p>
-                        </header>
+                    <header class="info-cliente" style="text-align:center;">
+                        <h3>{{ $recep->nombre }}</h3>
+                        <p>Rol: <span class="tag-rol recepcionista">Recepcionista</span></p>
+                    </header>
 
-                        <footer style="display: flex; gap: 0.5rem; padding: 0; background: none; border: none; margin-top: auto; justify-content:center;">
-                            <button type="button" class="btn-zen" onclick="editarRecepcionista({{ $recep->id }})" style="background: #ffffff; color: #475569; border: 1px solid #cbd5e1; padding: 0.35rem 0.75rem; font-size: 0.85rem; border-radius: 0.375rem; font-weight: 600; cursor: pointer;">Editar</button>
-                            <button type="button" class="btn-zen btn-baja" onclick="eliminarRecepcionista({{ $recep->id }})">Baja</button>
-                        </footer>
-                    </article>
+                    <footer style="display: flex; gap: 0.5rem; padding: 0; background: none; border: none; margin-top: auto; justify-content:center;">
+                        <button type="button" class="btn-zen" onclick="editarRecepcionista({{ $recep->id }})" style="background: #ffffff; color: #475569; border: 1px solid #cbd5e1; padding: 0.35rem 0.75rem; font-size: 0.85rem; border-radius: 0.375rem; font-weight: 600; cursor: pointer;">Editar</button>
+                        <button type="button" class="btn-zen btn-baja" onclick="eliminarRecepcionista({{ $recep->id }})">Baja</button>
+                    </footer>
+                </article>
                 @empty
-                    <p style="text-align: center; color: #64748b; margin: auto;">No hay recepcionistas registrados.</p>
+                <p style="text-align: center; color: #64748b; margin: auto;">No hay recepcionistas registrados.</p>
                 @endforelse
             </section>
 
@@ -102,40 +102,40 @@
 
             <section id="contenedor-trabajadores" class="grid-personal" style="display:flex; flex-direction:column; gap:1rem;">
                 @forelse($trabajadores as $trab)
-                    <article class="tarjeta-admision tarjeta-terapeuta" data-id="{{ $trab->id }}" data-especialidades="{{ $trab->especialidades ?? 'Bienestar General' }}">
-                        <figure class="terapeuta-foto-contenedor" style="margin-bottom:0.5rem; display:flex; justify-content:center;">
-                            <div class="foto-avatar-simulado" style="width:50px; height:50px; border-radius:50%; background:#cbd5e1; display:flex; align-items:center; justify-content:center; font-weight:bold; overflow:hidden;">
-                                {{ substr($trab->nombre, 0, 2) }}
-                            </div>
-                        </figure>
+                <article class="tarjeta-admision tarjeta-terapeuta" data-id="{{ $trab->id }}" data-especialidades="{{ $trab->especialidades ?? 'Bienestar General' }}">
+                    <figure class="terapeuta-foto-contenedor" style="margin-bottom:0.5rem; display:flex; justify-content:center;">
+                        <div class="foto-avatar-simulado" style="width:50px; height:50px; border-radius:50%; background:#cbd5e1; display:flex; align-items:center; justify-content:center; font-weight:bold; overflow:hidden;">
+                            {{ substr($trab->nombre, 0, 2) }}
+                        </div>
+                    </figure>
 
-                        <header class="info-cliente" style="text-align:center;">
-                            <h3>{{ $trab->nombre }}</h3>
-                            <p>Rol: <span class="tag-rol especialista">Especialista</span></p>
+                    <header class="info-cliente" style="text-align:center;">
+                        <h3>{{ $trab->nombre }}</h3>
+                        <p>Rol: <span class="tag-rol especialista">Especialista</span></p>
 
-                            <div class="contenedor-tags-especialidades" style="justify-content:center;">
-                                @if(!empty($trab->especialidades))
-                                    @foreach(explode(',', $trab->especialidades) as $esp)
-                                        <span class="tag-especialidad">{{ trim($esp) }}</span>
-                                    @endforeach
-                                @else
-                                    <span class="tag-especialidad">Terapeuta</span>
-                                @endif
-                            </div>
+                        <div class="contenedor-tags-especialidades" style="justify-content:center;">
+                            @if(!empty($trab->especialidades))
+                            @foreach(explode(',', $trab->especialidades) as $esp)
+                            <span class="tag-especialidad">{{ trim($esp) }}</span>
+                            @endforeach
+                            @else
+                            <span class="tag-especialidad">Terapeuta</span>
+                            @endif
+                        </div>
 
-                            <p class="terapeuta-telefono" style="display:none;">{{ $trab->telefono ?? 'S/N' }}</p>
-                            <p class="terapeuta-email" style="display:none;">{{ $trab->correo }}</p>
-                            <p class="terapeuta-descripcion" style="display:none;">{{ $trab->descripcion ?? 'Miembro del equipo profesional de The Beauty Room.' }}</p>
-                        </header>
+                        <p class="terapeuta-telefono" style="display:none;">{{ $trab->telefono ?? 'S/N' }}</p>
+                        <p class="terapeuta-email" style="display:none;">{{ $trab->correo }}</p>
+                        <p class="terapeuta-descripcion" style="display:none;">{{ $trab->descripcion ?? 'Miembro del equipo profesional de The Beauty Room.' }}</p>
+                    </header>
 
-                        <footer style="display: flex; gap: 0.5rem; padding: 0; background: none; border: none; margin-top: auto; justify-content:center;">
-                            <button type="button" class="btn-zen btn-ver-especialista" onclick="verTerapeutaDetalle({{ $trab->id }})">Ver Terapeuta</button>
-                            <button type="button" class="btn-zen" onclick="editarTerapeuta({{ $trab->id }})" style="background: #ffffff; color: #475569; border: 1px solid #cbd5e1; padding: 0.35rem 0.75rem; font-size: 0.85rem; border-radius: 0.375rem; font-weight: 600; cursor: pointer;">Editar</button>
-                            <button type="button" class="btn-zen btn-baja" onclick="eliminarTerapeuta({{ $trab->id }})">Baja</button>
-                        </footer>
-                    </article>
+                    <footer style="display: flex; gap: 0.5rem; padding: 0; background: none; border: none; margin-top: auto; justify-content:center;">
+                        <button type="button" class="btn-zen btn-ver-especialista" onclick="verTerapeutaDetalle({{ $trab->id }})">Ver Terapeuta</button>
+                        <button type="button" class="btn-zen" onclick="editarTerapeuta({{ $trab->id }})" style="background: #ffffff; color: #475569; border: 1px solid #cbd5e1; padding: 0.35rem 0.75rem; font-size: 0.85rem; border-radius: 0.375rem; font-weight: 600; cursor: pointer;">Editar</button>
+                        <button type="button" class="btn-zen btn-baja" onclick="eliminarTerapeuta({{ $trab->id }})">Baja</button>
+                    </footer>
+                </article>
                 @empty
-                    <p style="text-align: center; color: #64748b; margin: auto;">No hay especialistas registrados.</p>
+                <p style="text-align: center; color: #64748b; margin: auto;">No hay especialistas registrados.</p>
                 @endforelse
             </section>
 
@@ -216,7 +216,7 @@
 
             <footer class="modal-acciones">
                 <button type="button" class="btn-zen btn-secundario" onclick="document.getElementById('modal-recepcionista').close()">Cancelar</button>
-                <button type="submit" class="btn-zen btn-primario">Guardar Recepcionista</button>
+                <button type="button" onclick="this.form.action='{{ route('admin.create-recepcionista') }}'; this.form.submit();" class="btn-zen btn-primario">Guardar Recepcionista</button>
             </footer>
         </form>
     </dialog>
@@ -226,5 +226,5 @@
 @endsection
 
 @push('scripts')
-    @vite(['resources/js/terapeutas.js', 'resources/js/dashboard.js'])
+@vite(['resources/js/terapeutas.js', 'resources/js/dashboard.js'])
 @endpush
