@@ -15,7 +15,7 @@ class TerapeutaController extends Controller
         public function index()
         {
             $userRole = Auth::user()->rol; // Obtener el rol del usuario autenticado.
-            $terapeutas = User::where('rol', 'terapeuta')->get();//mostrara los terapeutas pero tenemos que solucionar si son especialistas, terapeutas o trabajadores.
+            $terapeutas = User::where('rol', 'trabajador')->get();//mostrara los terapeutas pero tenemos que solucionar si son especialistas, terapeutas o trabajadores.
             
 
             return view('compartidas.terapeutas', compact('terapeutas', 'userRole'));

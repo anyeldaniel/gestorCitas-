@@ -1,100 +1,99 @@
 <?php
 
-use App\Http\Controllers\LoginController; // Controlador para manejar el login y registro de usuarios.
 use Illuminate\Support\Facades\Route; // Importamos el controlador de Login para las rutas de autenticación.
+use App\Http\Controllers\LoginController; // Controlador para manejar el login y registro de usuarios.
 use App\Http\Controllers\AdminController; // Corregí mi regada con la A mayúscula xd att: Andrés
-use App\Http\Controllers\ReservaController; //Añadí el controlador de reservas para enrutarlooo
-use App\Http\Controllers\RecepcionController; // Controlador para la recepción.
-use App\Http\Controllers\EspecialistaController; // Controlador para el especialista (masajista/esteticista).
+use App\Http\Controllers\ReservaController; ; //Añadí el controlador de reservas para enrutarlooo
+use App\Http\Controllers\RecepcionController; ; // Controlador para la recepción. 
+use App\Http\Controllers\EspecialistaController; ; // Controlador para el especialista (masajista/esteticista).
 use App\Http\Controllers\ServicioController; // Controlador para el módulo de servicios (tratamientos).
-use App\Http\Controllers\AgendaController; // Controlador para manejar la agenda de citas en la recepción.
-use App\Http\Controllers\TerapeutaController; // Controlador para manejar las funciones del terapeuta (masajista/esteticista).
+use App\Http\Controllers\AgendaController; ; // Controlador para manejar la agenda de citas en la recepción.
+use App\Http\Controllers\TerapeutaController; ; // Controlador para manejar las funciones del terapeuta (masajista/esteticista).
 use App\Http\Controllers\SalaEsperaController; // Controlador para manejar la sala de espera (si es que se implementa esa funcionalidad).
 use App\Http\Controllers\PagoController; // Controlador para manejar la verificación de pagos (si es que se implementa esa funcionalidad).
 
+// --- ACCESO PÚBLICO Y AUTENTICACIÓN 
 // La raíz redirige o carga directamente el método index del Login para mantener la consistencia
 Route::get('/', [LoginController::class, 'index']);
 Route::get('/login', [LoginController::class, 'index'])->name('login');
-
-
-// Rutas de autenticación (auth) --------------------------------------------------------------------------
+Route::get('/login-view', [LoginController::class, 'index'])->name('login.view');
 
 Route::view('/Registro', 'auth.Registro')->name('registro.view');
-
-// SE CORRIGIÓ: Se añadió la ruta GET para que no dé error al cargar el login
-Route::get('/login', [LoginController::class, 'index'])->name('login.view');
-Route::post('/login', [LoginController::class, 'login'])->name('login.post'); // Ruta para procesar el inicio de sesión
+Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 Route::post('/registrado', [LoginController::class, 'RegistroController'])->name('registro.create');
-Route::post('/logout', [LoginController::class, 'logout'])->name('logout'); // Ruta para procesar el cierre de sesión
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-// Corregi ruta compartida, ahora apunta a compartidas.catalogo en vez de clientes.catalogo
-Route::view('/catalogo', 'compartidas.catalogo')->name('catalogo');
 
-// TODAS LAS RUTAS DE ABAJO SE PROTEGEN PARA USUARIOS AUTENTICADOS ----------------------------------------
+// --- RUTAS PROTEGIDAS (SOLO USUARIOS LOGUEADOS) ---
 Route::middleware(['auth'])->group(function () {
 
-    //         RUTAS DE COMPARTIDAS (Movidas a su nueva carpeta)
-
-    // Agrego la ruta de la agenda, es una ruta global para que funcione con los otros roles
+    // ==========================================
+    // 1. RUTAS COMPARTIDAS (Multirrol)
+    // ==========================================
+    
+    // Vista Global de la Agenda / Calendario
     Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda');
-    //Ruta compartida de terapeutas, para que tanto admin como recepcionista puedan verla (y el admin pueda gestionar desde ahí)
+    
+    // El Catálogo Zen dinámico con lógica de botones por rol
+    Route::view('/catalogo', 'compartidas.catalogo')->name('catalogo');
+    
+    // RECUPERADA: Vista para mostrar y gestionar terapeutas desde el módulo de administración, pero accesible para todos los roles (con botones de acción visibles solo para admin)
     Route::get('/terapeutas', [TerapeutaController::class, 'index'])->name('terapeutas.index');
-    // faltarian las dos rutas del recepcionista y especialista pero
-    // hay que esperar a que el admin los pueda registrar
 
-    // RUTAS DEL CLIENTE ------------------------------------
+
+    // ==========================================
+    // 2. RUTAS DEL CLIENTE
+    // ==========================================
     Route::get('/reservas', [ReservaController::class, 'index'])->name('clientes.reserva');
     Route::post('/reservas', [ReservaController::class, 'store'])->name('clientes.reserva.store');
-});
 
-// Aquí Andrés: Agregando rutas del controlador del admin para cada módulo (CORREGIDO) ------------------
-Route::prefix('admin')->group(function () {
-    // Como ya tiene el prefijo 'admin', la ruta se deja solo como '/' o '/dashboard'
-    Route::view('/dashboard', 'admin.dashboard')->name('admin.dashboard');
-    Route::view('/reportes', 'admin.reportes')->name('admin.reportes');
-    //hagan asi para las vistas, no es necesario crear un método en el controlador si solo van a retornar una vista, con la función Route::view es suficiente
-    //solo si muestra vista si la vista incluye lógica o datos dinámicos, entonces sí es necesario crear un método en el controlador para procesar esa lógica y pasarle los datos a la vista
-    Route::get('/servicios', [AdminController::class, 'servicios'])->name('admin.servicios');
-    Route::post('/crear-trabajador', [AdminController::class, 'CreateTrabajador'])->name('admin.create-trabajador');
-    Route::post('/crear-recepcionista', [AdminController::class, 'CreateRecepcionista'])->name('admin.create-recepcionista');
-});
 
-// RUTAS DE LA RECEPCIÓN --------------------------------
-Route::prefix('recepcion')->group(function () {
-    Route::get('/agenda', [RecepcionController::class, 'agenda'])->name('recepcion.agenda');
-});
-Route::middleware(['auth'])->prefix('recepcion')->group(function () {
-    Route::get('/agenda', [RecepcionController::class, 'agenda'])->name('recepcion.agenda');
-});
+    // ==========================================
+    // 3. MÓDULO ADMINISTRADOR (Prefijo 'admin')
+    // ==========================================
+    Route::prefix('admin')->group(function () {
+        // Cambio de Route::view a Route::get apuntando al controlador 
+        Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard'); 
+    
+        Route::view('/reportes', 'admin.reportes')->name('admin.reportes');
+        Route::get('/servicios', [AdminController::class, 'servicios'])->name('admin.servicios');
+        
+        // Endpoints que subió Wladimir para persistir usuarios en la Base de Datos
+        Route::post('/crear-trabajador', [AdminController::class, 'CreateTrabajador'])->name('admin.create-trabajador');
+        Route::post('/crear-recepcionista', [AdminController::class, 'CreateRecepcionista'])->name('admin.create-recepcionista');
+        
+        // CRUD de Servicios de Spa
+        Route::prefix('servicios')->group(function () {
+            Route::get('/crear', [ServicioController::class, 'create'])->name('servicios.crear');
+            Route::post('/guardar', [ServicioController::class, 'store'])->name('servicios.guardar');
+            // Aquí puedes añadir luego las rutas de actualizar y eliminar que dejamos preparadas en los modales
+        });
+    });
 
-// RUTAS DE LOS ESPECIALISTAS (TRABAJADORES) ------------
-Route::prefix('especialista')->group(function () {
-    Route::get('/tablero', [EspecialistaController::class, 'tablero'])->name('especialista.tablero');
-});
 
-// Rutas para el CRUD de Servicios (Solo el Admin debería poder entrar aquí).
-Route::prefix('admin/servicios')->group(function () {
-    // Esta ruta muestra el formulario (Falta la vista).
-    Route::get('/crear', [ServicioController::class, 'create'])->name('servicios.crear');
+    // ==========================================
+    // 4. MÓDULO RECEPCIÓN (Prefijo 'recepcion')
+    // ==========================================
+    Route::prefix('recepcion')->group(function () {
+        Route::get('/agenda', [RecepcionController::class, 'agenda'])->name('recepcion.agenda');
+        Route::post('/cita/{id}/actualizar', [AgendaController::class, 'updateStatus'])->name('cita.update');
+        Route::get('/pagos', [PagoController::class, 'index'])->name('pago.verificar');
+    });
 
-    // Esta ruta recibe los datos del formulario y los guarda en la base de datos.
-    Route::post('/guardar', [ServicioController::class, 'store'])->name('servicios.guardar');
-});
 
-// Rutas de Agenda (Recepción).
-Route::middleware(['auth'])->group(function () {
-    // Cambia "recepcion.agenda" por "agenda"
-    Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda');
-    Route::post('/recepcion/cita/{id}/actualizar', [AgendaController::class, 'updateStatus'])->name('cita.update');
-});
+    // ==========================================
+    // 5. MÓDULO ESPECIALISTAS / TRABAJADORES
+    // ==========================================
+    Route::prefix('especialista')->group(function () {
+        Route::get('/tablero', [EspecialistaController::class, 'tablero'])->name('especialista.tablero');
+        // REUBICADA: La ruta de Wladimir para el tablero operativo interno del terapeuta con URL única
+        Route::get('/gestion-interna', [TerapeutaController::class, 'tablero'])->name('terapeuta.gestion-interna');
+    });
 
-// Rutas de Terapeuta (TAMBIEN TRABAJADORES).
-Route::middleware(['auth'])->group(function () {
-    Route::get('/terapeutas', [TerapeutaController::class, 'tablero'])->name('especialista.tablero');
-});
 
-// Rutas añadidas para arreglar el error 404.
-Route::middleware(['auth'])->group(function () {
+    // ==========================================
+    // 6. OTROS MÓDULOS DE CONTROL
+    // ==========================================
     Route::get('/sala-espera', [SalaEsperaController::class, 'index'])->name('sala.espera');
-    Route::get('/recepcion/pagos', [PagoController::class, 'index'])->name('pago.verificar');
+
 });

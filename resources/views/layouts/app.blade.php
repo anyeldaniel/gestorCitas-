@@ -26,10 +26,6 @@
                     <a href="{{ route('agenda') }}" class="{{ Request::is('agenda*') ? 'active' : '' }}">Agenda</a>
                 @endif
 
-                @if(auth()->user()->rol === 'admin' || auth()->user()->rol === 'recepcionista')
-                    <a href="{{ url('/sala-espera') }}" class="{{ Request::is('sala-espera*') ? 'active' : '' }}">Sala de Espera</a>
-                @endif
-
                 @if(auth()->user()->rol === 'admin' || auth()->user()->rol === 'recepcionista' || auth()->user()->rol === 'cliente')
                     <a href="{{ url('/terapeutas') }}" class="{{ Request::is('terapeutas*') ? 'active' : '' }}">Terapeutas</a>
                 @endif
@@ -42,10 +38,6 @@
                     <a href="{{ route('admin.reportes') }}" class="{{ Request::is('admin/reportes*') ? 'active' : '' }}">Reportes</a>
                 @endif
 
-                @if(auth()->user()->rol === 'recepcionista' || auth()->user()->rol === 'trabajador' || auth()->user()->rol === 'cliente')
-                    <a href="{{ route('catalogo') }}" class="{{ Request::is('catalogo*') ? 'active' : '' }}">Catálogo Zen</a>
-                @endif
-
                 @if(auth()->user()->rol === 'recepcionista' || auth()->user()->rol === 'admin')
                     <a href="{{ url('/recepcion/pagos') }}" class="{{ Request::is('recepcion/pagos*') ? 'active' : '' }}">Verificar Pagos</a>
                 @endif
@@ -53,6 +45,8 @@
                 @if(auth()->user()->rol === 'cliente')
                     <a href="{{ url('/reservas') }}" class="{{ Request::is('reservas*') ? 'active' : '' }}">Reservas</a>
                 @endif
+
+                    <a href="{{ route('catalogo') }}" class="{{ Request::is('catalogo*') ? 'active' : '' }}">Catálogo Zen</a>
 
                 <a href="#" class="btn-logout" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                     Cerrar Sesión
