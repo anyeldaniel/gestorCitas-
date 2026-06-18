@@ -52,7 +52,7 @@ class AdminController extends Controller
                 
                 if (!empty($nombreLimpio)) {
                     // Buscamos si la especialidad ya existe en la tabla 'especialidades'
-                    $especialidad = DB::table('especialidades')->where('nombre', $nombreLimpio)->first();
+                    $especialidad = DB::table('especialidades')->where('nombre_especialidad', $nombreLimpio)->first();
 
                     if (!$especialidad) {
                         // Si NO existe, la guardamos nueva y obtenemos su ID recién creado
@@ -66,7 +66,7 @@ class AdminController extends Controller
 
                     // Guardamos la conexión Terapeuta-Especialidad en la tabla pivote
                     DB::table('trabajador_especialidad')->insert([
-                        'user_id'         => $trabajador->id, // El ID del terapeuta que acabamos de crear arriba
+                        'usuario_id'         => $trabajador->id, // El ID del terapeuta que acabamos de crear arriba
                         'especialidad_id' => $especialidadId  // El ID de la especialidad (nueva o vieja)
                     ]);
                 }

@@ -324,3 +324,24 @@ window.validarContrasenas = function() {
     }
     return true;
 }
+
+// Función para sincronizar las especialidades dinámicas con el input oculto antes de enviar el formulario.
+window.sincronizarEspecialidades = function() {
+    // Buscamos los inputs dinámicos que creó tu compañero
+    const inputsEsp = document.querySelectorAll(".input-especialidad-item");
+    const listaEspecialidades = [];
+    
+    // Extraemos el valor de cada uno
+    inputsEsp.forEach(input => {
+        if(input.value.trim() !== "") {
+            listaEspecialidades.push(input.value.trim());
+        }
+    });
+    
+    // Lo metemos en tu input oculto
+    const inputOculto = document.getElementById("especialidades_hidden");
+    if(inputOculto) {
+        inputOculto.value = listaEspecialidades.join(",");
+        console.log("Especialidades sincronizadas:", inputOculto.value);
+    }
+};
