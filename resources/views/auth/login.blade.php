@@ -1,69 +1,57 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Iniciar sesion</title>
-	@vite(['resources/css/app.css'])
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Beauty Room - Iniciar sesión</title>
+    @vite(['resources/css/auth.css'])
 </head>
-<body>
+<script src="https://unpkg.com/lucide@latest"></script>
+<body class="login-container">
 
-	<main class="login-page">
-		<section class="login-wrapper">
-			<div class="form-login">
-				<header>
-					<h1>Iniciar sesion</h1>
-					<p>Accede con tu correo y contrasena.</p>
-				</header>
+    <main class="split-layout">
+        <section class="image-side">
+            <div class="overlay">
+                <h1>Un momento para ti.</h1>
+                <p>THE BEAUTY ROOM</p>
+            </div>
+        </section>
+
+        <section class="form-side">
+            <div class="form-inner">
+                <header>
+                    <i data-lucide="sparkles" style="width: 16px; height: 16px; color: #8b5e3c; margin-right: 5px; display: inline-block; vertical-align: middle;"></i>
+                    <small> THE BEAUTY ROOM</small>
+                    <h1>Bienvenida de vuelta</h1>
+                    <p>Accede a tu cuenta para gestionar tus reservas.</p>
+                </header>
 
                 <form id="login-form" method="POST" action="{{ route('login.post') }}">
-					@csrf
-
-                    @if ($errors->any())
-                        <div class="error-message">
-                            <ul>
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-
+                    @csrf
+                    
                     <div class="form-row">
-                        <label for="email">Correo electronico</label>
-                        <input id="email" name="email" type="email" placeholder="usuario@ejemplo.com" value="{{ old('email') }}" required autocomplete="email" autofocus>
-                        @error('email')
-                            <span class="error-message">{{ $message }}</span>
-                        @enderror
+                        <label for="email">CORREO ELECTRÓNICO</label>
+                        <input id="email" name="email" type="email" placeholder="tu@correo.com" required>
                     </div>
 
                     <div class="form-row">
-                        <label for="password">Contrasena</label>
-                        <input id="password" name="password" type="password" placeholder="********" required autocomplete="current-password">
-                        @error('password')
-                            <span class="error-message">{{ $message }}</span>
-                        @enderror
-					</div>
+                        <div class="password-header">
+                            <label for="password">CONTRASEÑA</label>
+                            <a href="#" class="forgot-pass">¿Olvidaste la contraseña?</a>
+                        </div>
+                        <input id="password" name="password" type="password" placeholder="••••••••" required>
+                    </div>
 
-					<footer>
-						<button type="submit" class="btn-zen">Entrar</button>
-
-						<div class="form-footer-link">
-							<a href="{{ route('registro.view') }}">Registrarme</a>
-						</div>
-					</footer>
-				</form>
-			</div>
-		</section>
-	</main>
-
+                    <button type="submit" class="btn-primary" style="margin-top: 10px;">INICIAR SESIÓN</button>
+                    
+                    <p class="register-link">¿Aún no tienes cuenta? <a href="{{ route('registro.view') }}">Regístrate aquí</a></p>
+                </form>
+            </div>
+        </section>
+    </main>
+    
     <script>
-        // Este script recarga la página cuando el usuario vuelve atrás
-        // para evitar un token CSRF antiguo y el error 419 Page Expired.
-        window.addEventListener('pageshow', function(event) {
-            if (event.persisted || window.performance.getEntriesByType('navigation')[0]?.type === 'back_forward') {
-                window.location.reload();
-            }
-        });
+        lucide.createIcons();
     </script>
-
+</body>
+</html>
