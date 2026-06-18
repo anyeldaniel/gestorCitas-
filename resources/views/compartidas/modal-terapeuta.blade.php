@@ -8,7 +8,7 @@
     <form id="form-terapeuta" autocomplete="off" method="POST" action="{{ route('admin.create-trabajador') }}" class="modal-form" enctype="multipart/form-data">
         @csrf
 
-<fieldset class="campo-formulario">
+        <fieldset class="campo-formulario">
             <label for="terapeuta_foto">Foto de Perfil (Opcional)</label>
             <div class="campo-foto-previsualizacion">
                 <div id="previsualizacion-avatar-terapeuta" class="avatar-preview">TF</div>

@@ -15,6 +15,19 @@ class AdminController extends Controller
     {
         // Traemos los usuarios reales de la base de datos filtrados por su respectivo rol
         $trabajadores = User::where('rol', 'trabajador')->get();
+
+        // Recorremos cada trabajador para buscar sus especialidades en las otras tablas
+        foreach ($trabajadores as $trabajador) {
+            $listaEspecialidades = DB::table('especialidades')
+                ->join('trabajador_especialidad', 'especialidades.id', '=', 'trabajador_especialidad.especialidad_id')
+                ->where('trabajador_especialidad.usuario_id', $trabajador->id)
+                ->pluck('especialidades.nombre_especialidad') // Extraemos solo el nombre
+                ->toArray();
+
+            // Las unimos con comas y se las "pegamos" al objeto trabajador para la vista
+            $trabajador->especialidades = implode(', ', $listaEspecialidades);
+        }
+
         $recepcionistas = User::where('rol', 'recepcion')->get();
 
         //Variables dinámicas para los KPIs del Dashboard (reemplazan los datos de prueba estáticos) 
@@ -38,6 +51,7 @@ class AdminController extends Controller
             'telefono'   => $validatedData['telefono'] ?? null,
             // Quitamos el Hash::make porque Anyel ya lo configuró directo en el modelo
             'contraseña' => $validatedData['password'] ?? $validatedData['contraseña'],
+            // 'descripcion' => $request->descripcion, // Agregado para guardar la descripción del especialista NO BORRAR POR FAVOR, ES IMPORTANTE PARA QUE SE GUARDE LA DESCRIPCIÓN EN LA BASE DE DATOS Y SE PUEDA MOSTRAR EN EL CATÁLOGO.
             'rol'        => 'trabajador' // CAMBIO: Usamos 'trabajador' porque es lo único que la BD acepta actualmente
         ]);
 
@@ -48,8 +62,8 @@ class AdminController extends Controller
 
             foreach ($listaEspecialidades as $nombreEspecialidad) {
                 // Limpiamos espacios en blanco al principio o al final
-                $nombreLimpio = trim($nombreEspecialidad); 
-                
+                $nombreLimpio = trim($nombreEspecialidad);
+
                 if (!empty($nombreLimpio)) {
                     // Buscamos si la especialidad ya existe en la tabla 'especialidades'
                     $especialidad = DB::table('especialidades')->where('nombre_especialidad', $nombreLimpio)->first();
@@ -70,6 +84,7 @@ class AdminController extends Controller
                         'especialidad_id' => $especialidadId  // El ID de la especialidad (nueva o vieja)
                     ]);
                 }
+                $terapeutas = User::where('rol', 'trabajador')->get();
             }
         }
 

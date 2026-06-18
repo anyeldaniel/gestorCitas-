@@ -26,7 +26,8 @@ class User extends Authenticatable
         'correo',
         'telefono',
         'contraseña',
-        'rol'
+        'rol',
+        'descripcion',
     ];
 
     /**
@@ -52,10 +53,8 @@ class User extends Authenticatable
         ];
     }
 
-     public function getAuthPassword()
-{
-    return $this->contraseña; // Le indicamos a Laravel que tu columna tiene la "ñ"
-}
-
-
+    public function getAuthPassword()
+    {
+        return $this->contraseña; // Le indicamos a Laravel que tu columna tiene la "ñ"
+    }
 }
