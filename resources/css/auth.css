@@ -1,0 +1,120 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap');
+@import 'tailwindcss';
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    height: 100%;
+    font-family: 'Inter', sans-serif;
+    color: #333;
+}
+
+/* Layout de dos columnas */
+.login-container { height: 100vh; }
+.split-layout { 
+    display: flex; 
+    height: 100vh; 
+}
+
+/* Lado Izquierdo (Imagen) */
+.image-side { 
+    flex: 1; 
+    background: url('/public/asset/img/imagen-login.jpg') center/cover no-repeat; 
+    display: flex;
+    align-items: flex-end;
+    padding: 60px;
+    color: white;
+}
+
+.overlay h1 { 
+    font-family: 'Cormorant Garamond', serif; 
+    font-size: 3.5rem; 
+    margin-bottom: 10px;
+}
+
+.overlay p { letter-spacing: 2px; font-size: 0.9rem; }
+
+/* Lado Derecho (Formulario) */
+.form-side { 
+    flex: 1; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    background-color: #fff9f0;
+}
+
+.form-inner { width: 100%; max-width: 400px; padding: 20px; }
+
+header small { color: #8b5e3c; font-size: 0.8rem; letter-spacing: 1px; }
+header h1 { 
+    font-family: 'Cormorant Garamond', serif; 
+    font-size: 2.5rem; 
+    margin: 10px 0;
+    color: #2d2a26;
+}
+
+header p { color: #7a7a7a; margin-bottom: 30px; font-size: 0.95rem; }
+
+/* Inputs y Formulario */
+.form-row { margin-bottom: 20px; }
+label { 
+    display: block; 
+    font-size: 0.7rem; 
+    font-weight: 700; 
+    margin-bottom: 8px; 
+    letter-spacing: 1px;
+    color: #555;
+}
+
+input { 
+    width: 100%; 
+    padding: 14px; 
+    border: 1px solid #e0dcd5; 
+    border-radius: 6px; 
+    background: #fcfaf8; 
+    outline: none;
+}
+
+input:focus { border-color: #8b5e3c; }
+
+/* Botones */
+.btn-primary { 
+    width: 100%; 
+    padding: 15px; 
+    background: #8b5e3c; 
+    color: white; 
+    border: none; 
+    border-radius: 6px; 
+    cursor: pointer; 
+    font-weight: 600;
+    transition: background 0.3s;
+}
+
+.btn-primary:hover { background: #6d4a2f; }
+
+.register-link { text-align: center; margin-top: 25px; font-size: 0.9rem; color: #777; }
+.register-link a { color: #8b5e3c; font-weight: 600; text-decoration: none; }
+
+/* --- RESPONSIVE DESIGN --- */
+@media (max-width: 768px) {
+    .split-layout {
+        flex-direction: column;
+    }
+
+    .image-side {
+        display: none; /* Oculta la imagen en móviles */
+    }
+
+    .form-side {
+        padding: 40px 20px;
+        align-items: flex-start; /* Alinea hacia arriba para mejor lectura */
+    }
+
+    .form-inner {
+        max-width: 100%;
+    }
+}
