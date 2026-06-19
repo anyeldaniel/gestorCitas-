@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('especialidades', function (Blueprint $table) {
             $table->id();
             $table->string('nombre_especialidad')->unique(); //masajes, uñas, facial etc
-            $table->text('descripcion')->nullable();
             $table->timestamps();
         });
     }

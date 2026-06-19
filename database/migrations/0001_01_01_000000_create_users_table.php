@@ -21,6 +21,7 @@ return new class extends Migration
             $table->timestamp('verificacion')->nullable(); // verificacion de seguridad
             $table->string('contraseña'); // contraseña encriptada
             $table->enum('rol',['admin','recepcion','trabajador','cliente'])->default('cliente'); //por defecto todos entran como cliente
+            $table->text('descripcion')->nullable();
             $table->rememberToken(); // para mantener la sesion iniciada
             $table->timestamps(); // fechas de registro
         });
