@@ -23,6 +23,24 @@ Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 Route::post('/registrado', [LoginController::class, 'RegistroController'])->name('registro.create');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
+// --- RUTAS DE RECUPERACIÓN DE CONTRASEÑA ---
+
+// 1. Mostrar el formulario para solicitar el correo (La vista que acabamos de crear)
+Route::get('/olvide-contrasena', function () {
+    return view('auth.password.request');
+})->name('password.request');
+
+// 2. Procesar el envío del correo de recuperación
+Route::post('/olvide-contrasena', [LoginController::class, 'sendResetLinkEmail'])->name('password.email');
+
+// 3. Vista para que el usuario ingrese la nueva contraseña (Recibe el token por URL)
+Route::get('/reset-password/{token}', function ($token) {
+    return view('auth.password.reset', ['token' => $token]);
+})->name('password.reset');
+
+// 4. Procesar el cambio de contraseña real
+Route::post('/reset-password', [LoginController::class, 'resetPassword'])->name('password.update');
+
 
 // --- RUTAS PROTEGIDAS (SOLO USUARIOS LOGUEADOS) ---
 Route::middleware(['auth'])->group(function () {
