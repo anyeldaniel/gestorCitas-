@@ -51,7 +51,7 @@ class AdminController extends Controller
             'telefono'   => $validatedData['telefono'] ?? null,
             // Quitamos el Hash::make porque Anyel ya lo configuró directo en el modelo
             'contraseña' => $validatedData['password'] ?? $validatedData['contraseña'],
-            // 'descripcion' => $request->descripcion, // Agregado para guardar la descripción del especialista NO BORRAR POR FAVOR, ES IMPORTANTE PARA QUE SE GUARDE LA DESCRIPCIÓN EN LA BASE DE DATOS Y SE PUEDA MOSTRAR EN EL CATÁLOGO.
+            'descripcion' => $request->descripcion, // Agregado para guardar la descripción del especialista NO BORRAR POR FAVOR, ES IMPORTANTE PARA QUE SE GUARDE LA DESCRIPCIÓN EN LA BASE DE DATOS Y SE PUEDA MOSTRAR EN EL CATÁLOGO.
             'rol'        => 'trabajador' // CAMBIO: Usamos 'trabajador' porque es lo único que la BD acepta actualmente
         ]);
 
