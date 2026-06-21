@@ -153,7 +153,7 @@
             <h2 id="modal-recepcionista-titulo">Agregar Nuevo Recepcionista</h2>
             <button type="button" class="btn-cerrar-modal" onclick="document.getElementById('modal-recepcionista').close()">&times;</button>
         </header>
-        <form id="form-recepcionista" method="POST" action="{{ route('admin.create-recepcionista') }}" autocomplete="off" class="modal-form">
+        <form id="form-recepcionista" method="POST" autocomplete="off" class="modal-form">
             @csrf
 
             <fieldset class="campo-formulario">
@@ -216,10 +216,40 @@
 
             <footer class="modal-acciones">
                 <button type="button" class="btn-zen btn-secundario" onclick="document.getElementById('modal-recepcionista').close()">Cancelar</button>
-                <button type="button" onclick="this.form.action='{{ route('admin.create-recepcionista') }}'; this.form.submit();" class="btn-zen btn-primario">Guardar Recepcionista</button>
+                <button type="submit" class="btn-zen btn-primario" formnovalidate>Guardar Recepcionista</button>
             </footer>
         </form>
     </dialog>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const formRecepcionista = document.getElementById("form-recepcionista");
+            if (formRecepcionista) {
+                // Buscamos el botón de Guardar específicamente
+                const btnGuardar = formRecepcionista.querySelector('button[type="submit"]');
+                if (btnGuardar) {
+                    // Este evento intercepta tu clic EXACTAMENTE en el milisegundo antes de enviar
+                    btnGuardar.addEventListener("click", function() {
+                        const titulo = document.getElementById("modal-recepcionista-titulo").textContent;
+
+                        let baseUrl = window.location.origin;
+                        if (window.location.pathname.includes('/public')) {
+                            baseUrl += window.location.pathname.substring(0, window.location.pathname.indexOf('/public') + 7);
+                        }
+
+                        if (titulo.includes("Editar")) {
+                            const id = formRecepcionista.dataset.idEditando;
+                            // Forzamos la ruta de actualización en la cara del navegador
+                            formRecepcionista.setAttribute("action", baseUrl + "/admin/recepcionista/" + id);
+                        } else {
+                            // Forzamos la ruta de creación
+                            formRecepcionista.setAttribute("action", baseUrl + "/admin/crear-recepcionista");
+                        }
+                    });
+                }
+            }
+        });
+    </script>
 
     @include('compartidas.modal-terapeuta')
 </main>

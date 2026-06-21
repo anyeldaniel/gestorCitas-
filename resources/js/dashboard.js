@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const formRecepcionista = document.getElementById("form-recepcionista");
 
     // Lógica e inyección dinámica del Modal de Recepcionistas (Crear/Editar)
-    window.abrirModalRecepcionista = function() {
+    window.abrirModalRecepcionista = function () {
         const modal = document.getElementById("modal-recepcionista");
         const form = document.getElementById("form-recepcionista");
         document.getElementById("modal-recepcionista-titulo").textContent = "Agregar Nuevo Recepcionista";
@@ -23,14 +23,14 @@ document.addEventListener("DOMContentLoaded", () => {
         modal.showModal();
     };
 
-    window.editarRecepcionista = function(id) {
+    window.editarRecepcionista = function (id) {
         const modal = document.getElementById("modal-recepcionista");
         const form = document.getElementById("form-recepcionista");
         document.getElementById("modal-recepcionista-titulo").textContent = "Editar Recepcionista";
         form.reset();
-        
+
         const tarjeta = document.querySelector(`.tarjeta-recepcionista-item[data-id="${id}"]`);
-        if(tarjeta) {
+        if (tarjeta) {
             const nombre = tarjeta.querySelector('h3').textContent;
             const correo = tarjeta.dataset.correo || '';
             const telefono = tarjeta.dataset.telefono || '';
@@ -44,55 +44,71 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("recep_password").required = false;
 
             const preview = document.getElementById("previsualizacion-avatar-recepcionista");
-            if(fotoSrc) {
+            if (fotoSrc) {
                 preview.innerHTML = `<img src="${fotoSrc}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
             } else {
-                preview.innerHTML = nombre.substring(0,2).toUpperCase();
+                preview.innerHTML = nombre.substring(0, 2).toUpperCase();
             }
             form.dataset.idEditando = id;
         }
         modal.showModal();
     };
 
-    if(formRecepcionista) {
+    if (formRecepcionista) {
         formRecepcionista.addEventListener("submit", (e) => {
+            e.preventDefault(); // Sus compañeros detienen el envío para hacer la animación
+
             const titulo = document.getElementById("modal-recepcionista-titulo").textContent;
-            if(titulo.includes("Editar")) {
-                e.preventDefault();
+
+            let baseUrl = window.location.origin;
+            if (window.location.pathname.includes('/public')) {
+                baseUrl += window.location.pathname.substring(0, window.location.pathname.indexOf('/public') + 7);
+            }
+
+            if (titulo.includes("Editar")) {
                 const id = formRecepcionista.dataset.idEditando;
                 const tarjeta = document.querySelector(`.tarjeta-recepcionista-item[data-id="${id}"]`);
-                if(tarjeta) {
+
+                // === LÓGICA VISUAL DE TUS COMPAÑEROS (INTACTA) ===
+                if (tarjeta) {
                     const nombre = document.getElementById("recep_name").value;
                     const correo = document.getElementById("recep_email").value;
                     const telefono = document.getElementById("recep_phone").value;
                     const fotoSrc = document.getElementById("previsualizacion-avatar-recepcionista").querySelector('img')?.src;
 
-                    tarjeta.querySelector('h3').textContent = nombre;
+                    if (tarjeta.querySelector('h3')) tarjeta.querySelector('h3').textContent = nombre;
                     tarjeta.dataset.correo = correo;
                     tarjeta.dataset.telefono = telefono;
 
                     const avatarBox = tarjeta.querySelector('.foto-avatar-simulado') || tarjeta.querySelector('.avatar-preview');
-                    if(avatarBox) {
-                        if(fotoSrc) {
+                    if (avatarBox) {
+                        if (fotoSrc) {
                             avatarBox.innerHTML = `<img src="${fotoSrc}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
                         } else {
-                            avatarBox.innerHTML = nombre.substring(0,2).toUpperCase();
+                            avatarBox.innerHTML = nombre.substring(0, 2).toUpperCase();
                         }
                     }
                 }
-                alert("Cambios guardados en el recepcionista con éxito.");
                 document.getElementById("modal-recepcionista").close();
+                // =================================================
+
+                // === EL FIX: ENVIAR LOS DATOS A LA BASE DE DATOS ===
+                formRecepcionista.action = `${baseUrl}/admin/recepcionista/${id}/actualizar`;
+                if (!document.getElementById('metodo-put-recep')) {
+                    formRecepcionista.insertAdjacentHTML('beforeend', '<input type="hidden" name="_method" value="PUT" id="metodo-put-recep">');
+                }
+                formRecepcionista.submit(); // ¡Esta línea faltaba!
+                // ===================================================
+
             } else {
-                // Flujo nativo de registro express hacia el controlador si fuera necesario,
-                // pero lo interceptamos para pintarlo en caliente a petición del flujo Frontend
-                e.preventDefault();
+                // === LÓGICA VISUAL DE TUS COMPAÑEROS (INTACTA) ===
                 const nombre = document.getElementById("recep_name").value;
                 const correo = document.getElementById("recep_email").value;
                 const telefono = document.getElementById("recep_phone").value;
                 const fotoSrc = document.getElementById("previsualizacion-avatar-recepcionista").querySelector('img')?.src;
                 const nuevaId = Date.now();
 
-                const avatarRender = fotoSrc ? `<img src="${fotoSrc}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">` : nombre.substring(0,2).toUpperCase();
+                const avatarRender = fotoSrc ? `<img src="${fotoSrc}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">` : nombre.substring(0, 2).toUpperCase();
 
                 const nuevoHtml = `
                     <article class="tarjeta-admision tarjeta-recepcionista-item" data-id="${nuevaId}" data-correo="${correo}" data-telefono="${telefono}">
@@ -110,31 +126,47 @@ document.addEventListener("DOMContentLoaded", () => {
                     </article>
                 `;
                 document.getElementById("contenedor-recepcionistas").insertAdjacentHTML('beforeend', nuevoHtml);
-                alert("Recepcionista agregado con éxito.");
                 document.getElementById("modal-recepcionista").close();
-                actualizarPaginadoresTotales();
+                if (typeof actualizarPaginadoresTotales === 'function') actualizarPaginadoresTotales();
+                // =================================================
+
+                // === EL FIX: ENVIAR LOS DATOS A LA BASE DE DATOS ===
+                const metodosOcultos = formRecepcionista.querySelectorAll('input[name="_method"]');
+                metodosOcultos.forEach(input => input.remove());
+                formRecepcionista.action = `${baseUrl}/admin/crear-recepcionista`;
+                formRecepcionista.submit(); // ¡Esta línea faltaba!
+                // ===================================================
             }
         });
     }
 
-    window.eliminarRecepcionista = function(id) {
-        if(window.mostrarAlertaConfirmacion) {
-            window.mostrarAlertaConfirmacion(
-                "¿Estás seguro de eliminar los datos?",
-                "¿Estás seguro de eliminar los datos del recepcionista?",
-                () => {
-                    const tarjeta = document.querySelector(`.tarjeta-recepcionista-item[data-id="${id}"]`);
-                    if(tarjeta) tarjeta.remove();
-                    actualizarPaginadoresTotales();
-                }
-            );
+    window.eliminarRecepcionista = function (id) {
+        if (confirm("¿Estás seguro de que quieres eliminar a este recepcionista permanentemente?")) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+
+            // Calculamos la ruta base para que funcione en cualquier servidor
+            let baseUrl = window.location.origin;
+            if (window.location.pathname.includes('/public')) {
+                baseUrl += window.location.pathname.substring(0, window.location.pathname.indexOf('/public') + 7);
+            }
+
+            // Esta es la ruta hacia tu AdminController@destroyUsuario
+            form.action = `${baseUrl}/admin/usuario/${id}`;
+
+            form.innerHTML = `
+            <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').getAttribute('content')}">
+            <input type="hidden" name="_method" value="DELETE">
+        `;
+            document.body.appendChild(form);
+            form.submit();
         }
-    };
+    }
 
     // Motor de paginación del lado del admin para Terapeutas y Recepcionistas
-    window.paginarBloque = function(contenedorId, numPagina, btnPrevId, btnNextId, infoId) {
+    window.paginarBloque = function (contenedorId, numPagina, btnPrevId, btnNextId, infoId) {
         const contenedor = document.getElementById(contenedorId);
-        if(!contenedor) return;
+        if (!contenedor) return;
         const items = contenedor.children;
         const totalItems = items.length;
         const maxPaginas = Math.ceil(totalItems / itemsPorPagina) || 1;

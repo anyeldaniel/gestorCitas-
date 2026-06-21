@@ -71,7 +71,7 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('admin')->group(function () {
         // Rutas de edición y eliminación correctamente ubicadas aquí
         Route::put('/trabajador/{id}', [AdminController::class, 'updateTrabajador'])->name('admin.update-trabajador');
-        Route::put('/recepcionista/{id}', [AdminController::class, 'updateRecepcionista'])->name('admin.update-recepcionista');
+        Route::put('/recepcionista/{id}/actualizar', [AdminController::class, 'updateRecepcionista'])->name('admin.update-recepcionista');
         Route::delete('/usuario/{id}', [AdminController::class, 'destroyUsuario'])->name('admin.destroy-usuario');
 
         // Cambio de Route::view a Route::get apuntando al controlador 
