@@ -1,0 +1,569 @@
+/* ==========================================================================
+   ESTRUCTURA DE CONTROL NATIVA PARA DIALOG (OCULTACIÓN Y AJUSTES DE APARECIMIENTO)
+   ========================================================================== */
+dialog {
+    padding: 0;
+    border: none;
+    background: transparent;
+    max-width: 100vw;
+    max-height: 100vh;
+}
+
+/* Evita que se renderice roto en el flujo del catálogo cuando no está activo */
+dialog:not([open]) {
+    display: none !important;
+}
+
+/* Cuando se abre usando el método nativo .showModal() de JavaScript */
+dialog:modal {
+    width: 100%;
+    height: 100%;
+    max-width: 100vw;
+    max-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(4px);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+}
+
+/* Fondo oscurecido nativo del navegador */
+dialog::backdrop {
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(4px);
+}
+
+/* ==========================================================================
+   CENTRADOR GLOBAL Y ESTRUCTURA DEL CONTENEDOR INTERNO
+   ========================================================================== */
+.modal-tarjeta-interna,
+.cuerpo-alerta-centrado {
+    background: #ffffff;
+    width: 92%;
+    max-width: 660px;
+    max-height: 88vh;
+    border-radius: 16px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: entradaSuaveModal 0.25s ease-out;
+    box-sizing: border-box;
+}
+
+/* Forzar posicionamiento e inyección absoluta a mitad de pantalla para la Alerta Crítica */
+.modal-contenedor-alerta-critica {
+    max-width: 420px;
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.modal-contenedor-alerta-critica .cuerpo-alerta-centrado {
+    max-width: 420px;
+    padding: 1.75rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+@keyframes entradaSuaveModal {
+    from { transform: scale(0.96); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* ==========================================================================
+   COMPONENTES DE ENCABEZADO Y CABECERAS
+   ========================================================================== */
+.modal-cabecera-spa {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #fafafa;
+}
+
+.modal-titulo-principal,
+.modal-titulo-vista {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+}
+
+.btn-cerrar-redondo {
+    background: none;
+    border: none;
+    font-size: 1.6rem;
+    color: #94a3b8;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s, background-color 0.2s;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.btn-cerrar-redondo:hover {
+    color: #ef4444;
+    background-color: #fee2e2;
+}
+
+/* ==========================================================================
+   ZONA DE CUERPO GENERAL (CON SCROLL INTERNO CONTROLADO)
+   ========================================================================== */
+.form-cuerpo-scrollable,
+.cuerpo-vista-scroll {
+    padding: 1.5rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    background-color: #fbfbfc;
+    box-sizing: border-box;
+}
+
+/* ==========================================================================
+   ESTILO DE CASILLAS POR ELEMENTOS (ZONA FORMULARIO DE REGISTRO)
+   ========================================================================== */
+.campo-formulario-casilla {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin: 0;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.legend-etiqueta-zen {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    color: #64748b;
+    padding: 0.15rem 0.6rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+}
+
+.grupo-input-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.label-formulario-zen {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #334155;
+}
+
+.input-estandar-zen,
+.select-estandar-zen,
+.textarea-estandar-zen {
+    width: 100%;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #1e293b;
+    background-color: #ffffff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+.input-estandar-zen:focus,
+.select-estandar-zen:focus,
+.textarea-estandar-zen:focus {
+    outline: none;
+    border-color: #a78bfa;
+    box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
+}
+
+.texto-descripcion-input,
+.texto-ayuda-archivo {
+    color: #64748b;
+    font-size: 0.78rem;
+    margin-top: 0.1rem;
+}
+
+/* Grillas Internas de las Casillas */
+.grid-tres-columnas-zen {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+/* ==========================================================================
+   IDENTIDAD VISUAL (ZONA MULTIMEDIA FOTO)
+   ========================================================================== */
+.seccion-alineada-centro {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.contenedor-carga-foto {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    background: #ffffff;
+    padding: 0.5rem 1rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.avatar-previsualizacion-vacio {
+    width: 75px;
+    height: 75px;
+    background: #f1f5f9;
+    border: 2px dashed #cbd5e1;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #64748b;
+    margin: 0;
+    overflow: hidden;
+}
+
+.controles-archivo {
+    display: flex;
+    flex-direction: column;
+}
+
+.btn-seleccionar-archivo {
+    display: inline-block;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    padding: 0.4rem 0.85rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.15s;
+}
+
+.btn-seleccionar-archivo:hover {
+    background: #f1f5f9;
+}
+
+/* ==========================================================================
+   INTEGRACIÓN Y SELECCIÓN DE ESPECIALISTAS (CASILLA DE CHECKS)
+   ========================================================================== */
+.lista-seleccion-scroll-zen {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+    max-height: 140px;
+    overflow-y: auto;
+    padding: 0.6rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.tarjeta-checkbox-personal-zen {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.15s, background-color 0.15s;
+}
+
+.tarjeta-checkbox-personal-zen:hover {
+    border-color: #cbd5e1;
+    background-color: #f8fafc;
+}
+
+.checkbox-estandar-zen {
+    accent-color: #8b5cf6;
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+}
+
+.nombre-personal-check-zen {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #334155;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.alerta-sistema-vacio-zen {
+    grid-column: 1 / -1;
+    color: #b45309;
+    background: #fef3c7;
+    border: 1px solid #fde68a;
+    font-size: 0.82rem;
+    padding: 0.75rem;
+    border-radius: 6px;
+    text-align: center;
+    margin: 0;
+}
+
+/* ==========================================================================
+   COMPONENTES ESPECÍFICOS DE LA FICHA TÉCNICA DE LECTURA (MODAL VER)
+   ========================================================================== */
+.contenedor-foto-portada {
+    margin: 0;
+    width: 100%;
+    height: 170px;
+    overflow: hidden;
+    border-radius: 10px;
+    background: #e2e8f0;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.imagen-portada-ajustada {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.cabecera-detalle-servicio {
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 0.6rem;
+}
+
+.titulo-servicio-vista {
+    margin: 0;
+    font-size: 1.3rem;
+    color: #1e293b;
+    font-weight: 700;
+}
+
+.texto-categoria-linea {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.badge-categoria-premium {
+    background: #fef3c7;
+    color: #d97706;
+    padding: 0.15rem 0.45rem;
+    border-radius: 5px;
+    font-weight: 600;
+    font-size: 0.78rem;
+}
+
+.grid-detalles-tecnicos {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.bloque-informacion-celda {
+    margin: 0;
+    font-size: 0.92rem;
+    color: #334155;
+}
+
+.subtitulo-informacion {
+    font-weight: 600;
+    color: #64748b;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    display: block;
+    margin-bottom: 0.15rem;
+}
+
+.valor-precio-destacado {
+    background: #e0f2fe;
+    color: #0369a1;
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    border-radius: 5px;
+    display: inline-block;
+}
+
+.texto-reserva-porcentaje {
+    font-weight: 500;
+}
+
+.porcentaje-numero {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.badge-tiempo-duracion {
+    background: #f1f5f9;
+    color: #475569;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 5px;
+    display: inline-block;
+}
+
+.caja-descripcion-lectura {
+    display: block;
+    background: #f8fafc;
+    padding: 0.85rem;
+    border-radius: 8px;
+    color: #475569;
+    line-height: 1.45;
+    border: 1px solid #e2e8f0;
+    font-size: 0.9rem;
+}
+
+/* ==========================================================================
+   ACCIONES CRÍTICAS (MODAL CONFIRMACIÓN/ELIMINAR)
+   ========================================================================== */
+.icono-alerta-advertencia {
+    font-size: 2.2rem;
+    margin: 0 0 0.75rem 0;
+}
+
+.titulo-alerta-critica {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.mensaje-alerta-descripcion {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin: 0.5rem 0 0 0;
+    line-height: 1.4;
+}
+
+.pie-alerta-botones {
+    margin-top: 1.25rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.btn-cancelar-alerta {
+    flex: 1;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    padding: 0.55rem 1rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+.btn-cancelar-alerta:hover {
+    background: #f8fafc;
+}
+
+.btn-aceptar-eliminar {
+    flex: 1;
+    background: #dc2626;
+    border: none;
+    color: #ffffff;
+    padding: 0.55rem 1rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+.btn-aceptar-eliminar:hover {
+    background: #b91c1c;
+}
+
+/* ==========================================================================
+   FOOTER O PIE DE FORMULARIO COMÚN (BOTONES ACCIONES)
+   ========================================================================== */
+.pie-formulario-fijo-zen {
+    border-top: 1px solid #f1f5f9;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    background: #fafafa;
+}
+
+.btn-secundario-zen,
+.btn-vista-cerrar {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    padding: 0.55rem 1.2rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+.btn-secundario-zen:hover,
+.btn-vista-cerrar:hover {
+    background: #f8fafc;
+}
+
+.btn-primario-zen {
+    background: #8b5cf6;
+    border: none;
+    color: #ffffff;
+    padding: 0.55rem 1.2rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: background-color 0.15s;
+    box-shadow: 0 1px 2px rgba(139, 92, 246, 0.2);
+}
+
+.btn-primario-zen:hover {
+    background: #7c3aed;
+}
+
+/* ==========================================================================
+   ADAPTACIÓN RESPONSIVA (DISEÑO MÓVIL)
+   ========================================================================== */
+@media (max-width: 640px) {
+    .grid-tres-columnas-zen { 
+        grid-template-columns: 1fr; 
+        gap: 0.85rem;
+    }
+    .lista-seleccion-scroll-zen {
+        grid-template-columns: 1fr;
+    }
+    .modal-tarjeta-interna { 
+        max-height: 94vh; 
+        width: 95%;
+    }
+    .contenedor-carga-foto {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.75rem;
+    }
+    .modal-contenedor-alerta-critica {
+        width: 90%;
+    }
+}
