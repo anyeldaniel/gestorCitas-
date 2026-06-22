@@ -3,34 +3,76 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth; // Importamos la clase Auth para manejar la autenticación de usuarios.
+use App\Models\Cita; // Importamos el modelo de Cita.
+use App\Models\User; // Importamos el modelo de User para los especialistas.
+
 
 class ReservaController extends Controller
 {
-    //Muestro el formulario de reserva para el cliente
-    public function index()
+    // Muestro el formulario de reserva para el cliente.
+    public function index(Request $request)
     {
-        return view('clientes.reserva');
+        // Atrapamos el ID si viene por la URL (si no viene, será null)
+        $servicioSeleccionado = $request->query('servicio_id');
+        
+        return view('clientes.reserva', compact('servicioSeleccionado'));
     }
-
-    //Proceso la reservación 
+    // Función para manejar la creación de una nueva cita.
     public function store(Request $request)
     {
-        // Validación estricta siguiendo las reglas del negocio del Spa
+        // Validación de los datos recibidos del formulario.
         $request->validate([
             'servicio_id'    => 'required|integer',
+            'trabajador_id'  => 'required', // Recibe 'aleatorio' o el ID numérico.
             'fecha'          => 'required|date|after_or_equal:today',
             'hora'           => 'required',
-            'adjunto_receta' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048', // Máximo 2MB
+            'adjunto_receta' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
-        // Simulación de manejo de archivo si el cliente sube una indicación médica
-        if ($request->hasFile('adjunto_receta')) {
-            $archivo = $request->file('adjunto_receta');
-            // Aquí se guardaría en: storage/app/public/recetas
-            // $ruta = $archivo->store('recetas', 'public');
+        // Lógica de asignación de especialista (Aleatorio o Específico).
+        $trabajadorId = $request->trabajador_id;
+        if ($trabajadorId === 'aleatorio') {
+            // Si se selecciona 'aleatorio', se obtiene un especialista al azar de la base de datos.
+            $trabajadorId = User::where('rol', 'trabajador')->inRandomOrder()->first()->id;
         }
 
-        // Aquí se retorna al catálogo con un mensaje de éxito 
+        // Manejo del archivo adjunto de receta si existe.
+        $rutaReceta = null;
+        if ($request->hasFile('adjunto_receta')) {
+            $rutaReceta = $request->file('adjunto_receta')->store('recetas', 'public');
+        }
+        // Creación de la cita en la base de datos.
+        Cita::create([
+            'cliente_id'    => Auth::id(), // Guarda el ID del cliente logueado
+            'trabajador_id' => $trabajadorId,
+            'servicio_id'   => $request->servicio_id,
+            'fecha'         => $request->fecha,
+            'hora'          => $request->hora,
+            'estado'        => 'pendiente',
+        ]);
+
+        // Redireccionar con éxito.
         return redirect()->route('catalogo')->with('success', '¡Su sesión ha sido agendada con éxito en nuestro santuario de bienestar!');
+    }
+
+    // Obtener especialistas filtrados por AJAX
+    public function getEspecialistas($id)
+    {
+        // Buscamos el servicio que el cliente seleccionó
+        $servicio = \App\Models\Servicio::find($id);
+
+        if (!$servicio || !$servicio->especialidad_id) {
+            return response()->json([]);
+        }
+
+        // Buscamos los usuarios que tengan la especialidad de ese servicio
+        $especialistas = \App\Models\User::join('trabajador_especialidad', 'usuarios.id', '=', 'trabajador_especialidad.usuario_id')
+            ->where('trabajador_especialidad.especialidad_id', $servicio->especialidad_id)
+            ->select('usuarios.id', 'usuarios.nombre')
+            ->get();
+
+        // Devolvemos los datos en formato JSON para que JavaScript los lea
+        return response()->json($especialistas);
     }
 }

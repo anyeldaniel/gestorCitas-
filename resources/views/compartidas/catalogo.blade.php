@@ -35,17 +35,17 @@
     {{-- Rejilla con inline styles definitivos para forzar el tamaño compacto de la imagen --}}
     <section class="rejilla-catalogo" id="contenedor-servicios-catalogo" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 310px)); gap: 1.5rem; justify-content: center; width: 100%; max-width: 1200px; margin: 0 auto; padding: 1rem 0;">
 
-        {{-- 1. CAMBIO AQUÍ: Ahora iteramos sobre los servicios reales de la BD --}}
+        {{-- Ahora iteramos sobre los servicios reales de la BD --}}
         @forelse($servicios as $servicio)
         @php
-        // 2. CAMBIO AQUÍ: Usamos las mismas variables de tus compañeros, pero las llenamos con la BD
+        // Llamamos las variables de la base de dato.
         $nombreServicio = $servicio->nombre_servicio;
         $idSimulado = $servicio->id;
         $precioSimulado = $servicio->precio;
         $tiempoEstimadoSimulado = $servicio->duracion_minutos . " min";
         $descripcionSimulada = $servicio->descripcion;
 
-        // Estos los dejamos simulados por ahora porque pertenecen a la futura lógica de citas
+        // Simulación para la futura lógica de citas.
         $porcentajeAgendadoSimulado = 10;
         $especialistasSimulados = ["Ana Gómez", "Carlos Ruiz"];
         $especialistasIdsSimulados = [1, 2];
@@ -63,7 +63,7 @@
             data-especialistas-ids='{{ json_encode($especialistasIdsSimulados) }}'
             style="display: flex; flex-direction: column; justify-content: space-between; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem; max-width: 310px; width: 100%; box-sizing: border-box; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
             <div>
-                {{-- 3. CAMBIO AQUÍ: Mostrar la imagen de la BD, o una por defecto si no tiene --}}
+                {{-- Mostrar la imagen de la BD, o una por defecto si no tiene --}}
                 @if($servicio->imagen)
                 <img src="{{ asset('storage/' . $servicio->imagen) }}"
                     alt="{{ $nombreServicio }}"
@@ -94,7 +94,7 @@
                     </button>
 
                     @if(auth()->check() && auth()->user()->rol === 'cliente')
-                    <a href="{{ route('clientes.reserva') }}?servicio_id={{ $idSimulado }}&nombre={{ urlencode($nombreServicio) }}&precio={{ $precioSimulado }}&porcentaje={{ $porcentajeAgendadoSimulado }}" class="btn-zen" style="padding: 0.4rem 0.85rem; font-size: 0.8rem; border-radius: 6px;">
+                    <a href="{{ route('clientes.reserva', ['servicio_id' => $servicio->id]) }}" class="btn-zen" style="padding: 0.4rem 0.85rem; font-size: 0.8rem; border-radius: 6px;">
                         Reservar
                     </a>
 
@@ -110,7 +110,7 @@
                     </button>
 
                     @elseif(auth()->check() && auth()->user()->rol === 'recepcionista')
-                    <a href="{{ route('clientes.reserva') }}?servicio_id={{ $idSimulado }}&nombre={{ urlencode($nombreServicio) }}&precio={{ $precioSimulado }}&porcentaje={{ $porcentajeAgendadoSimulado }}" class="btn-zen" style="background-color: #4f8eff; padding: 0.4rem 0.85rem; font-size: 0.8rem; border-radius: 6px;">
+                    <a href="{{ route('clientes.reserva', ['servicio_id' => $servicio->id]) }}" class="btn-zen" style="background-color: #4f8eff; padding: 0.4rem 0.85rem; font-size: 0.8rem; border-radius: 6px;">
                         Agendar Cita
                     </a>
 

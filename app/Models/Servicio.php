@@ -17,5 +17,6 @@ class Servicio extends Model
         'imagen',
         'precio',
         'duracion_minutos',
+        'especialidad_id'
     ];
 }

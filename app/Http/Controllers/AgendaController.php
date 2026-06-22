@@ -2,27 +2,35 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;   // Controlador para manejar la agenda de citas en la recepción.
-use App\Models\Cita; // Importamos el modelo de Cita para interactuar con la base de datos de citas.
+use Illuminate\Http\Request;
+use App\Models\Cita;
+use Carbon\Carbon;
 
-
-class AgendaController extends Controller // Controlador para manejar la agenda de citas en la recepción.
+class AgendaController extends Controller
 {
-    // Muestra todas las citas programadas.
-    public function index()
+    // Vista Global de la Agenda.
+public function index()
     {
-        // Traemos todas las citas con los datos del usuario que la pidió.
-        $citas = Cita::all(); 
-        return view('recepcion.agenda', compact('citas'));
-    }
+        // Traemos todas las citas cruzando los datos para obtener los nombres reales.
+        $citas = Cita::join('usuarios as clientes', 'citas.cliente_id', '=', 'clientes.id')
+            ->join('usuarios as trabajadores', 'citas.trabajador_id', '=', 'trabajadores.id')
+            ->join('servicios', 'citas.servicio_id', '=', 'servicios.id')
+            ->select(
+                'citas.*',
+                'clientes.nombre as cliente_nombre',
+                'trabajadores.nombre as especialista_nombre',
+                'servicios.nombre_servicio'
+            )
+            ->orderBy('fecha', 'asc')
+            ->orderBy('hora', 'asc')
+            ->get();
 
-    // Cambiar el estado de una cita (ejemplo: de pendiente a confirmada).
-    public function updateStatus(Request $request, $id)
-    {
-        $cita = Cita::findOrFail($id);
-        $cita->estado = $request->estado;
-        $cita->save();
+        // Agrupamos las citas por hora (Ej: "02:00 PM") para la grilla.
+        $citasPorHora = $citas->groupBy(function($cita) {
+            return Carbon::parse($cita->hora)->format('h:i A');
+        });
 
-        return redirect()->back()->with('success', 'Estado de la cita actualizado.');
+        // Enviamos los datos a la vista.
+        return view('recepcion.agenda', compact('citasPorHora'));
     }
 }

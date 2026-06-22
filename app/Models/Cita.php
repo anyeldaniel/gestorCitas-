@@ -9,14 +9,13 @@ class Cita extends Model
 {
     use HasFactory;
 
-    // Le dice a Laravel que use tu tabla de XAMPP
-    protected $table = 'citas'; 
-
+    // Definimos los campos que se pueden asignar masivamente.
     protected $fillable = [
-        'user_id',
+        'cliente_id',
+        'trabajador_id',
         'servicio_id',
         'fecha',
         'hora',
-        'estado',
+        'estado'
     ];
 }

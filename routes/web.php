@@ -83,6 +83,9 @@ Route::middleware(['auth'])->group(function () {
     // Ruta para procesar la reserva de un servicio, apuntando al método store del controlador de reservas.
     Route::post('/reservas', [ReservaController::class, 'store'])->name('clientes.reserva.store');
 
+    // Ruta para conectar los especialistas con los servicios.
+    Route::get('/especialistas-por-servicio/{id}', [\App\Http\Controllers\ReservaController::class, 'getEspecialistas']);
+
 
     // ==========================================
     //   MÓDULO ADMINISTRADOR (Prefijo 'admin')

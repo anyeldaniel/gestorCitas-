@@ -16,25 +16,34 @@
     <span class="status-badge disponible">Esteticista Clara (Cabina 3 — Libre)</span>
 </header>
 
-    <section class="grilla-horaria-spa" style="background: white; border: 1px solid var(--color-borde-suave); border-radius: 8px; overflow: hidden;">
+<section class="grilla-horaria-spa" style="background: white; border: 1px solid var(--color-borde-suave); border-radius: 8px; overflow: hidden;">
         
-        <article class="bloque-hora" style="display: grid; grid-template-columns: 100px 1fr; border-bottom: 1px solid var(--color-borde-suave);">
-            <time style="padding: 1.5rem; font-weight: bold; background: #fafafa; border-right: 1px solid var(--color-borde-suave); display: flex; align-items: center; justify-content: center;">09:00 AM</time>
-            <section class="zona-caida-agenda" data-hora="09:00" style="padding: 0.75rem; display: flex; gap: 1rem; min-height: 80px; align-items: center;">
+        @forelse($citasPorHora as $hora => $citas)
+            <article class="bloque-hora" style="display: grid; grid-template-columns: 100px 1fr; border-bottom: 1px solid var(--color-borde-suave);">
                 
-                <article class="tarjeta-cita-operativa" id="turno-401" draggable="true" style="padding: 0.75rem 1rem; background: #fdfefe; border: 1px solid var(--color-borde-suave); border-left: 4px solid var(--color-verde-zen); border-radius: 6px; width: 100%; max-width: 450px;">
-                    <h3 style="font-size: 0.95rem; font-weight: 600; margin: 0;">Carlos Mendoza</h3>
-                    <p style="font-size: 0.8rem; color: var(--color-texto-claro); margin: 2px 0 0 0;">Masaje con Piedras | <strong>Cabina 2</strong></p>
-                </article>
+                <time style="padding: 1.5rem; font-weight: bold; background: #fafafa; border-right: 1px solid var(--color-borde-suave); display: flex; align-items: center; justify-content: center; text-align: center;">
+                    {{ $hora }}
+                </time>
+                
+                <section class="zona-caida-agenda" data-hora="{{ $hora }}" style="padding: 0.75rem; display: flex; gap: 1rem; min-height: 80px; align-items: center; flex-wrap: wrap;">
+                    
+                    @foreach($citas as $cita)
+                        <article class="tarjeta-cita-operativa" id="turno-{{ $cita->id }}" draggable="true" style="padding: 0.75rem 1rem; background: #fdfefe; border: 1px solid var(--color-borde-suave); border-left: 4px solid var(--color-verde-zen); border-radius: 6px; width: 100%; max-width: 450px;">
+                            <h3 style="font-size: 0.95rem; font-weight: 600; margin: 0;">{{ $cita->cliente_nombre }}</h3>
+                            <p style="font-size: 0.8rem; color: var(--color-texto-claro); margin: 2px 0 0 0;">
+                                {{ $cita->nombre_servicio }} | <strong>Especialista: {{ $cita->especialista_nombre }}</strong><br>
+                                <small style="color: var(--color-primario);">📅 Fecha: {{ \Carbon\Carbon::parse($cita->fecha)->format('d/m/Y') }}</small>
+                            </p>
+                        </article>
+                    @endforeach
 
-            </section>
-        </article>
-
-        <article class="bloque-hora" style="display: grid; grid-template-columns: 100px 1fr;">
-            <time style="padding: 1.5rem; font-weight: bold; background: #fafafa; border-right: 1px solid var(--color-borde-suave); display: flex; align-items: center; justify-content: center;">10:30 AM</time>
-            <section class="zona-caida-agenda" data-hora="10:30" style="padding: 0.75rem; display: flex; gap: 1rem; min-height: 80px; align-items: center;">
                 </section>
-        </article>
+            </article>
+        @empty
+            <div style="padding: 3rem; text-align: center; color: var(--color-texto-claro);">
+                <p>No hay citas agendadas por el momento. ¡La agenda está libre!</p>
+            </div>
+        @endforelse
 
     </section>
 </section>
