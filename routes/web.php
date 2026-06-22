@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route; // Importamos el controlador de Login para las rutas de autenticación.
 use App\Http\Controllers\LoginController; // Controlador para manejar el login y registro de usuarios.
+use App\Http\Controllers\PasswordController; // Controlador para manejar la recuperación de contraseña.
 use App\Http\Controllers\AdminController; // Corregí mi regada con la A mayúscula xd att: Andrés
 use App\Http\Controllers\ReservaController; ; //Añadí el controlador de reservas para enrutarlooo
 use App\Http\Controllers\RecepcionController; ; // Controlador para la recepción. 
@@ -22,6 +23,22 @@ Route::view('/Registro', 'auth.Registro')->name('registro.view');
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 Route::post('/registrado', [LoginController::class, 'RegistroController'])->name('registro.create');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+// --- RUTAS DE RECUPERACIÓN DE CONTRASEÑA ---
+
+// 1. Mostrar el formulario para solicitar el correo (La vista que acabamos de crear)
+Route::view('/olvide-contrasena', 'auth.password.request')->name('passwordRequest.view');
+
+// 2. Procesar el envío del correo de recuperación
+Route::post('/olvide-contrasena', [PasswordController::class, 'VerifiCorreo'])->name('password.email');
+
+// 3. Vista para que el usuario ingrese la nueva contraseña (Recibe el token por URL)
+Route::get('/reset-password/{token}', function ($token) {
+    return view('auth.password.reset', ['token' => $token]);
+})->name('password.reset');
+
+// 4. Procesar el cambio de contraseña real
+Route::post('/reset-password', [LoginController::class, 'resetPassword'])->name('password.update');
 
 
 // --- RUTAS PROTEGIDAS (SOLO USUARIOS LOGUEADOS) ---
