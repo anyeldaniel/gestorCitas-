@@ -10,50 +10,34 @@
     </header>
 
     <div class="contenedor-formulario-spa">
-        <form class="formulario-spa" 
-              id="form-reserva-spa" 
-              method="POST" 
-              action="{{ route('clientes.reserva.store') }}" 
-              enctype="multipart/form-data" 
-              autocomplete="off">
+        <form class="formulario-spa"
+            id="form-reserva-spa"
+            method="POST"
+            action="{{ route('clientes.reserva.store') }}"
+            enctype="multipart/form-data"
+            autocomplete="off">
             @csrf
-            
+
             <div class="grupo-campo">
                 <label for="servicio_id">Tratamiento o Masaje Seleccionado *</label>
                 <select name="servicio_id" id="servicio_id" required>
                     <option value="" disabled selected>Elija una opción...</option>
-                    
-                    <optgroup label="1. Masajes Corporales">
-                        <option value="1">Masaje Relajante Anti-estrés — $35 (90min)</option>
-                        <option value="2">Masaje Descontracturante Profundo — $45 (60min)</option>
-                        <option value="3">Masaje con Piedras Volcánicas — $55 (90min)</option>
-                        <option value="4">Masaje Circulatorio / Drenaje Linfático — $40 (60min)</option>
-                        <option value="5">Masaje Aromaterapéutico — $40 (60min)</option>
-                    </optgroup>
-                    
-                    <optgroup label="2. Cuidado Facial">
-                        <option value="6">Limpieza Facial Profunda — $30 (90min)</option>
-                        <option value="7">Hidratación y Nutrición Intensiva — $35 (50min)</option>
-                        <option value="8">Facial Anti-age con Colágeno — $45 (90min)</option>
-                        <option value="9">Peeling Químico / Renovación — $50 (100min)</option>
-                    </optgroup>
-                    
-                    <optgroup label="3. Terapia con Plasma">
-                        <option value="10">Plasma Rico en Plaquetas (PRP) Facial — $70 (60min)</option>
-                        <option value="11">PRP Capilar Anticaída — $80 (60min)</option>
-                    </optgroup>
-                    
-                    <optgroup label="4. Estética de Manos y Pies">
-                        <option value="12">Manicura Tradicional Spa — $12 (40min)</option>
-                        <option value="13">Manicura Semi-permanente — $18 (50min)</option>
-                        <option value="14">Pedicura Spa Relajante — $22 (75min)</option>
-                        <option value="15">Uñas Esculpidas (Gel / Acrílico) — $35 (150min)</option>
-                        <option value="16">Tratamiento de Parafina Profunda — $10 (30min)</option>
-                    </optgroup>
-                    
-                    <optgroup label="5. Experiencias Premium">
-                        <option value="17">Ritual Supremo 'Beauty & Luxury' — $140 (180min)</option>
-                    </optgroup>
+                    @foreach(\App\Models\Servicio::all() as $servicio)
+                    <option value="{{ $servicio->id }}"
+                        {{ (isset($servicioSeleccionado) && $servicioSeleccionado == $servicio->id) ? 'selected' : '' }}>
+                        {{ $servicio->nombre_servicio }} — ${{ $servicio->precio }} ({{ $servicio->duracion_minutos }}min)
+                    </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="grupo-campo">
+                <label for="trabajador_id">¿Algún especialista en particular? (Opcional)</label>
+                <select name="trabajador_id" id="trabajador_id">
+                    <option value="aleatorio">Cualquiera disponible</option>
+                    @foreach(\App\Models\User::where('rol', 'trabajador')->get() as $especialista)
+                    <option value="{{ $especialista->id }}">{{ $especialista->nombre }}</option>
+                    @endforeach
                 </select>
             </div>
 
@@ -71,7 +55,7 @@
 
             <div class="grupo-campo">
                 <label for="adjunto_receta">
-                    Receta Médica o Indicaciones 
+                    Receta Médica o Indicaciones
                     <span class="nota-opcional">(Opcional)</span>
                 </label>
                 <input type="file" name="adjunto_receta" id="adjunto_receta" accept="image/*,application/pdf">
@@ -86,7 +70,14 @@
     </div>
 </section>
 
+<script>
+    const baseUrl = "{{ url('/') }}";
+</script>
+
 <script src="{{ asset('js/reserva-spa.js') }}"></script>
-{{-- Inclusión del modal de pago dinámico al final de la vista --}}
-    @include('clientes.modal-pago')
+
+{{-- Llamamos al CSS y JS de Eilyn por si tienen más cosas --}}
+@vite(['resources/css/verificar-pago.css', 'resources/js/verificar-pago.js'])
+
+@include('clientes.modal-pago')
 @endsection
