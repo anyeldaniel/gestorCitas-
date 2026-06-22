@@ -114,4 +114,10 @@ Route::middleware(['auth'])->group(function () {
     // 6. OTROS MÓDULOS DE CONTROL
     // ==========================================
     Route::get('/sala-espera', [SalaEsperaController::class, 'index'])->name('sala.espera');
+    
+    // -----------------------------------------------------------------
+        // MÓDULO DE VERIFICACIÓN DE PAGOS MÓVILES (FRONTEND - EILYN)
+        // -----------------------------------------------------------------
+        // Apunta directamente a la nueva función creada en el controlador
+        Route::get('/recepcion/pagos', [PagoController::class, 'mostrarVistaAdmin'])->name('compartidas.pago.verificar');
 });
