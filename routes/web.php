@@ -91,14 +91,15 @@ Route::middleware(['auth'])->group(function () {
         });
     });
 
-    // ==========================================
+    /* ==========================================
     // 4. MÓDULO RECEPCIÓN (Prefijo 'recepcion')
     // ==========================================
     Route::prefix('recepcion')->group(function () {
         Route::get('/agenda', [RecepcionController::class, 'agenda'])->name('recepcion.agenda');
         Route::post('/cita/{id}/actualizar', [AgendaController::class, 'updateStatus'])->name('cita.update');
         Route::get('/pagos', [PagoController::class, 'index'])->name('pago.verificar');
-    });
+        LO COMENTO PORQUE CREO QUE VOY A DESCARTARLO, DE MOMENTO, ASÍ QUEDA
+    });*/
 
     // ==========================================
     // 5. MÓDULO ESPECIALISTAS / TRABAJADORES

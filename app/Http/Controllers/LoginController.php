@@ -57,7 +57,7 @@ class LoginController extends Controller
             $rutaDestino = match ($user->rol) {
                 'admin'         => 'admin.dashboard',
                 'recepcion'     => 'agenda', // Apunta al name('agenda') global que tienes en web.php
-                'trabajador'    => 'especialista.tablero',
+                'trabajador'    => 'agenda',
                 'cliente'       => 'catalogo', // Tu ruta de catálogo corregida
                 default         => 'login',
             };

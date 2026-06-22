@@ -2,21 +2,28 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;   // Controlador para manejar la agenda de citas en la recepción.
-use App\Models\Cita; // Importamos el modelo de Cita para interactuar con la base de datos de citas.
+use Illuminate\Http\Request;
+use App\Models\Cita;
+use App\Models\User;
 
-
-class AgendaController extends Controller // Controlador para manejar la agenda de citas en la recepción.
+class AgendaController extends Controller
 {
-    // Muestra todas las citas programadas.
     public function index()
     {
-        // Traemos todas las citas con los datos del usuario que la pidió.
-        $citas = Cita::all(); 
-        return view('recepcion.agenda', compact('citas'));
+        // Renombramos la variable a $terapeutas para consistencia
+        $terapeutas = User::where('rol', 'trabajador')->get();
+        $user = auth()->user();
+
+        if ($user->rol === 'trabajador') {
+            $citas = Cita::where('trabajador_id', $user->id)->get();
+        } else {
+            $citas = Cita::all();
+        }
+
+        // Enviamos 'terapeutas' para que la vista pueda iterar correctamente
+        return view('compartidas.agenda', compact('citas', 'terapeutas'));
     }
 
-    // Cambiar el estado de una cita (ejemplo: de pendiente a confirmada).
     public function updateStatus(Request $request, $id)
     {
         $cita = Cita::findOrFail($id);

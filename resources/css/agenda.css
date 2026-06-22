@@ -1,0 +1,91 @@
+/* Paleta de colores sugerida: Elegante, tipo Spa */
+:root {
+    --bg-color: #fcfaf8;
+    --primary-color: #a88d75; /* Tono arena/bronce */
+    --text-color: #334155;
+    --white: #ffffff;
+    --border-color: #e2e8f0;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.modulo-agenda {
+    max-width: 1100px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: var(--white);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.agenda-header h1 {
+    color: var(--primary-color);
+    font-weight: 300;
+    margin-bottom: 0.5rem;
+}
+
+/* Filtros */
+.agenda-filtros {
+    display: flex;
+    gap: 1.5rem;
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: #f8fafc;
+    border-radius: 8px;
+}
+
+.grupo-filtro {
+    border: none;
+    display: flex;
+    flex-direction: column;
+}
+
+.grupo-filtro select, .grupo-filtro input {
+    padding: 0.6rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin-top: 0.3rem;
+}
+
+/* Tabla */
+.tabla-agenda {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.tabla-agenda th {
+    text-align: left;
+    padding: 1rem;
+    border-bottom: 2px solid var(--border-color);
+    color: #64748b;
+}
+
+.tabla-agenda td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.btn-agenda-modificar {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: opacity 0.3s;
+}
+
+.btn-agenda-modificar:hover {
+    opacity: 0.8;
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+    .agenda-filtros { flex-direction: column; }
+    .tabla-responsiva { overflow-x: auto; }
+}

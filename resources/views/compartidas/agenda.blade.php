@@ -1,74 +1,96 @@
 @extends('layouts.app')
 
-@section('title', 'Agenda Global')
+@section('title', 'Agenda de Citas')
+
+@push('styles')
+    @vite(['resources/css/agenda.css'])
+@endpush
 
 @section('content')
 <section class="modulo-agenda">
     
     <header class="agenda-header">
-        <h1>Agenda Global de Terapeutas</h1>
-        <p>Monitoreo y asignación en tiempo real para las experiencias de The Beauty Room.</p>
+        <h1>Agenda de Bienestar</h1>
+        <p>Gestión y monitoreo en tiempo real de las citas programadas.</p>
     </header>
 
-    <!-- Barra de Filtros con Elemento Form Semántico -->
-    <form class="agenda-filtros" id="form-filtros-agenda" onsubmit="event.preventDefault();">
-        <fieldset class="grupo-filtro">
-            <label for="filtro-terapeuta">Terapeuta Especialista</label>
-            <select id="filtro-terapeuta" name="terapeuta">
-                <option value="todos">Todos los terapeutas</option>
-                <option value="alana">Dra. Alana Ramos</option>
-                <option value="andres">Lic. Andrés García</option>
-            </select>
-        </fieldset>
+    {{-- Barra de Filtros: Se oculta el selector de terapeuta si el usuario es un trabajador --}}
+    <form class="agenda-filtros" id="form-filtros-agenda">
+        
+        @if(auth()->user()->rol !== 'trabajador')
+            <fieldset class="grupo-filtro">
+                <label for="filtro-terapeuta">Terapeuta</label>
+                <select id="filtro-terapeuta" name="terapeuta_id">
+                    <option value="">Todos los especialistas</option>
+                    @foreach($terapeutas as $terapeuta)
+                        <option value="{{ $terapeuta->id }}" {{ request('terapeuta_id') == $terapeuta->id ? 'selected' : '' }}>
+                            {{ $terapeuta->nombre }}
+                        </option>
+                    @endforeach
+                </select>
+            </fieldset>
+        @endif
 
         <fieldset class="grupo-filtro">
-            <label for="filtro-fecha">Fecha de Visualización</label>
-            <input type="date" id="filtro-fecha" name="fecha" value="{{ date('Y-m-d') }}">
+            <label for="filtro-fecha">Fecha</label>
+            <input type="date" id="filtro-fecha" name="fecha" value="{{ request('fecha', date('Y-m-d')) }}">
         </fieldset>
     </form>
 
-    <!-- Contenedor Responsivo de la Tabla Maestra -->
+    {{-- Tabla Maestra --}}
     <main class="tabla-responsiva">
         <table class="tabla-agenda">
             <thead>
                 <tr>
                     <th>Horario</th>
-                    <th>Paciente / Cliente</th>
-                    <th>Terapeuta</th>
-                    <th>Servicio / Tratamiento</th>
+                    <th>Paciente</th>
+                    {{-- Ocultamos la columna Terapeuta si el usuario logueado ya es el trabajador --}}
+                    @if(auth()->user()->rol !== 'trabajador')
+                        <th>Terapeuta</th>
+                    @endif
+                    <th>Servicio</th>
                     <th>Estado</th>
                     <th class="texto-centrado">Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($citas as $cita)
-                    <tr class="fila-cita" data-terapeuta="{{ $cita['terapeuta'] }}">
-                        <td class="columna-hora"><time>{{ $cita['hora'] }}</time></td>
-                        <td>{{ $cita['cliente'] }}</td>
-                        <td><span class="badge-terapeuta">{{ $cita['terapeuta'] }}</span></td>
-                        <td class="texto-atenuado">{{ $cita['servicio'] }}</td>
+                    <tr class="fila-cita">
+                        <td class="columna-hora">
+                            <time>{{ \Carbon\Carbon::parse($cita->fecha_hora_inicio)->format('H:i') }}</time>
+                        </td>
+                        <td>{{ $cita->paciente->nombre ?? 'Sin asignar' }}</td>
+                        
+                        @if(auth()->user()->rol !== 'trabajador')
+                            <td>
+                                <span class="badge-terapeuta">{{ $cita->terapeuta->nombre ?? 'No asignado' }}</span>
+                            </td>
+                        @endif
+
+                        <td class="texto-atenuado">{{ $cita->servicio->nombre_servicio ?? 'Servicio' }}</td>
                         <td>
-                            <span class="status-tag {{ strtolower($cita['estado']) }}">
-                                {{ $cita['estado'] }}
+                            <span class="status-tag status-{{ strtolower($cita->estado) }}">
+                                {{ ucfirst($cita->estado) }}
                             </span>
                         </td>
                         <td class="acciones-celda">
-                            <button type="button" class="btn-agenda-modificar" onclick="modificarCita({{ $cita['id'] }})">Reasignar</button>
-                            <button type="button" class="btn-agenda-cancelar" onclick="cancelarCita({{ $cita['id'] }})">Cancelar</button>
+                            <button type="button" class="btn-agenda-modificar" onclick="abrirModalEditar({{ $cita->id }})">Editar</button>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="tabla-vacia">No hay citas registradas para este día.</td>
+                        {{-- Ajustamos el colspan dinámicamente según el rol --}}
+                        <td colspan="{{ auth()->user()->rol === 'trabajador' ? 5 : 6 }}" class="tabla-vacia">
+                            No hay citas registradas para este día.
+                        </td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
     </main>
-
 </section>
-
 @endsection
 
 @push('scripts')
-    @vite(['resources/js/agenda.js']) <!-- Aquí esstoy añadiendo el script para que se inyecte la lógica de js en el módulo de agenda -->@endpush
+    @vite(['resources/js/agenda.js'])
+@endpush

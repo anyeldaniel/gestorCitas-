@@ -23,11 +23,11 @@
 <!--Aquì estoy añadiendo el nav para que se muestre en todas las vistas, y se adapte segun el rol del usuario logueado, mostrando solo las opciones correspondientes a su rol.-->
         <nav class="nav-roles" aria-label="Navegación de Roles Operativos">
             @auth
-                @if(auth()->user()->rol === 'admin' || auth()->user()->rol === 'recepcionista' || auth()->user()->rol === 'trabajador')
+                @if(auth()->user()->rol === 'admin' || auth()->user()->rol === 'recepcion' || auth()->user()->rol === 'trabajador')
                     <a href="{{ route('agenda') }}" class="{{ Request::is('agenda*') ? 'active' : '' }}">Agenda</a>
                 @endif
 
-                @if(auth()->user()->rol === 'admin' || auth()->user()->rol === 'recepcionista' || auth()->user()->rol === 'cliente')
+                @if(auth()->user()->rol === 'admin' || auth()->user()->rol === 'recepcion' || auth()->user()->rol === 'cliente')
                     <a href="{{ url('/terapeutas') }}" class="{{ Request::is('terapeutas*') ? 'active' : '' }}">Terapeutas</a>
                 @endif
 
@@ -39,7 +39,7 @@
                     <a href="{{ route('admin.reportes') }}" class="{{ Request::is('admin/reportes*') ? 'active' : '' }}">Reportes</a>
                 @endif
 
-                @if(auth()->user()->rol === 'recepcionista' || auth()->user()->rol === 'admin')
+                @if(auth()->user()->rol === 'recepcion' || auth()->user()->rol === 'admin')
                     <a href="{{ url('/recepcion/pagos') }}" class="{{ Request::is('recepcion/pagos*') ? 'active' : '' }}">Verificar Pagos</a>
                 @endif
 
