@@ -25,7 +25,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 e.preventDefault();
                 
                 const actionUrl = formTerapeutaModal.action;
-                const match = actionUrl.match(/\/terapeutas\/(\d+)\/actualizar/);
+                
+                // === MODIFICADO LIGERAMENTE PARA EL BACKEND: Ajustamos su búsqueda para la ruta de Laravel ===
+                const match = actionUrl.match(/\/admin\/trabajador\/(\d+)/);
+                // ==============================================================================================
                 
                 if (match) {
                     const idEditando = match[1];
@@ -83,6 +86,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 alert("Información del especialista actualizada con éxito.");
                 cerrarModal();
+
+                // === AGREGADO PARA EL BACKEND: Fuerzo el envío oculto a la base de datos después de su animación ===
+                formTerapeutaModal.submit();
+                // ====================================================================================================
             } else {
                 alert("Procesando registro en el servidor...");
             }
@@ -122,6 +129,11 @@ window.abrirModalAgregar = function() {
     const titulo = document.getElementById('modal-titulo');
     
     if (!modal || !formulario) return;
+
+    // === AGREGADO PARA EL BACKEND: Limpiamos el método PUT por si el usuario venía de editar ===
+    const metodoPut = document.getElementById('metodo-put-laravel');
+    if (metodoPut) metodoPut.remove();
+    // ============================================================================================
     
     formulario.reset();
     document.getElementById('previsualizacion-avatar-terapeuta').innerHTML = "TF";
@@ -132,7 +144,16 @@ window.abrirModalAgregar = function() {
         </div>
     `;
     
-    formulario.action = "/admin/terapeutas/guardar"; 
+    // Calculamos la ruta base real
+    let baseUrl = window.location.origin;
+    if (window.location.pathname.includes('/public')) {
+        baseUrl += window.location.pathname.substring(0, window.location.pathname.indexOf('/public') + 7);
+    }
+    
+    // Asignamos la ruta correcta para crear el trabajador
+    formulario.action = `${baseUrl}/admin/crear-trabajador`;
+    // ==============================================================================================
+
     titulo.textContent = "Registrar Nuevo Especialista";
     
     document.getElementById('campo-password').style.display = 'grid';
@@ -150,7 +171,19 @@ window.editarTerapeuta = function(id) {
     if (!modal || !formulario) return;
     
     titulo.textContent = "Editar Información del Especialista";
-    formulario.action = `/admin/terapeutas/${id}/actualizar`; 
+    
+    // Calculamos la ruta base real
+    let baseUrl = window.location.origin;
+    if (window.location.pathname.includes('/public')) {
+        baseUrl += window.location.pathname.substring(0, window.location.pathname.indexOf('/public') + 7);
+    }
+    
+    // Aplicamos la ruta correcta de una sola vez
+    formulario.action = `${baseUrl}/admin/trabajador/${id}`;
+    if (!document.getElementById('metodo-put-laravel')) {
+        formulario.insertAdjacentHTML('beforeend', '<input type="hidden" name="_method" value="PUT" id="metodo-put-laravel">');
+    }
+    // ======================================================================================
 
     document.getElementById('campo-password').style.display = 'none';
     document.getElementById('password').required = false;
@@ -249,7 +282,7 @@ window.verTerapeutaDetalle = function(id) {
     const accionesAdmin = document.getElementById('view-acciones-admin');
     accionesAdmin.innerHTML = `
         <button type="button" class="btn-zen" style="background:white; border:1px solid #cbd5e1; color:#475569;" onclick="document.getElementById('modal-ver-terapeuta').close(); editarTerapeuta(${id});">Editar</button>
-        <button type="button" class="btn-zen btn-baja" onclick="document.getElementById('modal-ver-ver-terapeuta').close(); eliminarTerapeuta(${id});">Dar de Baja</button>
+        <button type="button" class="btn-zen btn-baja" onclick="document.getElementById('modal-ver-terapeuta').close(); eliminarTerapeuta(${id});">Dar de Baja</button>
     `;
 
     modal.showModal();
@@ -288,10 +321,23 @@ window.eliminarTerapeuta = function(id) {
         "¿Estás seguro de eliminar los datos?",
         "¿Estás seguro de eliminar los datos del terapeuta?",
         () => {
-            const elementos = document.querySelectorAll(`.tarjeta-terapeuta[data-id="${id}"]`);
-            elementos.forEach(el => el.remove());
-            // Si está abierto el modal de ver, cerrarlo
-            document.getElementById('modal-ver-terapeuta').close();
+            // Esto es lo único que necesitabas para el backend:
+           // Esto es lo único que necesitabas para el backend:
+            const form = document.createElement('form');
+            form.method = 'POST';
+            
+            let baseUrl = window.location.origin;
+            if (window.location.pathname.includes('/public')) {
+                baseUrl += window.location.pathname.substring(0, window.location.pathname.indexOf('/public') + 7);
+            }
+            form.action = `${baseUrl}/admin/usuario/${id}`;
+            
+            form.innerHTML = `
+                <input type="hidden" name="_token" value="${document.querySelector('input[name="_token"]').value}">
+                <input type="hidden" name="_method" value="DELETE">
+            `;
+            document.body.appendChild(form);
+            form.submit();
         }
     );
 }

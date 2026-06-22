@@ -82,7 +82,7 @@
 
         <footer class="modal-acciones">
             <button type="button" class="btn-zen btn-secundario" onclick="cerrarModal()">Cancelar</button>
-            <button type="button" onclick="sincronizarEspecialidades(); this.form.action='{{ route('admin.create-trabajador') }}'; this.form.submit();" class="btn-zen btn-primario">Guardar Especialista</button>
+            <button type="button" onclick="sincronizarEspecialidades(); this.form.submit();" class="btn-zen btn-primario">Guardar Especialista</button>
         </footer>
     </form>
 </dialog>

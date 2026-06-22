@@ -3,14 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\User; // Importar el modelo User para crear especialistas y recepcionistas.
-use App\Http\Requests\CreateTrabajadorRequest; // Importar el Form Request para validar la creación de trabajadores..
+use App\Http\Requests\CreateTrabajadorRequest; // Importar el Form Request para validar la creación de trabajadores.
 use Illuminate\Http\Request; // Agregado para validar al recepcionista.
 use Illuminate\Support\Facades\DB; // Importar DB para consultas directas si es necesario.
 
 class AdminController extends Controller
 {
-
-    // Añadí este método. Carga los datos dinámicos de especialistas y recepcionistas en el panel administrativo, además de los KPIs reales (aunque por ahora con datos de prueba hasta que conectemos con los modelos reales).
+    // Añadí este método. Carga los datos dinámicos de especialistas y recepcionistas en el panel administrativo, además de los KPIs reales.
     public function dashboard()
     {
         // Traemos los usuarios reales de la base de datos filtrados por su respectivo rol
@@ -30,8 +29,7 @@ class AdminController extends Controller
 
         $recepcionistas = User::where('rol', 'recepcion')->get();
 
-        //Variables dinámicas para los KPIs del Dashboard (reemplazan los datos de prueba estáticos) 
-        // NOTA: podemos sustituir estos ceros por conteos de los modelos reales en el futuro (ej. Cita::count()) para mostrar datos reales en el dashboard. OJO ANYEL Y WLADIMIR, LEAN ESTO POR FAVOR, ES IMPORTANTE PARA QUE EL DASHBOARD NO SE VEA VACÍO Y LOS BOTONES DE ADMINISTRACIÓN NO SE VEAN SIN SENTIDO.
+        //Variables dinámicas para los KPIs del Dashboard
         $totalCitas = 0;
         $ingresosEstimados = 0.00;
 
@@ -39,61 +37,42 @@ class AdminController extends Controller
         return view('admin.dashboard', compact('trabajadores', 'recepcionistas', 'totalCitas', 'ingresosEstimados'));
     }
 
+    // Método para crear un nuevo trabajador (especialista) con validación personalizada.
     public function CreateTrabajador(CreateTrabajadorRequest $request)
     {
         $validatedData = $request->validated();
 
-        // NOTA TÉCNICA: Si el Form Request falla diciendo que falta "contraseña", 
-        // asegúrate de que en 'CreateTrabajadorRequest' la regla use 'password' y no 'contraseña'.
         $trabajador = User::create([
             'nombre'     => $validatedData['nombre'] ?? $validatedData['name'],
             'correo'     => $validatedData['email'] ?? $validatedData['correo'],
             'telefono'   => $validatedData['telefono'] ?? null,
-            // Quitamos el Hash::make porque Anyel ya lo configuró directo en el modelo
             'contraseña' => $validatedData['password'] ?? $validatedData['contraseña'],
-            // 'descripcion' => $request->descripcion, // Agregado para guardar la descripción del especialista NO BORRAR POR FAVOR, ES IMPORTANTE PARA QUE SE GUARDE LA DESCRIPCIÓN EN LA BASE DE DATOS Y SE PUEDA MOSTRAR EN EL CATÁLOGO.
-            'rol'        => 'trabajador' // CAMBIO: Usamos 'trabajador' porque es lo único que la BD acepta actualmente
+            'descripcion' => $request->descripcion, // Importante para la descripción del especialista.
+            'rol'        => 'trabajador'
         ]);
 
-        // Verificamos si el formulario envió datos en el campo "especialidades"
         if ($request->filled('especialidades')) {
-            // Separamos el texto que viene junto (ej: "Limpieza, Masaje") por las comas
             $listaEspecialidades = explode(',', $request->especialidades);
-
             foreach ($listaEspecialidades as $nombreEspecialidad) {
-                // Limpiamos espacios en blanco al principio o al final
                 $nombreLimpio = trim($nombreEspecialidad);
-
                 if (!empty($nombreLimpio)) {
-                    // Buscamos si la especialidad ya existe en la tabla 'especialidades'
                     $especialidad = DB::table('especialidades')->where('nombre_especialidad', $nombreLimpio)->first();
+                    $especialidadId = $especialidad ? $especialidad->id : DB::table('especialidades')->insertGetId(['nombre_especialidad' => $nombreLimpio]);
 
-                    if (!$especialidad) {
-                        // Si NO existe, la guardamos nueva y obtenemos su ID recién creado
-                        $especialidadId = DB::table('especialidades')->insertGetId([
-                            'nombre_especialidad' => $nombreLimpio
-                        ]);
-                    } else {
-                        // Si YA existe, simplemente agarramos el ID que ya tiene
-                        $especialidadId = $especialidad->id;
-                    }
-
-                    // Guardamos la conexión Terapeuta-Especialidad en la tabla pivote
                     DB::table('trabajador_especialidad')->insert([
-                        'usuario_id'         => $trabajador->id, // El ID del terapeuta que acabamos de crear arriba
-                        'especialidad_id' => $especialidadId  // El ID de la especialidad (nueva o vieja)
+                        'usuario_id'         => $trabajador->id,
+                        'especialidad_id' => $especialidadId
                     ]);
                 }
-                $terapeutas = User::where('rol', 'trabajador')->get();
             }
         }
 
         return redirect()->route('admin.dashboard')->with('success', 'Especialista registrado exitosamente.');
     }
 
+    // Método para crear un nuevo recepcionista con validación personalizada.
     public function CreateRecepcionista(Request $request)
     {
-        // AJUSTE DE VALIDACIÓN: Corregido para que valide directo en la tabla 'users' y columna 'correo'
         $validatedData = $request->validate([
             'nombre'   => 'required|string|max:255',
             'email'    => 'required|email|unique:usuarios,correo',
@@ -101,13 +80,12 @@ class AdminController extends Controller
             'password' => 'required|min:8',
         ]);
 
-        // Guardamos en la base de datos mapeando los campos del formulario con las columnas correspondientes
-        $recepcionista = User::create([
+        User::create([
             'nombre'     => $validatedData['nombre'],
             'correo'     => $validatedData['email'],
             'telefono'   => $validatedData['telefono'],
-            'contraseña' => $validatedData['password'], // Se envía como password y el modelo lo procesa
-            'rol'        => 'recepcion' // Asignación automática del rol
+            'contraseña' => $validatedData['password'],
+            'rol'        => 'recepcion'
         ]);
 
         return redirect()->route('admin.dashboard')->with('success', 'Recepcionista registrado exitosamente.');
@@ -117,5 +95,84 @@ class AdminController extends Controller
     public function servicios()
     {
         return view('admin.servicios');
+    }
+
+    // ELIMINAR USUARIO.
+    public function destroyUsuario($id)
+    {
+        User::findOrFail($id)->delete();
+        return back()->with('success', 'Usuario eliminado exitosamente.');
+    }
+
+    // ACTUALIZAR ESPECIALISTA.
+    public function updateTrabajador(Request $request, $id)
+    {
+        $trabajador = User::findOrFail($id);
+
+        $validatedData = $request->validate([
+            'nombre'      => 'required|string|max:255',
+            'email'       => 'required|email|unique:usuarios,correo,' . $id,
+            'telefono'    => 'required|string',
+            'descripcion' => 'nullable|string',
+        ]);
+
+        // 1. Actualizamos los datos básicos en la tabla de usuarios
+        $trabajador->update([
+            'nombre'      => $validatedData['nombre'],
+            'correo'      => $validatedData['email'],
+            'telefono'    => $validatedData['telefono'],
+            'descripcion' => $validatedData['descripcion'],
+        ]);
+
+        // 2. ACTUALIZACIÓN DE ESPECIALIDADES
+        if ($request->has('especialidades')) {
+            // Primero, borramos todas las relaciones anteriores de este trabajador en la tabla pivote
+            DB::table('trabajador_especialidad')->where('usuario_id', $trabajador->id)->delete();
+
+            // Segundo, si enviaron especialidades nuevas, las registramos
+            if ($request->filled('especialidades')) {
+                $listaEspecialidades = explode(',', $request->especialidades);
+                
+                foreach ($listaEspecialidades as $nombreEspecialidad) {
+                    $nombreLimpio = trim($nombreEspecialidad);
+                    
+                    if (!empty($nombreLimpio)) {
+                        // Buscamos si la especialidad ya existe
+                        $especialidad = DB::table('especialidades')->where('nombre_especialidad', $nombreLimpio)->first();
+                        
+                        // Si existe, tomamos su ID. Si no, la creamos y obtenemos el nuevo ID.
+                        $especialidadId = $especialidad ? $especialidad->id : DB::table('especialidades')->insertGetId(['nombre_especialidad' => $nombreLimpio]);
+                        
+                        // Insertamos la nueva relación en la tabla pivote
+                        DB::table('trabajador_especialidad')->insert([
+                            'usuario_id'      => $trabajador->id,
+                            'especialidad_id' => $especialidadId
+                        ]);
+                    }
+                }
+            }
+        }
+
+        return back()->with('success', 'Especialista actualizado con éxito.');
+    }
+
+    // ACTUALIZAR RECEPCIONISTA.
+    public function updateRecepcionista(Request $request, $id)
+    {
+        $recepcionista = User::findOrFail($id);
+
+        $validatedData = $request->validate([
+            'nombre'   => 'required|string|max:255',
+            'email'    => 'required|email|unique:usuarios,correo,' . $id,
+            'telefono' => 'required|string',
+        ]);
+
+        $recepcionista->update([
+            'nombre'   => $validatedData['nombre'],
+            'correo'   => $validatedData['email'],
+            'telefono' => $validatedData['telefono'],
+        ]);
+
+        return redirect()->route('admin.dashboard')->with('success', 'Recepcionista actualizado con éxito.');
     }
 }

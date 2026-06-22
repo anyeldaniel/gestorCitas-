@@ -12,7 +12,9 @@
                         'resources/js/servicios.js', 
                         'resources/js/agenda.js', //acá añado la ruta del nuevo archivo js para el módulo de agenda
                         'resources/css/terapeutas.css', // Acá añado la ruta del nuevo archivo css para el módulo de terapeutas
-                        'resources/js/terapeutas.js' //Mi nuevo archivo js para el módulo de terapeutas
+                        'resources/js/terapeutas.js', //Mi nuevo archivo js para el módulo de terapeutas
+                        'resources/js/catalogo.js', //añado el js para el catálogo para que sea formulario dinámico
+                        'resources/css/modal.css' //añado los estilos para el catlago y el formulario de servicios
                     ],
                 refresh: true,
             }),
