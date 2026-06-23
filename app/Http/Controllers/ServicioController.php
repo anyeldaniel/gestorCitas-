@@ -54,7 +54,7 @@ class ServicioController extends Controller
             'duracion_minutos' => $request->duracion_minutos,
             'imagen' => $rutaImagen, // Guardamos la ruta, no la imagen como tal.
         ]);
-        
+
 
         // Redireccionar.
         // Devolvemos al usuario a la página anterior con un mensajito de que todo salió bien.
@@ -64,6 +64,7 @@ class ServicioController extends Controller
     // Esta función recibe los datos editados y los actualiza en la base de datos.
     public function update(Request $request, $id)
     {
+
         // Buscamos el servicio que queremos editar. Si no existe, da error 404.
         $servicio = Servicio::findOrFail($id);
 
@@ -78,7 +79,7 @@ class ServicioController extends Controller
 
         // Manejar la Imagen.
         // Por defecto, conservamos la imagen que ya tenía guardada en la base de datos.
-        $rutaImagen = $servicio->imagen; 
+        $rutaImagen = $servicio->imagen;
 
         if ($request->hasFile('imagen')) {
             // Si el admin subió una NUEVA imagen, la guardamos y actualizamos la variable.
@@ -90,11 +91,12 @@ class ServicioController extends Controller
             'nombre_servicio' => $request->nombre_servicio,
             'descripcion' => $request->descripcion,
             'precio' => $request->precio,
+            // Comentado por ahora --- 'porcentaje_agendado' => $request->porcentaje_agendado,
             'duracion_minutos' => $request->duracion_minutos,
-            'imagen' => $rutaImagen, 
+            'imagen' => $rutaImagen,
         ]);
 
-        // 5. Redireccionamos con mensaje de éxito.
+        // Redireccionamos con mensaje de éxito.
         return redirect()->back()->with('success', '¡Tratamiento actualizado exitosamente!');
     }
 
@@ -102,7 +104,7 @@ class ServicioController extends Controller
     public function destroy($id)
     {
         $servicio = Servicio::findOrFail($id);
-        
+
         // Borramos la foto física del servidor si existe
         if ($servicio->imagen) {
             Storage::disk('public')->delete($servicio->imagen);

@@ -71,6 +71,9 @@ Route::middleware(['auth'])->group(function () {
     // RECUPERADA: Vista para mostrar y gestionar terapeutas desde el módulo de administración, pero accesible para todos los roles (con botones de acción visibles solo para admin).
     Route::get('/terapeutas', [TerapeutaController::class, 'index'])->name('terapeutas.index');
 
+    // Ruta para actualizar el catalogo.    
+    Route::put('/catalogo/actualizar/{id}', [ServicioController::class, 'update'])->name('catalogo.update');
+
 
     // ==========================================
     //            RUTAS DEL CLIENTE
@@ -99,6 +102,8 @@ Route::middleware(['auth'])->group(function () {
 
         // Ruta para actualizar una recepcionista específica, apuntando al método updateRecepcionista del AdminController.
         Route::put('/recepcionista/{id}/actualizar', [AdminController::class, 'updateRecepcionista'])->name('admin.update-recepcionista');
+
+
 
         // Ruta para eliminar un usuario específico, apuntando al método destroyUsuario del AdminController.
         Route::delete('/usuario/{id}', [AdminController::class, 'destroyUsuario'])->name('admin.destroy-usuario');

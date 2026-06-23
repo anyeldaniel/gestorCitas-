@@ -66,7 +66,7 @@
             <footer class="terapeuta-acciones" style="display:flex; flex-direction:column; gap:0.4rem; padding:0.5rem;">
                 <button type="button" class="btn-zen" style="width:100%; background-color:#e2e8f0; color:#1e293b;" onclick="verTerapeutaDetalle({{ $terapeuta->id }})">Ver Terapeuta</button>
 
-                @if($userRole === 'admin')
+                @if(auth()->check() && auth()->user()->rol === 'admin')
                 <div style="display:flex; gap:0.25rem; width:100%;">
                     <button type="button" class="btn-terapeuta-editar" style="flex:1;" onclick="editarTerapeuta({{ $terapeuta->id }})">Editar Info</button>
                     <button type="button" class="btn-terapeuta-eliminar" style="flex:1;" onclick="eliminarTerapeuta({{ $terapeuta->id }})">Dar de Baja</button>

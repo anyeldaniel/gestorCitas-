@@ -9,10 +9,12 @@
         <form id="form-servicio"
             autocomplete="off"
             method="POST"
-            action="{{ route('servicios.guardar') }}"
+            action="" 
             class="form-cuerpo-scrollable"
             enctype="multipart/form-data">
             @csrf
+            {{-- Campo oculto para permitir que JS cambie el método a PUT cuando sea edición --}}
+            <input type="hidden" name="_method" value="POST" id="input-metodo">
 
             <fieldset class="campo-formulario-casilla bg-slate-50/40">
                 <legend class="legend-etiqueta-zen">1. Identidad Visual</legend>
@@ -111,7 +113,6 @@
     </article>
 </dialog>
 
-
 <dialog id="modal-ver-servicio" class="modal-contenedor-vista-lectura">
     <article class="modal-tarjeta-interna">
 
@@ -146,10 +147,12 @@
                     <span id="view-servicio-tiempo" class="badge-tiempo-duracion"></span>
                 </p>
 
-                <nav class="bloque-informacion-celda col-span-full border-t border-slate-200/60 pt-2">
+                
+                {{-- <nav class="bloque-informacion-celda col-span-full border-t border-slate-200/60 pt-2">
                     <span class="subtitulo-informacion mb-1.5">Especialistas Certificados:</span>
                     <section id="view-servicio-especialistas" class="flex flex-wrap gap-1.5"></section>
-                </nav>
+                </nav> --}}
+                
 
                 <p class="bloque-informacion-celda col-span-full border-t border-slate-200/60 pt-2">
                     <span class="subtitulo-informacion mb-1">Beneficios y Propiedades:</span>
@@ -163,7 +166,6 @@
         </section>
     </article>
 </dialog>
-
 
 <dialog id="modal-confirmacion-custom" class="modal-contenedor-alerta-critica">
     <article class="cuerpo-alerta-centrado">
