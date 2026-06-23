@@ -40,7 +40,7 @@
                 @endif
 
                 @if(auth()->user()->rol === 'recepcion' || auth()->user()->rol === 'admin')
-                    <a href="{{ url('/recepcion/pagos') }}" class="{{ Request::is('recepcion/pagos*') ? 'active' : '' }}">Verificar Pagos</a>
+                    <a href="{{ route('pago.verificar') }}">Verificar Pagos</a>
                 @endif
 
                 @if(auth()->user()->rol === 'cliente')
