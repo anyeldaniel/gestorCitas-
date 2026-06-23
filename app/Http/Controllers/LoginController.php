@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use App\Http\Requests\RegisterUserRequest;
 use App\Models\User;
+use App\Mail\CuentaCreada;
 
 class LoginController extends Controller
 {
@@ -25,6 +27,8 @@ class LoginController extends Controller
             'contraseña' => $validatedData['password'], // Se encripta en el modelo por el cast
             'rol' => 'cliente',
         ]);
+
+      Mail::to($usuario->correo)->send(new CuentaCreada($usuario));
 
         return redirect()->route('login.view')->with('success', 'Registro exitoso. Ahora puedes iniciar sesión.');
     }
