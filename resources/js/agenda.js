@@ -1,50 +1,40 @@
-// Lógica del Módulo de Agenda Global
-
 document.addEventListener('DOMContentLoaded', () => {
-    //Capturar los elementos de control y las filas
-    const selectorTerapeuta = document.getElementById('filtro-terapeuta');
-    const inputFecha = document.getElementById('filtro-fecha');
-    const filasCitas = document.querySelectorAll('.fila-cita');
-
-    //Acá se hace el filtrado de terapeutas en tiempo real 
-    if (selectorTerapeuta) {
-        selectorTerapeuta.addEventListener('change', (e) => {
-            const seleccion = e.target.value.toLowerCase();
-            console.log(`Filtrando agenda para el terapeuta: ${seleccion}`);
-
-            filasCitas.forEach(fila => {
-                //Capturamos el valor del atributo data-terapeuta de cada fila
-                const terapeutaFila = fila.getAttribute('data-terapeuta').toLowerCase();
-
-                if (seleccion === 'todos') {
-                    fila.style.display = 'table-row'; // Muestra todas las filas
-                } else if (terapeutaFila.includes(seleccion)) {
-                    fila.style.display = 'table-row'; // Muestra las coincidencias
-                } else {
-                    fila.style.display = 'none';      // Oculta las demás
-                }
-            });
-        });
-    }
-
-    // Escuchador para el cambio de fecha (Pendiente para el backend con Fetch/AJAX)
-    if (inputFecha) {
-        inputFecha.addEventListener('change', (e) => {
-            console.log(`Cambiando fecha de control a: ${e.target.value}`);
-            // Aquí es donde en el futuro anyel o wladi harán el fetch() al servidor para traer nuevas citas
+    const formFiltros = document.getElementById('form-filtros-agenda');
+    
+    // 1. Filtrado dinámico (cuando cambias el terapeuta o la fecha)
+    if (formFiltros) {
+        formFiltros.addEventListener('change', () => {
+            const formData = new FormData(formFiltros);
+            const params = new URLSearchParams(formData).toString();
+            
+            // Redirige manteniendo los filtros activos en la URL
+            window.location.href = `${window.location.pathname}?${params}`;
         });
     }
 });
 
-//Exponer las funciones al objeto Window
-
-window.modificarCita = function(id) {
-    alert(`Abriendo ventana de reasignación para la cita #${id}`);
+/**
+ * Función global para abrir el modal de edición
+ * @param {number} citaId 
+ */
+window.abrirModalEditar = function(citaId) {
+    console.log("Abriendo modal para la cita:", citaId);
+    
+    // Aquí es donde harías una llamada fetch al backend:
+    // fetch(`/api/citas/${citaId}`)
+    //   .then(res => res.json())
+    //   .then(data => { /* Llenar campos del modal */ });
+    
+    const modal = document.getElementById('modal-agenda');
+    if (modal) {
+        modal.style.display = 'block';
+    }
 };
 
-window.cancelarCita = function(id) {
-    if (confirm(`¿Está seguro de que desea remover la cita #${id} de la agenda?`)) {
-        console.log(`Solicitud de cancelación enviada para ID: ${id}`);
-        // Aquí, anyel o wladi, meterán la lógica de eliminación asíncrona más adelante
-    }
+/**
+ * Función global para cerrar modales
+ */
+window.cerrarModal = function() {
+    const modal = document.getElementById('modal-agenda');
+    if (modal) modal.style.display = 'none';
 };

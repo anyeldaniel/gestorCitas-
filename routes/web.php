@@ -76,7 +76,7 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('admin')->group(function () {
         // Rutas de edición y eliminación correctamente ubicadas aquí
         Route::put('/trabajador/{id}', [AdminController::class, 'updateTrabajador'])->name('admin.update-trabajador');
-        Route::put('/recepcionista/{id}', [AdminController::class, 'updateRecepcionista'])->name('admin.update-recepcionista');
+        Route::put('/recepcionista/{id}/actualizar', [AdminController::class, 'updateRecepcionista'])->name('admin.update-recepcionista');
         Route::delete('/usuario/{id}', [AdminController::class, 'destroyUsuario'])->name('admin.destroy-usuario');
 
         // Cambio de Route::view a Route::get apuntando al controlador 
@@ -96,14 +96,15 @@ Route::middleware(['auth'])->group(function () {
         });
     });
 
-    // ==========================================
+    /* ==========================================
     // 4. MÓDULO RECEPCIÓN (Prefijo 'recepcion')
     // ==========================================
     Route::prefix('recepcion')->group(function () {
         Route::get('/agenda', [RecepcionController::class, 'agenda'])->name('recepcion.agenda');
         Route::post('/cita/{id}/actualizar', [AgendaController::class, 'updateStatus'])->name('cita.update');
         Route::get('/pagos', [PagoController::class, 'index'])->name('pago.verificar');
-    });
+        LO COMENTO PORQUE CREO QUE VOY A DESCARTARLO, DE MOMENTO, ASÍ QUEDA
+    });*/
 
     // ==========================================
     // 5. MÓDULO ESPECIALISTAS / TRABAJADORES
@@ -118,4 +119,10 @@ Route::middleware(['auth'])->group(function () {
     // 6. OTROS MÓDULOS DE CONTROL
     // ==========================================
     Route::get('/sala-espera', [SalaEsperaController::class, 'index'])->name('sala.espera');
+    
+    // -----------------------------------------------------------------
+        // MÓDULO DE VERIFICACIÓN DE PAGOS MÓVILES (FRONTEND - EILYN)
+        // -----------------------------------------------------------------
+        // Apunta directamente a la nueva función creada en el controlador
+        Route::get('/recepcion/pagos', [PagoController::class, 'mostrarVistaAdmin'])->name('compartidas.pago.verificar');
 });

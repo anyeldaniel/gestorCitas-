@@ -1,0 +1,221 @@
+/* =========================================================================
+   ESTILOS PARA EL MÓDULO DE VERIFICACIÓN DE PAGOS (EILYN)
+   ========================================================================= */
+
+:root {
+    --primary-color: #2b4c7e;
+    --success-color: #2ec4b6;
+    --danger-color: #e71d36;
+    --text-dark: #2b2d42;
+    --bg-light: #f8f9fa;
+    --border-color: #e2e8f0;
+}
+
+.modulo-vista {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+}
+
+.encabezado-modulo h1 {
+    color: var(--primary-color);
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+/* El formulario ahora es el contenedor del filtro */
+.formulario-filtro {
+    background: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border: 1px solid var(--border-color);
+}
+
+.formulario-filtro input[type="date"] {
+    padding: 0.4rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    outline: none;
+}
+
+.btn-buscar {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+/* Tabla directa */
+.tabla-transacciones {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border-color);
+}
+
+.tabla-transacciones th {
+    background-color: var(--bg-light);
+    color: #4a5568;
+    font-weight: 600;
+    text-align: left;
+    padding: 1rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.tabla-transacciones td {
+    padding: 1rem;
+    color: var(--text-dark);
+    font-size: 0.92rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Píldora de estado */
+.estado-pendiente {
+    background-color: #fef3c7;
+    color: #d97706;
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* Botones de acción */
+.btn-autorizar {
+    background-color: var(--success-color);
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    margin-right: 0.5rem;
+}
+
+.btn-rechazar {
+    background-color: transparent;
+    color: var(--danger-color);
+    border: 1px solid var(--danger-color);
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+/* =========================================================================
+   ESTILOS DEL MODAL SEMÁNTICO (<dialog>)
+   ========================================================================= */
+
+.modal-pago {
+    border: none;
+    border-radius: 12px;
+    padding: 0;
+    width: 90%;
+    max-width: 450px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    background: white;
+}
+
+/* El fondo oscuro nativo del dialog */
+.modal-pago::backdrop {
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
+}
+
+.contenido-modal {
+    padding: 1.5rem;
+}
+
+.modal-header h2 {
+    color: var(--primary-color);
+    font-size: 1.3rem;
+    margin: 0 0 1rem 0;
+}
+
+.modal-body p {
+    color: var(--text-dark);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+/* Textarea estilizado para cuando se rechace */
+#motivo-rechazo {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    resize: none;
+    font-family: inherit;
+    outline: none;
+    margin-top: 0.5rem;
+}
+
+#motivo-rechazo:focus {
+    border-color: var(--danger-color);
+}
+
+/* Botones del Modal */
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.btn-cancelar {
+    background: #edf2f7;
+    color: #4a5568;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.btn-confirmar {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+/* Clase de utilidad para ocultar elementos */
+.hidden {
+    display: none;
+}
+/* Nuevos estados dinámicos post-acción */
+.estado-autorizado {
+    background-color: #d1fae5;
+    color: #065f46;
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.estado-rechazado {
+    background-color: #fee2e2;
+    color: #991b1b;
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
