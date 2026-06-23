@@ -278,12 +278,18 @@ window.verTerapeutaDetalle = function(id) {
         if(esp.trim() !== '') tagsDestino.innerHTML += `<span class="tag-especialidad">${esp.trim()}</span>`;
     });
 
-    // Validar si el rol es Admin (inyectar botones de control)
+    // Detectar rol desde el atributo del modal para asegurar persistencia
     const accionesAdmin = document.getElementById('view-acciones-admin');
-    accionesAdmin.innerHTML = `
-        <button type="button" class="btn-zen" style="background:white; border:1px solid #cbd5e1; color:#475569;" onclick="document.getElementById('modal-ver-terapeuta').close(); editarTerapeuta(${id});">Editar</button>
-        <button type="button" class="btn-zen btn-baja" onclick="document.getElementById('modal-ver-terapeuta').close(); eliminarTerapeuta(${id});">Dar de Baja</button>
-    `;
+    const userRole = modal.getAttribute('data-role');
+    
+    if (userRole === 'admin') {
+        accionesAdmin.innerHTML = `
+            <button type="button" class="btn-zen" style="background:white; border:1px solid #cbd5e1; color:#475569;" onclick="document.getElementById('modal-ver-terapeuta').close(); editarTerapeuta(${id});">Editar</button>
+            <button type="button" class="btn-zen btn-baja" onclick="document.getElementById('modal-ver-terapeuta').close(); eliminarTerapeuta(${id});">Dar de Baja</button>
+        `;
+    } else {
+        accionesAdmin.innerHTML = '';
+    }
 
     modal.showModal();
 }
@@ -373,21 +379,17 @@ window.validarContrasenas = function() {
 
 // Función para sincronizar las especialidades dinámicas con el input oculto antes de enviar el formulario.
 window.sincronizarEspecialidades = function() {
-    // Buscamos los inputs dinámicos que creó tu compañero
     const inputsEsp = document.querySelectorAll(".input-especialidad-item");
     const listaEspecialidades = [];
     
-    // Extraemos el valor de cada uno
     inputsEsp.forEach(input => {
         if(input.value.trim() !== "") {
             listaEspecialidades.push(input.value.trim());
         }
     });
     
-    // Lo metemos en tu input oculto
     const inputOculto = document.getElementById("especialidades_hidden");
     if(inputOculto) {
         inputOculto.value = listaEspecialidades.join(",");
-        console.log("Especialidades sincronizadas:", inputOculto.value);
     }
 };

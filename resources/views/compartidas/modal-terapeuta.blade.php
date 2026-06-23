@@ -87,7 +87,7 @@
     </form>
 </dialog>
 
-<dialog id="modal-ver-terapeuta" class="modal-zen">
+<dialog id="modal-ver-terapeuta" class="modal-zen" data-role="{{ auth()->check() ? auth()->user()->rol : 'guest' }}">
     <header class="modal-header">
         <h2>Información Detallada del Terapeuta</h2>
         <button type="button" class="btn-cerrar-modal" onclick="document.getElementById('modal-ver-terapeuta').close()">&times;</button>

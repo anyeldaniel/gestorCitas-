@@ -14,7 +14,9 @@ class MoverDescripcionDeEspecialidadesAUsuarios extends Migration
         // se modifica la tabla de especialidades
         Schema::table('especialidades', function (Blueprint $table) {
             // se elimina la columna sin tocar nada de los datos
-            $table->dropColumn('descripcion'); 
+           if (Schema::hasColumn('especialidades', 'descripcion')) {
+            $table->dropColumn('descripcion');
+           }
         });
 
         // se modifica la tabla usuarios
@@ -23,7 +25,9 @@ class MoverDescripcionDeEspecialidadesAUsuarios extends Migration
             // se pone 'nullable()' porque los usuarios antiguos (clientes/admins) 
             // no tienen descripción y así la base de datos no da error por dejarla vacía
             // 'after('rol')' la acomoda visualmente al lado del campo rol en phpMyAdmin
-            $table->text('descripcion')->nullable()->after('rol'); 
+           if (!Schema::hasColumn('usuarios', 'descripcion')) {
+            $table->text('descripcion')->nullable()->after('rol');
+        }
         });
     }
 
