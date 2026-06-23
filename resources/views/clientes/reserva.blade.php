@@ -87,4 +87,6 @@
 </section>
 
 <script src="{{ asset('js/reserva-spa.js') }}"></script>
+{{-- Inclusión del modal de pago dinámico al final de la vista --}}
+    @include('clientes.modal-pago')
 @endsection

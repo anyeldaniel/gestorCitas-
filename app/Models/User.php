@@ -57,4 +57,17 @@ class User extends Authenticatable
     {
         return $this->contraseña; // Le indicamos a Laravel que tu columna tiene la "ñ"
     }
+
+    /**
+     * Get the e-mail address where password reset links are sent.
+     */
+    public function getEmailForPasswordReset()
+    {
+        return $this->correo;
+    }
+
+    public function routeNotificationForMail($notification)
+    {
+        return $this->correo;
+    }
 }

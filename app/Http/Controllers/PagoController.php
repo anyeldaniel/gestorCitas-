@@ -12,4 +12,9 @@ class PagoController extends Controller
             'mensaje' => 'El backend de Verificar Pagos responde correctamente'
         ]);
     }
+      // Creamos esta función separada para renderizar tu HTML sin chocar con el JSON de arriba.
+    public function mostrarVistaAdmin()
+    {
+        return view('compartidas.verificar-pago');
+    }
 }

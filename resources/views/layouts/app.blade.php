@@ -2,9 +2,15 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}"> 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'The Beauty Room')</title>
-    @vite(['resources/css/app1.css', 'resources/js/layout.js'])
+    
+    {{-- Vite carga los estilos globales y tus archivos --}}
+    @vite(['resources/css/app.css',  'resources/css/agenda.css', 'resources/css/terapeutas.css', 'resources/js/app.js', 'resources/js/layout.js', 'resources/js/terapeutas.js', 'resources/js/dashboard.js'])
+    
+    {{-- AGREGADO: Stack para que tus vistas hijas inyecten sus estilos --}}
+    @stack('styles')
 </head>
 <body>
     @auth
@@ -93,7 +99,6 @@
                     Un espacio sagrado donde la belleza y el bienestar se encuentran. Tu equilibrio, nuestra misión.
                 </p>
             </section>
-
             <section>
                 <h3 class="footer-section-title">SERVICIOS</h3>
                 <ul class="footer-link-list">
@@ -104,24 +109,31 @@
                     <li>Piedras Volcánicas</li>
                 </ul>
             </section>
-
             <section>
                 <h3 class="footer-section-title">CONTACTO</h3>
                 <ul class="footer-link-list space-y-3">
                     <li class="flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4"></i> La Guaira - Catia La Mar</li>
                     <li class="flex items-center gap-2"><i data-lucide="phone" class="w-4 h-4"></i> +58 414-2578005</li>
                     <li class="flex items-center gap-2"><i data-lucide="mail" class="w-4 h-4"></i> hola@thebeautyroom.mx</li>
-                    <li class="pt-2 text-xs opacity-60">Lunes – Sábado: 9:00 - 20:00<br>Domingo: 10:00 - 17:00</li>
                 </ul>
             </section>
         </div>
-
         <div class="footer-bottom-bar">
             &copy; {{ date('Y') }} The Beauty Room Spa. Potenciado por Sistema de Gestión Operativa SyncroStyle.
         </div>
     </footer>
 
+    {{-- Inicialización de Iconos --}}
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script>lucide.createIcons();</script>
+    <script>
+        lucide.createIcons();
+        // Asegúrate de que aquí esté tu lógica de menú móvil si la tenías escrita directo en el layout
+        document.getElementById('hamburger-btn')?.addEventListener('click', () => {
+            document.getElementById('mobile-menu').classList.add('active');
+        });
+    </script>
+    
+    {{-- Stack para scripts específicos de cada vista --}}
+    @stack('scripts')
 </body>
 </html>

@@ -32,6 +32,17 @@
                     <div class="form-row">
                         <label for="email">CORREO ELECTRÓNICO</label>
                         <input id="email" name="email" type="email" placeholder="tu@correo.com" required>
+                          @error('email')
+                            <div style="color: red; font-size: 0.9em; margin-top: 5px;">
+                             {{ $message }}
+                                </div>
+                               @enderror
+                               
+                               @if (session('status'))
+                           <div style="color: green; font-weight: bold; margin-bottom: 15px;">
+                             {{ session('status') }}
+                            </div>
+                            @endif
                     </div>
 
                     <button type="submit" class="btn-primary">ENVIAR ENLACE</button>

@@ -1,0 +1,68 @@
+/* Importación de fuentes */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap');
+
+:root {
+    --bg-page: #fdfaf6;
+    --primary-brown: #8b5e3c;
+    --text-main: #2d2a26;
+    --border-color: #e0dcd5;
+    --font-heading: 'Cormorant Garamond', serif;
+    --font-body: 'Instrument Sans', sans-serif;
+
+    /* Colores de estados */
+    --color-confirmada: #00796b;
+    --color-pendiente: #8b5e3c;
+    --color-en-curso: #f57c00;
+    --color-completada: #5e35b1;
+    --color-cancelada: #d32f2f;
+}
+
+body { font-family: var(--font-body); color: var(--text-main); }
+h1, h2, h3, .titulo-agenda { font-family: var(--font-heading) !important; }
+
+.modulo-agenda { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+
+/* Cabecera */
+.agenda-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; }
+.titulo-agenda { font-size: 2.5rem; margin: 0; }
+
+/* Stats - Ajuste principal */
+.stats-container { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem; margin-bottom: 2rem; }
+.stat-card { background: white; padding: 1rem 0.5rem; border: 1px solid var(--border-color); border-radius: 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.stat-card span { display: block; font-size: 1.5rem; font-weight: 800; }
+.stat-card small { font-weight: 600; text-transform: uppercase; font-size: 0.65rem; }
+
+/* Filtros */
+.agenda-filtros { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 1rem; background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.08); align-items: end; }
+.filter-group { display: flex; flex-direction: column; gap: 0.5rem; }
+.filter-group label { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; }
+.filter-group input, .filter-group select { padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 8px; background: #fcfaf8; font-family: var(--font-body); font-size: 0.9rem; }
+
+/* Tabla */
+.tabla-responsive-wrapper { overflow-x: auto; margin-bottom: 2rem; }
+.tabla-agenda { width: 100%; border-collapse: separate; border-spacing: 0 10px; min-width: 600px; }
+.tabla-agenda thead { background: var(--primary-brown); color: white; }
+.tabla-agenda th { padding: 1rem; text-align: left; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; }
+.tabla-agenda tbody tr { background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+.tabla-agenda td { padding: 1rem; border-top: 1px solid #eee; border-bottom: 1px solid #eee; }
+
+/* Estados */
+.badge-estado { padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: inline-block; }
+.estado-confirmada { background: #e0f2f1; color: var(--color-confirmada); }
+.estado-pendiente { background: #efebe9; color: var(--color-pendiente); }
+.estado-en-curso { background: #fff3e0; color: var(--color-en-curso); }
+.estado-completada { background: #ede7f6; color: var(--color-completada); }
+.estado-cancelada { background: #ffebee; color: var(--color-cancelada); }
+
+/* Responsive optimizado */
+@media (max-width: 768px) { 
+    .stats-container { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; } /* Más columnas en tablets */
+    .agenda-filtros { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) { 
+    .stats-container { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; } /* 2 columnas en celulares */
+    .stat-card { padding: 0.75rem 0.2rem; }
+    .stat-card span { font-size: 1.2rem; }
+    .stat-card small { font-size: 0.6rem; }
+}

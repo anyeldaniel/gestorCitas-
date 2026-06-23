@@ -1,378 +1,395 @@
-/**
- * ESTILOS: Módulo Terapeutas & Componentes Globales de Interfaz 
- */
+/* --- Importación unificada de fuentes --- */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@300;400;600;700&display=swap');
 
-.modulo-terapeutas, .dashboard-admin {
-    padding: 2rem;
+/* --- Variables de Marca --- */
+:root {
+    --bg-crema: #fbf9f5;
+    --color-marron-oscuro: #4a3728;
+    --color-marron-claro: #634832;
+    --color-borde: #e5dcd3;
+    --color-texto: #3d2b1f;
+    --blanco: #ffffff;
+    --error-bg: #fff1f2;
+    --error-text: #e11d48;
+    --gris-texto: #6b7280;
+}
+
+body {
+    background-color: var(--bg-crema);
+    color: var(--color-texto);
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+}
+
+.dashboard-admin {
     max-width: 1200px;
     margin: 0 auto;
-    font-family: 'Segoe UI', system-ui, sans-serif;
+    padding: 2rem;
 }
 
-/* Encabezados */
-.terapeutas-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 2px solid #f1f5f9;
-    padding-bottom: 1rem;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-    gap: 1rem;
+/* --- Títulos del Header (Ajustados a estilo Login) --- */
+.encabezado-modulo h1 { 
+    font-family: 'Cormorant Garamond', serif; /* Misma fuente que el login */
+    font-size: 2.5rem; 
+    color: #2d2a26; /* Color exacto del login */
+    font-weight: 700;
+    margin-bottom: 0.5rem;
 }
 
-.terapeutas-header h1 {
-    font-size: 1.75rem;
-    color: #1e293b;
-    margin: 0;
+.encabezado-modulo p {
+    font-size: 1.1rem;
+    color: var(--gris-texto);
+    font-weight: 400;
 }
 
-/* Grid y Tarjetas */
-.grid-terapeutas, .grid-personal {
+/* --- Grid Superior --- */
+.tarjetas-resumen-admin {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 1.5rem;
+    margin-bottom: 2.5rem;
 }
 
-.tarjeta-terapeuta, .tarjeta-admision {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.75rem;
+.tarjeta-kpi {
+    background: var(--blanco);
     padding: 1.5rem;
+    border-radius: 16px;
+    border: 1px solid var(--color-borde);
     display: flex;
     flex-direction: column;
-    position: relative;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
-/* BOTONES CON AZUL ORIGINAL DE MARCA */
-.btn-terapeuta-agregar, .btn-primario {
-    background: #00a6fb;
-    color: #ffffff;
-    border: none;
-    padding: 0.65rem 1.2rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: background 0.2s ease;
+.tarjeta-kpi h3 { 
+    font-size: 0.75rem; 
+    color: var(--gris-texto); 
+    text-transform: uppercase; 
+    letter-spacing: 0.05rem;
+    margin: 0 0 0.5rem 0; 
 }
 
-.btn-terapeuta-agregar:hover, .btn-primario:hover {
-    background: #0284c7;
+.tarjeta-kpi .valor { 
+    font-size: 1.75rem; 
+    font-weight: 700; 
+    color: var(--color-texto); 
 }
 
-.btn-secundario {
-    background: #cbd5e1;
-    color: #334155;
-    border: none;
-    padding: 0.65rem 1.2rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.btn-secundario:hover {
-    background: #94a3b8;
-}
-
-.btn-baja, .btn-terapeuta-eliminar {
-    background: #ef4444;
-    color: white;
-    border: none;
-    padding: 0.4rem 0.8rem;
-    border-radius: 0.375rem;
-    cursor: pointer;
-}
-
-/* CENTRADO PERFECTO DEL MODAL DIALOG NATURALEZA RESPONSIVA */
-.modal-zen {
-    border: none;
-    border-radius: 0.75rem;
-    padding: 0;
-    width: 90%;
-    max-width: 520px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    
-    /* Centrado absoluto en viewport sin importar scroll */
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    margin: 0;
-}
-
-.modal-zen::backdrop {
-    background: rgba(15, 23, 42, 0.4);
-    backdrop-filter: blur(4px);
-}
-
-.modal-header {
-    background: #f8fafc;
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid #e2e8f0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.modal-header h2 {
-    font-size: 1.2rem;
-    color: #1e293b;
-    margin: 0;
-}
-
-.btn-cerrar-modal {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: #94a3b8;
-    cursor: pointer;
-}
-
-.modal-form {
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-}
-
-/* Campos de Formulario */
-.campo-formulario {
-    border: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-}
-
-.campo-formulario label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #475569;
-}
-
-.campo-formulario input, .campo-formulario textarea {
-    padding: 0.65rem 0.75rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 0.375rem;
-    font-size: 0.95rem;
-    color: #0f172a;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-/* INTERFAZ DEL ICONO SVG EN EL INPUT */
-.grupo-seguridad-modal {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-}
-
-.input-icono-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-.btn-alternar-password {
-    position: absolute;
-    right: 0.75rem;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #64748b;
-    transition: color 0.15s ease;
-}
-
-.btn-alternar-password:hover {
-    color: #0f172a;
-}
-
-.svg-ojo {
-    width: 1.25rem;
-    height: 1.25rem;
-    pointer-events: none; /* Evita interferencia con clics */
-}
-
-@media (max-width: 600px) {
-    .grupo-seguridad-modal {
-        grid-template-columns: 1fr;
-    }
-}
-
-
-/* ==========================================================================
-   MÓDULO: Extensiones UI - Personal, Recepcionistas y Alertas Personalizadas 
-   ========================================================================== */
-
-/* Contenedor de Especialidades Dinámicas */
-.contenedor-especialidades-dinamicas {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.fila-especialidad {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-}
-
-.fila-especialidad input {
-    flex: 1;
-}
-
-.btn-añadir-especialidad {
-    background-color: var(--color-verde-zen, #a3b899);
-    color: white;
-    border: none;
-    border-radius: 0.375rem;
-    padding: 0.5rem 0.75rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.btn-añadir-especialidad:hover {
-    background-color: var(--color-verde-hover, #8ba180);
-}
-
-.btn-remover-especialidad {
-    background-color: var(--color-error, #c0392b);
-    color: white;
-    border: none;
-    border-radius: 0.375rem;
-    padding: 0.5rem 0.75rem;
-    cursor: pointer;
-}
-
-/* Tags de especialidades en tarjetas */
-.contenedor-tags-especialidades {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.25rem;
-    margin-top: 0.35rem;
-}
-
-.tag-especialidad {
-    background-color: #e2e8f0;
-    color: #475569;
-    font-size: 0.75rem;
-    padding: 0.15rem 0.5rem;
-    border-radius: 0.25rem;
-    font-weight: 500;
-}
-
-/* Manejo de Fotos */
-.campo-foto-previsualizacion {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-top: 0.5rem;
-}
-
-.avatar-preview {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    object-fit: cover;
-    background-color: #cbd5e1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    color: #475569;
-    border: 2px solid var(--color-borde-suave, #e2e8f0);
-}
-
-/* Distribución del Dashboard con Recepcionistas */
+/* --- Listas Doble Columna --- */
 .contenedor-doble-columnas {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-    margin-top: 1.5rem;
+    gap: 2rem;
 }
 
-@media (max-width: 992px) {
-    .contenedor-doble-columnas {
-        grid-template-columns: 1fr;
-    }
+.lista-admisiones {
+    background: var(--blanco);
+    border: 1px solid var(--color-borde);
+    border-radius: 16px;
+    overflow: hidden;
 }
 
-/* Sección de Paginación */
-.paginador-ui {
+.encabezado-registro {
+    background-color: var(--color-marron-oscuro);
+    color: var(--blanco);
+    padding: 1rem 1.5rem;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
+}
+
+.encabezado-registro h3 { margin: 0; font-size: 1.1rem; font-weight: 600; }
+
+/* --- Tarjetas de Usuario (Filas) --- */
+.tarjeta-fila {
+    display: flex;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--color-borde);
     gap: 1rem;
-    margin-top: 1.25rem;
-    padding-top: 0.5rem;
 }
 
-.btn-paginacion {
-    background: white;
-    border: 1px solid #cbd5e1;
-    padding: 0.35rem 0.75rem;
-    font-size: 0.85rem;
-    border-radius: 0.375rem;
-    cursor: pointer;
+.avatar-iniciales {
+    width: 45px;
+    height: 45px;
+    background: #d6ccc2;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: var(--color-marron-oscuro);
+    flex-shrink: 0;
+}
+
+.info-usuario { flex-grow: 1; }
+.info-usuario h4 { margin: 0; font-size: 0.95rem; font-weight: 600; }
+.info-usuario p { margin: 0; font-size: 0.85rem; color: var(--gris-texto); }
+
+/* Etiquetas de Especialidades */
+.contenedor-badges { display: flex; gap: 0.5rem; margin-top: 4px; }
+.badge { 
+    font-size: 0.7rem; background: #f3f4f6; color: #4b5563; 
+    padding: 2px 8px; border-radius: 4px; border: 1px solid #e5e7eb;
+}
+
+/* --- Botones --- */
+.btn-agregar-general {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--blanco);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
     font-weight: 600;
-    color: #475569;
+    cursor: pointer;
 }
 
-.btn-paginacion:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+.btn-accion {
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    border: 1px solid var(--color-borde);
+    background: var(--blanco);
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
 }
 
-.info-paginacion {
-    font-size: 0.85rem;
-    color: var(--color-texto-claro, #7f8c8d);
+.btn-baja { 
+    background: var(--error-bg); 
+    color: var(--error-text); 
+    border: 1px solid #fecdd3; 
 }
 
-/* Alerta de Confirmación Customizada en el Centro */
-.modal-alerta-custom {
-    border: none;
-    border-radius: 0.5rem;
-    padding: 1.5rem;
-    max-width: 400px;
-    width: 90%;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+/* --- Paginación --- */
+.paginacion-lista {
+    padding: 1rem;
     text-align: center;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    margin: 0;
-    background: white;
+    font-size: 0.85rem;
+    color: var(--gris-texto);
+    border-top: 1px solid var(--color-borde);
 }
 
-.modal-alerta-custom::backdrop {
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(2px);
+/* --- MODAL ZEN --- */
+.modal-zen {
+    border: none;
+    border-radius: 16px;
+    padding: 0;
+    max-width: 450px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
 
-.alerta-contenido h3 {
-    margin-top: 0;
-    color: var(--color-texto-oscuro, #2c3e50);
+.modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.alerta-contenido p {
-    color: var(--color-texto-claro, #7f8c8d);
-    font-size: 0.95rem;
+.modal-form { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.2rem; }
+
+.campo-formulario label { 
+    font-size: 0.7rem; 
+    font-weight: 700; 
+    color: var(--gris-texto); 
+    text-transform: uppercase; 
+}
+
+.campo-formulario input, .campo-formulario textarea {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid var(--color-borde);
+    border-radius: 8px;
+    margin-top: 0.4rem;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+.fila-doble { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+.btn-guardar {
+    background-color: var(--color-marron-oscuro);
+    color: var(--blanco);
+    border: none;
+    padding: 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* --- RESPONSIVIDAD --- */
+@media (max-width: 768px) {
+    .contenedor-doble-columnas { grid-template-columns: 1fr; }
+    .tarjetas-resumen-admin { grid-template-columns: 1fr; }
+    .encabezado-modulo h1 { font-size: 2rem; }
+}
+
+@media (max-width: 480px) {
+    .fila-doble { grid-template-columns: 1fr; }
+}
+/* --- 1. CONFIGURACIÓN E IMPORTACIÓN --- */
+/* --- 1. CONFIGURACIÓN E IMPORTACIÓN --- */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+
+:root {
+    --color-fondo: #fcf9f4;
+    --color-blanco: #ffffff;
+    --color-texto: #4a4440;
+    --color-acento: #c5a992;
+    --color-borde: #efece8;
+    --color-error: #b91c1c;
+    --font-serif: 'Playfair Display', serif;
+    --font-sans: 'Inter', sans-serif;
+}
+
+/* --- 2. LAYOUT GENERAL --- */
+.modulo-terapeutas {
+    background-color: var(--color-fondo);
+    padding: 4rem 2rem;
+    text-align: center;
+}
+
+.terapeutas-header { margin-bottom: 3.5rem; }
+
+.terapeutas-header h1 {
+    font-family: var(--font-serif);
+    font-size: 3rem;
+    font-weight: 400;
+    color: var(--color-texto);
+    margin: 0 0 1rem 0;
+}
+
+.terapeutas-header p {
+    font-family: var(--font-sans);
+    color: #8c857e;
+    font-size: 1rem;
+}
+
+/* --- 3. GRID Y TARJETAS PREMIUM --- */
+.grid-terapeutas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 350px));
+    gap: 2.5rem;
+    justify-content: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.tarjeta-terapeuta {
+    background: var(--color-blanco);
+    border: 1px solid var(--color-borde);
+    border-radius: 1.5rem;
+    padding: 3rem 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+    transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.tarjeta-terapeuta:hover { transform: translateY(-8px); }
+
+/* --- 4. AVATARES Y ELEMENTOS --- */
+.avatar-preview, .foto-avatar-simulado {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    margin-bottom: 1.5rem;
+    border: 1px solid #e8e2dd;
+    object-fit: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fdfaf7;
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    color: var(--color-texto);
+}
+
+.tarjeta-terapeuta h2 {
+    font-family: var(--font-serif);
+    font-size: 1.6rem;
+    margin: 0 0 0.5rem 0;
+    color: var(--color-texto);
+    font-weight: 400;
+}
+
+.tag-especialidad {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    color: #a89f97;
+    text-transform: uppercase;
+    letter-spacing: 0.15rem;
+    margin-bottom: 1.5rem;
+    display: block;
+}
+
+.contenedor-estrellas {
+    color: var(--color-acento);
+    font-size: 0.9rem;
+    letter-spacing: 0.2rem;
     margin-bottom: 1.5rem;
 }
 
-.alerta-acciones {
+/* --- 5. BOTONES Y ACCIONES --- */
+.admin-controls { display: flex; gap: 0.8rem; margin-top: 1rem; }
+
+.btn-terapeuta-editar, .btn-terapeuta-eliminar {
+    padding: 0.5rem 1.2rem;
+    font-family: var(--font-sans);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1rem;
+    border-radius: 2rem;
+    cursor: pointer;
+    border: 1px solid var(--color-borde);
+    transition: all 0.3s;
+}
+
+.btn-terapeuta-editar { background: #ffffff; color: var(--color-texto); }
+.btn-terapeuta-editar:hover { background: var(--color-fondo); }
+.btn-terapeuta-eliminar { background: transparent; color: var(--color-error); border-color: #fee2e2; }
+.btn-terapeuta-eliminar:hover { background: #fff5f5; }
+
+.btn-zen {
+    background: var(--color-texto);
+    color: white;
+    padding: 0.8rem 2rem;
+    border-radius: 2rem;
+    border: none;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.1rem;
+    cursor: pointer;
+}
+
+/* --- 6. CENTRADO DE MODALES Y ALERTAS --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(74, 68, 64, 0.4);
     display: flex;
     justify-content: center;
-    gap: 0.75rem;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.modal-contenido {
+    background: var(--color-blanco);
+    padding: 3rem;
+    border-radius: 1.5rem;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    text-align: center;
+    font-family: var(--font-sans);
+}
+
+.modal-contenido h2 {
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    color: var(--color-texto);
+    margin-bottom: 1.5rem;
 }

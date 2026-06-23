@@ -37,7 +37,7 @@
                     <div class="form-row">
                         <div class="password-header">
                             <label for="password">CONTRASEÑA</label>
-                            <a href="#" class="forgot-pass">¿Olvidaste la contraseña?</a>
+                            <a href="{{ route('passwordRequest.view') }}" class="forgot-pass">¿Olvidaste la contraseña?</a>
                         </div>
                         <input id="password" name="password" type="password" placeholder="••••••••" required>
                     </div>

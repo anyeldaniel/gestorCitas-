@@ -1,16 +1,17 @@
 <?php
 
-use Illuminate\Support\Facades\Route; // Importamos los controladores necesarios para manejar las rutas de cada módulo.
-use App\Http\Controllers\LoginController; // Controlador para manejar la autenticación de usuarios (login, registro, logout).
-use App\Http\Controllers\AdminController; // Controlador para manejar las funciones administrativas, incluyendo la gestión de trabajadores, recepcionistas y el dashboard.
-use App\Http\Controllers\ReservaController;  // Controlador para manejar las reservas de citas por parte de los clientes, incluyendo la creación y visualización de reservas.
-use App\Http\Controllers\RecepcionController; // Controlador para manejar las funciones específicas del módulo de recepción, como la gestión de citas y pagos.
-use App\Http\Controllers\EspecialistaController; // Controlador para manejar las funciones específicas de los especialistas/trabajadores, como la visualización de su tablero operativo interno.
-use App\Http\Controllers\ServicioController; // Controlador para manejar la gestión de servicios de spa, incluyendo la creación y visualización de servicios disponibles.
-use App\Http\Controllers\AgendaController; // Controlador para manejar la visualización de la agenda/calendario global, accesible para todos los roles.
-use App\Http\Controllers\TerapeutaController; // Controlador para manejar la visualización y gestión de terapeutas desde el módulo de administración, pero accesible para todos los roles (con botones de acción visibles solo para admin).
-use App\Http\Controllers\SalaEsperaController; // Controlador para manejar la visualización de la sala de espera virtual, accesible para todos los roles.
-use App\Http\Controllers\PagoController; // Controlador para manejar la gestión de pagos, incluyendo la verificación de pagos por parte del personal de recepción.
+use Illuminate\Support\Facades\Route; // Importamos el controlador de Login para las rutas de autenticación.
+use App\Http\Controllers\LoginController; // Controlador para manejar el login y registro de usuarios.
+use App\Http\Controllers\PasswordController; // Controlador para manejar la recuperación de contraseña.
+use App\Http\Controllers\AdminController; // Corregí mi regada con la A mayúscula xd att: Andrés
+use App\Http\Controllers\ReservaController; ; //Añadí el controlador de reservas para enrutarlooo
+use App\Http\Controllers\RecepcionController; ; // Controlador para la recepción. 
+use App\Http\Controllers\EspecialistaController; ; // Controlador para el especialista (masajista/esteticista).
+use App\Http\Controllers\ServicioController; // Controlador para el módulo de servicios (tratamientos).
+use App\Http\Controllers\AgendaController; ; // Controlador para manejar la agenda de citas en la recepción.
+use App\Http\Controllers\TerapeutaController; ; // Controlador para manejar las funciones del terapeuta (masajista/esteticista).
+use App\Http\Controllers\SalaEsperaController; // Controlador para manejar la sala de espera (si es que se implementa esa funcionalidad).
+use App\Http\Controllers\PagoController; // Controlador para manejar la verificación de pagos (si es que se implementa esa funcionalidad).
 
 // --- ACCESO PÚBLICO Y AUTENTICACIÓN 
 // La raíz redirige o carga directamente el método index del Login para mantener la consistencia.
@@ -22,6 +23,23 @@ Route::view('/Registro', 'auth.Registro')->name('registro.view'); // Redirige a 
 Route::post('/login', [LoginController::class, 'login'])->name('login.post'); // Redirige al método de login para procesar la autenticación.
 Route::post('/registrado', [LoginController::class, 'RegistroController'])->name('registro.create'); // Redirige al método de registro para procesar la creación de un nuevo usuario.
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+// --- RUTAS DE RECUPERACIÓN DE CONTRASEÑA ---
+
+// 1. Mostrar el formulario para solicitar el correo (La vista que acabamos de crear)
+Route::view('/olvide-contrasena', 'auth.password.request')->name('passwordRequest.view');
+
+// 2. Procesar el envío del correo de recuperación
+Route::post('/olvide-contrasena', [PasswordController::class, 'VerifiCorreo'])->name('password.email');
+
+// 3. Vista para que el usuario ingrese la nueva contraseña (Recibe el token por URL)
+Route::get('/reset-password/{token}', function ($token) {
+    return view('auth.password.reset', ['token' => $token]);
+})->name('password.reset');
+
+// 4. Procesar el cambio de contraseña real
+Route::post('/reset-password', [LoginController::class, 'resetPassword'])->name('password.update');
+
 
 // --- RUTAS PROTEGIDAS (SOLO USUARIOS LOGUEADOS) ---
 Route::middleware(['auth'])->group(function () {
@@ -53,7 +71,7 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('admin')->group(function () {
         // Rutas de edición y eliminación correctamente ubicadas aquí
         Route::put('/trabajador/{id}', [AdminController::class, 'updateTrabajador'])->name('admin.update-trabajador');
-        Route::put('/recepcionista/{id}', [AdminController::class, 'updateRecepcionista'])->name('admin.update-recepcionista');
+        Route::put('/recepcionista/{id}/actualizar', [AdminController::class, 'updateRecepcionista'])->name('admin.update-recepcionista');
         Route::delete('/usuario/{id}', [AdminController::class, 'destroyUsuario'])->name('admin.destroy-usuario');
 
         // Cambio de Route::view a Route::get apuntando al controlador 
@@ -73,14 +91,15 @@ Route::middleware(['auth'])->group(function () {
         });
     });
 
-    // ==========================================
+    /* ==========================================
     // 4. MÓDULO RECEPCIÓN (Prefijo 'recepcion')
     // ==========================================
     Route::prefix('recepcion')->group(function () {
         Route::get('/agenda', [RecepcionController::class, 'agenda'])->name('recepcion.agenda');
         Route::post('/cita/{id}/actualizar', [AgendaController::class, 'updateStatus'])->name('cita.update');
         Route::get('/pagos', [PagoController::class, 'index'])->name('pago.verificar');
-    });
+        LO COMENTO PORQUE CREO QUE VOY A DESCARTARLO, DE MOMENTO, ASÍ QUEDA
+    });*/
 
     // ==========================================
     // 5. MÓDULO ESPECIALISTAS / TRABAJADORES
@@ -95,4 +114,10 @@ Route::middleware(['auth'])->group(function () {
     // 6. OTROS MÓDULOS DE CONTROL
     // ==========================================
     Route::get('/sala-espera', [SalaEsperaController::class, 'index'])->name('sala.espera');
+    
+    // -----------------------------------------------------------------
+        // MÓDULO DE VERIFICACIÓN DE PAGOS MÓVILES (FRONTEND - EILYN)
+        // -----------------------------------------------------------------
+        // Apunta directamente a la nueva función creada en el controlador
+        Route::get('/recepcion/pagos', [PagoController::class, 'mostrarVistaAdmin'])->name('compartidas.pago.verificar');
 });
