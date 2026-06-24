@@ -6,11 +6,36 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Http;
 
 class PasswordController extends Controller
 {
     public function VerifiCorreo(Request $request)
     {
+
+
+        // 1. Verificamos si el usuario olvidó marcar la casilla
+         if (!$request->input('g-recaptcha-response')) {
+         return back()
+        ->withErrors(['captcha' => 'Por favor, marca la casilla de "No soy un robot".'])
+        ->withInput();
+                }
+
+// 2. Enviamos el código secreto a Google para verificar que sea un humano real
+     $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+     'secret' => env('RECAPTCHA_SECRET_KEY'),
+     'response' => $request->input('g-recaptcha-response'),
+     'remoteip' => $request->ip(),
+                 ]);
+
+// 3. Si Google rechaza el código (es un bot o el tiempo expiró)
+          if (!$response->json('success')) {
+         return back()
+        ->withErrors(['captcha' => 'La validación del CAPTCHA falló. Intenta de nuevo.'])
+        ->withInput();
+                      }
+      
+
 
 
         $request->validate([ 

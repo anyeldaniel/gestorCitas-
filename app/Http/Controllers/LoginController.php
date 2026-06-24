@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Http\Requests\RegisterUserRequest;
 use App\Models\User;
 use App\Mail\CuentaCreada;
+use Illuminate\Support\Facades\Http;
 
 class LoginController extends Controller
 {
@@ -18,6 +19,29 @@ class LoginController extends Controller
 
     public function RegistroController(RegisterUserRequest $request)
     {
+
+            // 1. Verificamos si el usuario olvidó marcar la casilla
+         if (!$request->input('g-recaptcha-response')) {
+         return back()
+        ->withErrors(['captcha' => 'Por favor, marca la casilla de "No soy un robot".'])
+        ->withInput();
+                }
+
+// 2. Enviamos el código secreto a Google para verificar que sea un humano real
+     $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+     'secret' => env('RECAPTCHA_SECRET_KEY'),
+     'response' => $request->input('g-recaptcha-response'),
+     'remoteip' => $request->ip(),
+                 ]);
+
+// 3. Si Google rechaza el código (es un bot o el tiempo expiró)
+          if (!$response->json('success')) {
+         return back()
+        ->withErrors(['captcha' => 'La validación del CAPTCHA falló. Intenta de nuevo.'])
+        ->withInput();
+                      }
+
+
         $validatedData = $request->validated();
 
         $usuario = User::create([

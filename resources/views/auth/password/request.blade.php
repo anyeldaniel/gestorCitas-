@@ -9,6 +9,8 @@
 <script src="https://unpkg.com/lucide@latest"></script>
 <body class="login-container">
 
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
     <main class="split-layout">
         <section class="image-side">
             <div class="overlay">
@@ -44,6 +46,14 @@
                             </div>
                             @endif
                     </div>
+
+                    <div class="g-recaptcha mb-3" data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}"></div>
+
+                     @error('captcha')
+                       <div class="text-danger mt-1">{{ $message }}</div>
+                     @enderror
+
+
 
                     <button type="submit" class="btn-primary">ENVIAR ENLACE</button>
                     

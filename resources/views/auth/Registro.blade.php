@@ -6,6 +6,8 @@
     <title>The Beauty Room - Registro</title>
     @vite(['resources/css/auth.css'])
 </head>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
 <script src="https://unpkg.com/lucide@latest"></script>
 <body class="login-container">
 
@@ -53,6 +55,12 @@
                         <label for="confirmPassword">CONFIRMAR CONTRASEÑA</label>
                         <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="••••••••">
                     </div>
+
+                    <div class="g-recaptcha mb-3" data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}"></div>
+
+                     @error('captcha')
+                       <div class="text-danger mt-1">{{ $message }}</div>
+                     @enderror
                     
                     <button type="submit" class="btn-primary">REGISTRARME</button>
                     
