@@ -3,17 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\Servicio; // Importamos el modelo que acabamos de crear.
+use App\Models\User; // Importamos el modelo User para obtener los trabajadores.''
 use Illuminate\Http\Request; // Importamos la clase Request para manejar los datos del formulario.
 use Illuminate\Support\Facades\Storage; // Importamos la clase Storage para manejar archivos (imágenes).
 
 class ServicioController extends Controller
 {
     // ===================================
-    // Esta función lee la base de datos y manda los servicios a la vista del catálogo.
+    // Esta función lee la base de datos y manda los servicios y especialistas a la vista del catálogo.
     public function index()
     {
         $servicios = Servicio::all();
-        return view('compartidas.catalogo', compact('servicios'));
+        $especialistas = User::where('rol', 'trabajador')->get(); //''
+
+        return view('compartidas.catalogo', compact('servicios', 'especialistas'));
     }
     // ===================================
 

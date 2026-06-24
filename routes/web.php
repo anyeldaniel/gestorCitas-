@@ -50,8 +50,13 @@ Route::get('/reset-password/{token}', function ($token) {
     return view('auth.password.reset', ['token' => $token]);
 })->name('password.reset');
 
-// Procesar el cambio de contraseña real.
-Route::post('/reset-password', [LoginController::class, 'resetPassword'])->name('password.update');
+// 3b. Redirige accesos GET directos sin token al formulario de solicitud de recuperación
+Route::get('/reset-password', function () {
+    return redirect()->route('passwordRequest.view');
+});
+
+// 4. Procesar el cambio de contraseña real
+Route::post('/reset-password', [PasswordController::class, 'resetPassword'])->name('password.update');
 
 
 // --- RUTAS PROTEGIDAS (SOLO USUARIOS LOGUEADOS) ---
