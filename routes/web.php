@@ -3,8 +3,8 @@
 use Illuminate\Support\Facades\Route; // Importamos el controlador de Login para las rutas de autenticación.
 use App\Http\Controllers\LoginController; // Controlador para manejar el login y registro de usuarios.
 use App\Http\Controllers\PasswordController; // Controlador para manejar la recuperación de contraseña.
-use App\Http\Controllers\AdminController; // Corregí mi regada con la A mayúscula xd att: Andrés
-use App\Http\Controllers\ReservaController; //Añadí el controlador de reservas para enrutarlooo
+use App\Http\Controllers\AdminController; // Corregí mi regada con la A mayúscula xd att: Andrés.
+use App\Http\Controllers\ReservaController; //Añadí el controlador de reservas para enrutarlo.
 use App\Http\Controllers\RecepcionController; // Controlador para la recepción. 
 use App\Http\Controllers\EspecialistaController; // Controlador para el especialista (masajista/esteticista).
 use App\Http\Controllers\ServicioController; // Controlador para el módulo de servicios (tratamientos).
@@ -91,9 +91,11 @@ Route::middleware(['auth'])->group(function () {
     // Ruta para procesar la reserva de un servicio, apuntando al método store del controlador de reservas.
     Route::post('/reservas', [ReservaController::class, 'store'])->name('clientes.reserva.store');
 
+    // 
+    Route::get('/get-especialistas/{id}', [App\Http\Controllers\ReservaController::class, 'getEspecialistas']);
+
     // Ruta para conectar los especialistas con los servicios.
     Route::get('/especialistas-por-servicio/{id}', [\App\Http\Controllers\ReservaController::class, 'getEspecialistas']);
-
 
     // ==========================================
     //   MÓDULO ADMINISTRADOR (Prefijo 'admin')

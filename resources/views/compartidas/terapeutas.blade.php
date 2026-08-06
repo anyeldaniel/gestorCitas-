@@ -15,7 +15,7 @@
             <p>Conoce al equipo profesional detrás de las experiencias exclusivas de The Beauty Room.</p>
         </div>
         <!-- Añado condicional para que, dependieno del rol, se muestren las opcionesde gestion de personal-->
-        @if($userRole === 'admin')
+        @if(auth()->check() && auth()->user()->rol === 'admin')
         <button type="button" class="btn-terapeuta-agregar" onclick="abrirModalAgregar()">
             <span class="icono-mas">+</span> Registrar Especialista
         </button>

@@ -15,7 +15,7 @@ class ReservaController extends Controller
     {
         // Atrapamos el ID si viene por la URL (si no viene, será null)
         $servicioSeleccionado = $request->query('servicio_id');
-        
+
         return view('clientes.reserva', compact('servicioSeleccionado'));
     }
     // Función para manejar la creación de una nueva cita.
@@ -59,20 +59,16 @@ class ReservaController extends Controller
     // Obtener especialistas filtrados por AJAX
     public function getEspecialistas($id)
     {
-        // Buscamos el servicio que el cliente seleccionó
+        // Buscamos el servicio
         $servicio = \App\Models\Servicio::find($id);
 
-        if (!$servicio || !$servicio->especialidad_id) {
+        // Si el servicio no existe, devolvemos un array vacío
+        if (!$servicio) {
             return response()->json([]);
         }
 
-        // Buscamos los usuarios que tengan la especialidad de ese servicio
-        $especialistas = \App\Models\User::join('trabajador_especialidad', 'usuarios.id', '=', 'trabajador_especialidad.usuario_id')
-            ->where('trabajador_especialidad.especialidad_id', $servicio->especialidad_id)
-            ->select('usuarios.id', 'usuarios.nombre')
-            ->get();
-
-        // Devolvemos los datos en formato JSON para que JavaScript los lea
-        return response()->json($especialistas);
+        // ¡Aquí está la magia! Laravel busca automáticamente en la tabla pivote
+        // usando la relación que definimos en el Modelo Servicio.
+        return response()->json($servicio->especialistas);
     }
 }

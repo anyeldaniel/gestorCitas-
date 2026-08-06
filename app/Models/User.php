@@ -70,4 +70,10 @@ class User extends Authenticatable
     {
         return $this->correo;
     }
+
+    // Relación Muchos a Muchos con Servicios.
+    public function servicios()
+    {
+        return $this->belongsToMany(Servicio::class, 'servicio_user', 'user_id', 'servicio_id');
+    }
 }

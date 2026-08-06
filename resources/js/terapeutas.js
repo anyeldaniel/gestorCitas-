@@ -280,11 +280,13 @@ window.verTerapeutaDetalle = function(id) {
 
     // Validar si el rol es Admin (inyectar botones de control)
     const accionesAdmin = document.getElementById('view-acciones-admin');
+
+    if (accionesAdmin) {
     accionesAdmin.innerHTML = `
         <button type="button" class="btn-zen" style="background:white; border:1px solid #cbd5e1; color:#475569;" onclick="document.getElementById('modal-ver-terapeuta').close(); editarTerapeuta(${id});">Editar</button>
         <button type="button" class="btn-zen btn-baja" onclick="document.getElementById('modal-ver-terapeuta').close(); eliminarTerapeuta(${id});">Dar de Baja</button>
     `;
-
+    }
     modal.showModal();
 }
 

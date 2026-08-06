@@ -115,8 +115,12 @@
 
         <footer class="modal-acciones" style="margin-top:1rem; border-top:1px solid #e2e8f0; padding-top:1rem;">
             <button type="button" class="btn-zen btn-secundario" onclick="document.getElementById('modal-ver-terapeuta').close()">Regresar</button>
+            
+            @if(auth()->check() && auth()->user()->rol === 'admin')
             <div id="view-acciones-admin" style="display:flex; gap:0.5rem;">
             </div>
+            @endif
+            
         </footer>
     </div>
 </dialog>

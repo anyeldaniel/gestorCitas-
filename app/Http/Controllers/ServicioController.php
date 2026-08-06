@@ -6,6 +6,7 @@ use App\Models\Servicio; // Importamos el modelo que acabamos de crear.
 use App\Models\User; // Importamos el modelo User para obtener los trabajadores.''
 use Illuminate\Http\Request; // Importamos la clase Request para manejar los datos del formulario.
 use Illuminate\Support\Facades\Storage; // Importamos la clase Storage para manejar archivos (imágenes).
+use Illuminate\Support\Facades\DB;
 
 class ServicioController extends Controller
 {
@@ -50,7 +51,7 @@ class ServicioController extends Controller
 
         // Guardar en la Base de Datos.
         // Usamos el Modelo Servicio para insertar una nueva fila en la tabla.
-        Servicio::create([
+        $servicio = Servicio::create([
             'nombre_servicio' => $request->nombre_servicio,
             'descripcion' => $request->descripcion,
             'precio' => $request->precio,
@@ -58,6 +59,9 @@ class ServicioController extends Controller
             'imagen' => $rutaImagen, // Guardamos la ruta, no la imagen como tal.
         ]);
 
+        if ($request->has('especialistas')) {
+            $servicio->especialistas()->sync($request->especialistas);
+        }
 
         // Redireccionar.
         // Devolvemos al usuario a la página anterior con un mensajito de que todo salió bien.
@@ -99,6 +103,13 @@ class ServicioController extends Controller
             'imagen' => $rutaImagen,
         ]);
 
+        if ($request->has('especialistas')) {
+            $servicio->especialistas()->sync($request->especialistas);
+        } else {
+            // Si el admin desmarcó todos los especialistas, limpiamos la tabla pivote
+            $servicio->especialistas()->detach();
+        }
+
         // Redireccionamos con mensaje de éxito.
         return redirect()->back()->with('success', '¡Tratamiento actualizado exitosamente!');
     }
@@ -106,14 +117,20 @@ class ServicioController extends Controller
     // Esta función elimina un servicio de la base de datos y borra su imagen del servidor si existe.
     public function destroy($id)
     {
+        // Buscamos el servicio.
         $servicio = Servicio::findOrFail($id);
 
-        // Borramos la foto física del servidor si existe
+        // Borramos por la fuerza las citas asociadas para que la base de datos no se queje.
+        DB::table('citas')->where('servicio_id', $id)->delete();
+
+        // Borramos la foto física del servidor si existe (Tu lógica original intacta).
         if ($servicio->imagen) {
             Storage::disk('public')->delete($servicio->imagen);
         }
 
+        // Ahora sí, con el camino libre y sin bloqueos, eliminamos el servicio.
         $servicio->delete();
+
         return redirect()->back()->with('success', '¡Servicio eliminado correctamente!');
     }
 }

@@ -31,4 +31,39 @@ document.addEventListener('DOMContentLoaded', function () {
             contenedorErrores.style.display = 'block';
         }
     });
+
+    // --- NUEVA LÓGICA: Filtrar especialistas al cambiar el servicio ---
+    const selectServicio = document.getElementById('servicio_id');
+    const selectTrabajador = document.getElementById('trabajador_id');
+
+    selectServicio.addEventListener('change', function () {
+        const servicioId = this.value;
+
+        selectTrabajador.innerHTML = '<option value="aleatorio">Cargando especialistas...</option>';
+
+        if (servicioId) {
+            fetch(`/get-especialistas/${servicioId}`)
+                .then(response => response.json())
+                .then(data => {
+                    selectTrabajador.innerHTML = '<option value="aleatorio">Cualquiera disponible</option>';
+
+                    if (data.length > 0) {
+                        data.forEach(especialista => {
+                            const option = document.createElement('option');
+                            option.value = especialista.id;
+                            option.textContent = especialista.nombre;
+                            selectTrabajador.appendChild(option);
+                        });
+                    } else {
+                        selectTrabajador.innerHTML = '<option value="aleatorio">No hay especialistas para este servicio</option>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    selectTrabajador.innerHTML = '<option value="aleatorio">Error al cargar</option>';
+                });
+        } else {
+            selectTrabajador.innerHTML = '<option value="aleatorio">Seleccione un servicio primero</option>';
+        }
+    });
 });
