@@ -1,14 +1,17 @@
 document.addEventListener('DOMContentLoaded', () => {
     const formFiltros = document.getElementById('form-filtros-agenda');
     
-    // 1. Filtrado dinámico (cuando cambias el terapeuta o la fecha)
-    if (formFiltros) {
-        formFiltros.addEventListener('change', () => {
-            const formData = new FormData(formFiltros);
-            const params = new URLSearchParams(formData).toString();
-            
-            // Redirige manteniendo los filtros activos en la URL
-            window.location.href = `${window.location.pathname}?${params}`;
+    // Si usas el ID en el formulario, asegúrate de añadirlo en el HTML
+    // En el HTML que te pasé, el formulario no tiene ID, así que lo seleccionamos por clase
+    const form = document.querySelector('.agenda-filtros');
+
+    if (form) {
+        // Escuchamos cambios en los selects e inputs para enviar el formulario automáticamente
+        const inputs = form.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            input.addEventListener('change', () => {
+                form.submit();
+            });
         });
     }
 });
@@ -19,11 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
  */
 window.abrirModalEditar = function(citaId) {
     console.log("Abriendo modal para la cita:", citaId);
-    
-    // Aquí es donde harías una llamada fetch al backend:
-    // fetch(`/api/citas/${citaId}`)
-    //   .then(res => res.json())
-    //   .then(data => { /* Llenar campos del modal */ });
     
     const modal = document.getElementById('modal-agenda');
     if (modal) {

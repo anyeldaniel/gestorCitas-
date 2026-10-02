@@ -7,8 +7,7 @@
     <title>@yield('title', 'The Beauty Room')</title>
     
     {{-- Vite carga los estilos globales y tus archivos --}}
-    @vite(['resources/css/app.css',  'resources/css/agenda.css', 'resources/css/terapeutas.css', 'resources/js/app.js', 'resources/js/layout.js', 'resources/js/terapeutas.js', 'resources/js/dashboard.js'])
-    
+@vite(['resources/css/app.css',  'resources/css/agenda.css', 'resources/css/terapeutas.css','resources/css/pago-checkout.css','resources/js/pago-checkout.js', 'resources/css/verificar-pago.css', 'resources/css/reserva.css', 'resources/js/app.js', 'resources/js/layout.js', 'resources/js/terapeutas.js', 'resources/js/dashboard.js', 'resources/js/reserva.js', 'resources/js/verificar-pago.js'])    
     {{-- AGREGADO: Stack para que tus vistas hijas inyecten sus estilos --}}
     @stack('styles')
 </head>

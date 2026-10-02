@@ -1,0 +1,240 @@
+/* ============================================
+   REPORTES — Estilo institucional Spa
+   Paleta consistente con auth (beige/marrón)
+   ============================================ */
+
+:root {
+    --spa-brown: #8b5e3c;
+    --spa-brown-dark: #6d4a2f;
+    --spa-brown-soft: #b08a6a;
+    --spa-cream: #fff9f0;
+    --spa-cream-2: #fcfaf8;
+    --spa-border: #e0dcd5;
+    --spa-ink: #1f1d1a;          /* más oscuro que antes (#2d2a26) */
+    --spa-ink-soft: #3a3632;     /* nuevo: para textos secundarios oscuros */
+    --spa-muted: #5c5c5c;        /* antes #7a7a7a, ahora más oscuro */
+    --spa-shadow: 0 1px 3px rgba(45, 42, 38, 0.06),
+                  0 8px 24px rgba(45, 42, 38, 0.06);
+    --spa-radius: 10px;
+}
+
+/* ---------- Contenedor principal ---------- */
+.reportes-admin {
+    background-color: var(--spa-cream);
+    min-height: 100vh;
+    padding: 40px clamp(20px, 4vw, 56px);
+    font-family: 'Instrument Sans', system-ui, sans-serif;
+    color: var(--spa-ink);
+}
+
+/* ---------- Encabezado del módulo ---------- */
+.reportes-admin .encabezado-modulo {
+    max-width: 1280px;
+    margin: 0 auto 32px;
+}
+
+.reportes-admin .encabezado-modulo h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 3vw, 2.75rem);
+    font-weight: 700;
+    color: var(--spa-ink);
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+}
+
+.reportes-admin .encabezado-modulo p {
+    color: var(--spa-ink-soft);   /* más oscuro que el muted original */
+    font-size: 0.95rem;
+    max-width: 640px;
+    line-height: 1.5;
+}
+
+/* ---------- Layout de dos columnas ---------- */
+.reportes-admin .distribucion-recepcion {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 28px;
+    align-items: start;
+}
+
+/* ---------- Sidebar de filtros ---------- */
+.reportes-admin .bloque-registro {
+    background: #ffffff;
+    border: 1px solid var(--spa-border);
+    border-radius: var(--spa-radius);
+    padding: 28px 24px;
+    box-shadow: var(--spa-shadow);
+    position: sticky;
+    top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* ---------- Encabezado del sidebar de filtros ---------- */
+.reportes-admin .encabezado-registro {
+    background: transparent;
+    color: var(--spa-ink);
+    padding: 0 0 18px;
+    margin: 0 0 20px;
+    border-bottom: 1px solid var(--spa-border);
+    text-align: left;
+}
+
+.reportes-admin .encabezado-registro h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--spa-ink);        /* negro más profundo */
+    margin: 0 0 4px;
+    line-height: 1.2;
+    letter-spacing: -0.2px;
+}
+
+.reportes-admin .texto-ayuda {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--spa-ink-soft);   /* más oscuro que el muted original */
+    letter-spacing: 0.3px;
+    line-height: 1.4;
+    margin: 0;
+}
+
+/* ---------- Campos del formulario ---------- */
+.reportes-admin .campo-formulario {
+    margin-bottom: 18px;
+}
+
+.reportes-admin .campo-formulario label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--spa-ink);        /* antes #555, ahora más oscuro */
+    margin-bottom: 8px;
+}
+
+.reportes-admin .campo-formulario input[type="date"] {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--spa-border);
+    border-radius: 6px;
+    background: var(--spa-cream-2);
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: var(--spa-ink);
+    font-weight: 500;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.reportes-admin .campo-formulario input[type="date"]:focus {
+    border-color: var(--spa-brown);
+    box-shadow: 0 0 0 3px rgba(199, 101, 25, 0.416);
+}
+
+.reportes-admin .error-campo {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.75rem;
+    color: #b03024;               /* rojo un poco más oscuro */
+}
+
+/* ---------- Botón ---------- */
+.reportes-admin .btn-zen {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 13px 18px;
+    border: none;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: background 0.25s, transform 0.15s;
+}
+
+.reportes-admin .btn-primario {
+    background: var(--spa-brown);
+    color: #fff;
+    margin-top: 4px;
+}
+
+.reportes-admin .btn-primario:hover {
+    background: var(--spa-brown-dark);
+}
+
+.reportes-admin .btn-primario:active {
+    transform: translateY(1px);
+}
+
+/* ---------- Panel de gráficas ---------- */
+.reportes-admin .panel-graficas {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+}
+
+/* ---------- Card de gráfica ---------- */
+.reportes-admin .contenedor-grafica {
+    background: #ffffff;
+    border: 1px solid var(--spa-border);
+    border-radius: var(--spa-radius);
+    padding: 24px 28px 28px;
+    box-shadow: var(--spa-shadow);
+}
+
+.reportes-admin .contenedor-grafica .info-cliente {
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--spa-border);
+}
+
+.reportes-admin .contenedor-grafica h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--spa-ink);
+    margin-bottom: 4px;
+}
+
+.reportes-admin .contenedor-grafica p {
+    font-size: 0.85rem;
+    color: var(--spa-ink-soft);   /* más oscuro que el muted original */
+    line-height: 1.5;
+}
+
+/* ---------- Canvas ---------- */
+.reportes-admin .contenedor-grafica canvas {
+    display: block;
+    width: 100% !important;
+    max-height: 340px;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1024px) {
+    .reportes-admin .distribucion-recepcion {
+        grid-template-columns: 1fr;
+    }
+
+    .reportes-admin .bloque-registro {
+        position: static;
+    }
+}
+
+@media (max-width: 640px) {
+    .reportes-admin {
+        padding: 24px 16px;
+    }
+
+    .reportes-admin .contenedor-grafica {
+        padding: 20px 18px 22px;
+    }
+}

@@ -1,4 +1,7 @@
-<!-- COMPONENTE MODAL REUTILIZABLE: Gestión de Especialistas -->
+<!-- ============================================
+     MODAL TERAPEUTA - REUTILIZABLE
+     ============================================ -->
+
 <dialog id="modal-terapeuta" class="modal-zen">
     <header class="modal-header">
         <h2 id="modal-titulo">Registrar Nuevo Especialista</h2>
@@ -7,7 +10,11 @@
 
     <form id="form-terapeuta" autocomplete="off" method="POST" action="{{ route('admin.create-trabajador') }}" class="modal-form" enctype="multipart/form-data">
         @csrf
+        
+        <!-- ✅ CAMPO OCULTO PARA EL MÉTODO (POST o PUT) -->
+        <input type="hidden" name="_method" id="terapeuta_method" value="POST">
 
+        <!-- FOTO -->
         <fieldset class="campo-formulario">
             <label for="terapeuta_foto">Foto de Perfil (Opcional)</label>
             <div class="campo-foto-previsualizacion">
@@ -16,24 +23,28 @@
             </div>
         </fieldset>
 
+        <!-- NOMBRE -->
         <fieldset class="campo-formulario">
             <label for="nombre">Nombre Completo</label>
             <input type="text" id="nombre" name="nombre" required minlength="3" maxlength="255" value="{{ old('nombre') }}" placeholder="Ej. Alana Ramos">
             <small style="color: #64748b; font-size: 0.8rem;">Mínimo 3 caracteres, solo letras.</small>
         </fieldset>
 
+        <!-- TELÉFONO -->
         <fieldset class="campo-formulario">
             <label for="telefono">Número de Teléfono</label>
             <input type="tel" id="telefono" name="telefono" required pattern="[0-9]{7,20}" title="Debe contener entre 7 y 20 números, sin espacios ni guiones" value="{{ old('telefono') }}" placeholder="Ej. 04124567890">
             <small style="color: #64748b; font-size: 0.8rem;">Solo números seguidos, sin guiones ni espacios (Ej. 04124567890).</small>
         </fieldset>
 
+        <!-- EMAIL -->
         <fieldset class="campo-formulario">
             <label for="email">Correo Electrónico</label>
             <input type="email" id="email" name="email" required value="{{ old('email') }}" placeholder="ejemplo@thebeautyroom.com">
             <small style="color: #64748b; font-size: 0.8rem;">Debe ser un correo válido y no estar registrado previamente.</small>
         </fieldset>
 
+        <!-- ESPECIALIDADES -->
         <fieldset class="campo-formulario">
             <label>Especialidades</label>
             <div id="wrapper-especialidades-lista" class="contenedor-especialidades-dinamicas">
@@ -46,12 +57,14 @@
             <small style="color: #64748b; font-size: 0.8rem;">Presiona el botón "+" para agregar múltiples especialidades.</small>
         </fieldset>
 
+        <!-- DESCRIPCIÓN -->
         <fieldset class="campo-formulario">
             <label for="descripcion">Biografía / Descripción Breve</label>
             <textarea id="descripcion" name="descripcion" rows="3" placeholder="Resumen de la experiencia y tratamientos que maneja...">{{ old('descripcion') }}</textarea>
             <small style="color: #64748b; font-size: 0.8rem;">Breve resumen profesional (Opcional).</small>
         </fieldset>
 
+        <!-- CONTRASEÑA -->
         <section id="campo-password" class="grupo-seguridad-modal">
             <fieldset class="campo-formulario campo-password-contenedor">
                 <label for="password">Contraseña de Acceso</label>
@@ -80,6 +93,7 @@
             </fieldset>
         </section>
 
+        <!-- ACCIONES -->
         <footer class="modal-acciones">
             <button type="button" class="btn-zen btn-secundario" onclick="cerrarModal()">Cancelar</button>
             <button type="button" onclick="sincronizarEspecialidades(); this.form.submit();" class="btn-zen btn-primario">Guardar Especialista</button>
@@ -87,47 +101,65 @@
     </form>
 </dialog>
 
+<!-- ============================================
+     MODAL VER TERAPEUTA - DETALLE
+     ============================================ -->
+
 <dialog id="modal-ver-terapeuta" class="modal-zen">
     <header class="modal-header">
         <h2>Información Detallada del Terapeuta</h2>
         <button type="button" class="btn-cerrar-modal" onclick="document.getElementById('modal-ver-terapeuta').close()">&times;</button>
     </header>
     <div class="modal-form">
+        <!-- Avatar y Nombre -->
         <div style="display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem;">
-            <div id="view-terapeuta-foto" class="avatar-preview" style="width:70px; height:70px; font-size:1.5rem;"></div>
+            <div id="view-terapeuta-foto" class="avatar-preview" style="width:70px; height:70px; font-size:1.5rem;">TF</div>
             <div>
-                <h3 id="view-terapeuta-nombre" style="margin:0; font-size:1.3rem; color:var(--color-texto-oscuro);"></h3>
+                <h3 id="view-terapeuta-nombre" style="margin:0; font-size:1.3rem; color:var(--color-texto-oscuro);">Nombre</h3>
                 <p style="margin:0.2rem 0 0 0; font-size:0.9rem;">Rol: <span id="view-terapeuta-rol" class="tag-rol especialista">Especialista</span></p>
             </div>
         </div>
 
+        <!-- Información -->
         <div style="display:flex; flex-direction:column; gap:0.8rem; margin-top:0.5rem;">
-            <div><strong>Contacto Telefónico:</strong> <span id="view-terapeuta-telefono"></span></div>
-            <div><strong>Correo Electrónico:</strong> <span id="view-terapeuta-email"></span></div>
+            <div><strong>Contacto Telefónico:</strong> <span id="view-terapeuta-telefono">No disponible</span></div>
+            <div><strong>Correo Electrónico:</strong> <span id="view-terapeuta-email">No disponible</span></div>
             <div>
                 <strong>Especialidades Especiales:</strong>
-                <div id="view-terapeuta-especialidades" class="contenedor-tags-especialidades"></div>
+                <div id="view-terapeuta-especialidades" class="contenedor-tags-especialidades">
+                    <span style="color: var(--gris-texto); font-size: 0.85rem;">Sin especialidades registradas</span>
+                </div>
             </div>
             <div><strong>Descripción / Biografía:</strong>
-                <p id="view-terapeuta-descripcion" style="margin:0.25rem 0; background:#f8fafc; padding:0.5rem; border-radius:0.375rem; font-size:0.9rem; color:#475569;"></p>
+                <p id="view-terapeuta-descripcion" style="margin:0.25rem 0; background:#f8fafc; padding:0.5rem; border-radius:0.375rem; font-size:0.9rem; color:#475569;">Sin descripción</p>
             </div>
         </div>
 
+        <!-- Acciones - Solo visibles para admin -->
         <footer class="modal-acciones" style="margin-top:1rem; border-top:1px solid #e2e8f0; padding-top:1rem;">
             <button type="button" class="btn-zen btn-secundario" onclick="document.getElementById('modal-ver-terapeuta').close()">Regresar</button>
             <div id="view-acciones-admin" style="display:flex; gap:0.5rem;">
+                @if(isset($userRole) && $userRole === 'admin')
+                <!-- Los botones se inyectan desde JS en editar/eliminar -->
+                @endif
             </div>
         </footer>
     </div>
 </dialog>
 
-<dialog id="modal-confirmacion-custom" class="modal-alerta-custom">
-    <div class="alerta-contenido">
-        <h3 id="confirm-alerta-titulo">¿Confirmar acción?</h3>
-        <p id="confirm-alerta-mensaje">¿Estás seguro de que deseas continuar con esta acción?</p>
-        <div class="alerta-acciones">
-            <button type="button" id="btn-confirm-cancelar" class="btn-zen btn-secundario" style="padding: 0.4rem 1rem;">Cancelar</button>
-            <button type="button" id="btn-confirm-aceptar" class="btn-zen btn-baja" style="padding: 0.4rem 1rem; background-color: var(--color-error);">Eliminar</button>
-        </div>
-    </div>
+<!-- ============================================
+     MODAL CONFIRMACIÓN PERSONALIZADA - ESTILO CATÁLOGO
+     ============================================ -->
+
+<dialog id="modal-confirmacion-custom" class="modal-contenedor-alerta-critica">
+    <article class="cuerpo-alerta-centrado">
+        <figure class="icono-alerta-advertencia">⚠️</figure>
+        <h3 id="confirm-alerta-titulo" class="titulo-alerta-critica">¿Confirmar acción?</h3>
+        <p id="confirm-alerta-mensaje" class="mensaje-alerta-descripcion"></p>
+        
+        <footer class="pie-alerta-botones">
+            <button type="button" id="btn-confirm-cancelar" class="btn-cancelar-alerta">Cancelar</button>
+            <button type="button" id="btn-confirm-aceptar" class="btn-aceptar-eliminar">Eliminar permanentemente</button>
+        </footer>
+    </article>
 </dialog>

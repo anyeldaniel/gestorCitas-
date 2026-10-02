@@ -15,7 +15,12 @@
                         'resources/js/terapeutas.js', //Mi nuevo archivo js para el módulo de terapeutas
                         'resources/js/catalogo.js', //añado el js para el catálogo para que sea formulario dinámico
                         'resources/css/modal.css', //añado los estilos para el catlago y el formulario de servicios
-                        'resources/css/agenda.css' //añado los estilos para la agenda :D
+                        'resources/css/agenda.css', //añado los estilos para la agenda :D
+                        'resources/css/pasarela-pago.css',//estilos para la pasarela de pagossss
+                        'resources/js/pasarela-pago.js',
+                        'resources/css/reserva.css',
+                        'resources/js/reserva.js',
+
                     ],
                 refresh: true,
             }),

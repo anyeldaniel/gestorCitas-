@@ -9,62 +9,86 @@
 @section('content')
 <section class="modulo-terapeutas">
 
+    <!-- HEADER -->
     <header class="terapeutas-header">
         <div>
             <h1>Nuestros Terapeutas</h1>
             <p>Conoce al equipo profesional detrás de las experiencias exclusivas de The Beauty Room.</p>
         </div>
-        @if($userRole === 'admin')
+        @if(isset($userRole) && $userRole === 'admin')
         <button type="button" class="btn-terapeuta-agregar" onclick="abrirModalAgregar()">
             <span class="icono-mas">+</span> Registrar Especialista
         </button>
         @endif
     </header>
 
+    <!-- GRID DE TERAPEUTAS -->
     <main class="grid-terapeutas">
         @forelse($terapeutas as $terapeuta)
-        <article class="tarjeta-terapeuta" data-id="{{ $terapeuta->id }}" data-especialidades="{{ $terapeuta->especialidades ?? '' }}">
+        <article class="tarjeta-terapeuta"
+                 data-id="{{ $terapeuta->id }}"
+                 data-especialidades="{{ $terapeuta->especialidades ?? '' }}">
 
+            <!-- FOTO / PLACEHOLDER -->
             <figure class="terapeuta-foto-contenedor">
                 @if($terapeuta->foto && file_exists(public_path('storage/' . $terapeuta->foto)))
-                <img src="{{ asset('storage/' . $terapeuta->foto) }}" alt="Foto de {{ $terapeuta->nombre }}">
+                    <img src="{{ asset('storage/' . $terapeuta->foto) }}"
+                         alt="Foto de {{ $terapeuta->nombre }}">
                 @else
-                <div class="foto-avatar-simulado">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clip-rule="evenodd" />
-                    </svg>
-                    <span>{{ substr($terapeuta->nombre, 0, 2) }}</span>
-                </div>
+                    <div class="foto-avatar-simulado" aria-label="Sin imagen disponible">
+                        <svg class="icono-placeholder"
+                             xmlns="http://www.w3.org/2000/svg"
+                             viewBox="0 0 24 24"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="1.4"
+                             stroke-linecap="round"
+                             stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="3"/>
+                            <circle cx="9" cy="9" r="2"/>
+                            <path d="M21 15l-5-5L5 21"/>
+                        </svg>
+                        <span class="texto-placeholder">Coloque imagen</span>
+                    </div>
                 @endif
+                <span class="indicador-estado disponible"></span>
             </figure>
 
+            <!-- INFORMACIÓN -->
             <div class="terapeuta-info">
-                <h2>{{ $terapeuta->nombre }}</h2>
-                
-                <div class="contenedor-tags-especialidades">
+                <span class="tag-especialidad">
                     @if(!empty($terapeuta->especialidades))
-                        <span class="tag-especialidad">{{ explode(',', $terapeuta->especialidades)[0] }}</span>
+                        {{ explode(',', $terapeuta->especialidades)[0] }}
                     @else
-                        <span class="tag-especialidad">Especialista en Bienestar</span>
+                        Especialista en Bienestar
                     @endif
-                </div>
+                </span>
+
+                <h2 class="terapeuta-nombre">{{ $terapeuta->nombre }}</h2>
 
                 <div class="contenedor-estrellas">
-                    ★★★★★
+                    <span class="estrellas">★★★★★</span>
+                    <span class="rating-valor">5.0</span>
+                    <span class="rating-cantidad">(0)</span>
                 </div>
 
+                <!-- DATOS OCULTOS PARA JS -->
                 <p class="terapeuta-telefono" style="display:none;">{{ $terapeuta->telefono ?? 'S/N' }}</p>
                 <p class="terapeuta-email" style="display:none;">{{ $terapeuta->correo ?? '' }}</p>
                 <p class="terapeuta-descripcion" style="display:none;">{{ $terapeuta->descripcion ?? '' }}</p>
             </div>
 
+            <!-- ACCIONES -->
             <footer class="terapeuta-acciones">
-                <button type="button" class="btn-zen" onclick="verTerapeutaDetalle({{ $terapeuta->id }})">Ver Perfil</button>
+                <button type="button" class="btn-zen" onclick="verTerapeutaDetalle({{ $terapeuta->id }})">
+                    Ver Perfil
+                    <span class="flecha">→</span>
+                </button>
 
-                @if($userRole === 'admin')
+                @if(isset($userRole) && $userRole === 'admin')
                 <div class="admin-controls">
                     <button type="button" class="btn-terapeuta-editar" onclick="editarTerapeuta({{ $terapeuta->id }})">Editar</button>
-                    <button type="button" class="btn-terapeuta-eliminar" onclick="eliminarTerapeuta({{ $terapeuta->id }})">Baja</button>
+                    <button type="button" class="btn-terapeuta-eliminar" onclick="eliminarTerapeuta({{ $terapeuta->id }})">Eliminar</button>
                 </div>
                 @endif
             </footer>
@@ -77,7 +101,8 @@
         @endforelse
     </main>
 
-    @include('compartidas.modal-terapeuta')
+    <!-- MODAL COMPARTIDO -->
+    @include('compartidas.modal-terapeuta', ['userRole' => $userRole ?? null])
 
 </section>
 @endsection

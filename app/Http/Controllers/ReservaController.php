@@ -3,34 +3,68 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Cita;
+use App\Models\Servicio;
+use App\Models\User;
 
 class ReservaController extends Controller
 {
-    //Muestro el formulario de reserva para el cliente
-    public function index()
+    /**
+     * Muestra el formulario de reserva.
+     */
+    public function index(Request $request)
     {
-        return view('clientes.reserva');
-    }
-
-    //Proceso la reservación 
-    public function store(Request $request)
-    {
-        // Validación estricta siguiendo las reglas del negocio del Spa
-        $request->validate([
-            'servicio_id'    => 'required|integer',
-            'fecha'          => 'required|date|after_or_equal:today',
-            'hora'           => 'required',
-            'adjunto_receta' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048', // Máximo 2MB
-        ]);
-
-        // Simulación de manejo de archivo si el cliente sube una indicación médica
-        if ($request->hasFile('adjunto_receta')) {
-            $archivo = $request->file('adjunto_receta');
-            // Aquí se guardaría en: storage/app/public/recetas
-            // $ruta = $archivo->store('recetas', 'public');
+        $servicio = null;
+        if ($request->filled('servicio_id')) {
+            $servicio = Servicio::find($request->query('servicio_id'));
         }
 
-        // Aquí se retorna al catálogo con un mensaje de éxito 
-        return redirect()->route('catalogo')->with('success', '¡Su sesión ha sido agendada con éxito en nuestro santuario de bienestar!');
+        $servicioData = [
+            'id'       => $servicio->id ?? $request->query('servicio_id', 1),
+            'nombre'   => $servicio->nombre_servicio ?? $request->query('nombre', 'Servicio Spa'),
+            'precio'   => $servicio->precio ?? $request->query('precio', 50),
+            'duracion' => $servicio->duracion_minutos ?? 60,
+        ];
+
+        // ✅ NUEVO: Traer terapeutas para el <select> del formulario
+        $terapeutas = User::where('id', '!=', auth()->id())
+            ->orderBy('nombre')
+            ->get();
+
+        return view('clientes.reserva', compact('servicioData', 'terapeutas'));
+    }
+
+    /**
+     * Guarda la reserva y redirige al checkout de pago.
+     */
+    public function store(Request $request)
+    {
+        // 1. Validación
+        $request->validate([
+            'servicio_id'   => 'required|integer|exists:servicios,id',
+            'trabajador_id' => 'required|integer|exists:usuarios,id',
+            'fecha'         => 'required|date|after_or_equal:today',
+            'hora'          => 'required',
+        ]);
+
+        // 2. Obtener el servicio
+        $servicio = Servicio::findOrFail($request->servicio_id);
+
+        // 3. Crear la cita
+        $cita = Cita::create([
+            'cliente_id'    => auth()->id(),
+            'trabajador_id' => $request->trabajador_id,
+            'servicio_id'   => $servicio->id,
+            'cabina_id'     => null,
+            'monto_total'   => $servicio->precio,
+            'fecha'         => $request->fecha,
+            'hora'          => $request->hora,
+            'estado'        => 'pendiente',
+        ]);
+
+        // 4. Redirigir al CHECKOUT DE PAGO
+        return redirect()
+            ->route('pago.checkout', ['cita' => $cita->id])
+            ->with('success', 'Cita apartada. Reporta tu pago para confirmarla.');
     }
 }

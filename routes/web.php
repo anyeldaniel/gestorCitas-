@@ -63,6 +63,11 @@ Route::middleware(['auth'])->group(function () {
     // ==========================================
     Route::get('/reservas', [ReservaController::class, 'index'])->name('clientes.reserva');
     Route::post('/reservas', [ReservaController::class, 'store'])->name('clientes.reserva.store');
+    // ==========================================
+// 2.1. PASARELA DE PAGO (Cliente)
+// ==========================================
+Route::get('/pago/checkout/{cita}',  [PagoController::class, 'checkout'])->name('pago.checkout');
+Route::post('/pago/procesar/{cita}', [PagoController::class, 'procesar'])->name('pago.procesar');
 
 
     // ==========================================
