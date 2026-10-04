@@ -87,6 +87,11 @@ Route::middleware(['auth'])->group(function () {
 
     // Ruta para procesar la reserva de un servicio, apuntando al método store del controlador de reservas.
     Route::post('/reservas', [ReservaController::class, 'store'])->name('clientes.reserva.store');
+    // ==========================================
+// 2.1. PASARELA DE PAGO (Cliente)
+// ==========================================
+Route::get('/pago/checkout/{cita}',  [PagoController::class, 'checkout'])->name('pago.checkout');
+Route::post('/pago/procesar/{cita}', [PagoController::class, 'procesar'])->name('pago.procesar');
 
     // Ruta para conectar los especialistas con los servicios.
     Route::get('/especialistas-por-servicio/{id}', [\App\Http\Controllers\ReservaController::class, 'getEspecialistas']);

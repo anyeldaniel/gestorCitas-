@@ -3,76 +3,74 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth; // Importamos la clase Auth para manejar la autenticación de usuarios.
-use App\Models\Cita; // Importamos el modelo de Cita.
-use App\Models\User; // Importamos el modelo de User para los especialistas.
-
+use App\Models\Cita;
+use App\Models\Servicio;
+use App\Models\User;
+use Illuminate\Validation\Rule;
 
 class ReservaController extends Controller
 {
-    // Muestro el formulario de reserva para el cliente.
+    /**
+     * Muestra el formulario de reserva.
+     */
     public function index(Request $request)
     {
-        // Atrapamos el ID si viene por la URL (si no viene, será null)
-        $servicioSeleccionado = $request->query('servicio_id');
-        
-        return view('clientes.reserva', compact('servicioSeleccionado'));
+        $servicio = null;
+        if ($request->filled('servicio_id')) {
+            $servicio = Servicio::find($request->query('servicio_id'));
+        }
+
+        $servicioData = [
+            'id'       => $servicio->id ?? $request->query('servicio_id', 1),
+            'nombre'   => $servicio->nombre_servicio ?? $request->query('nombre', 'Servicio Spa'),
+            'precio'   => $servicio->precio ?? $request->query('precio', 50),
+            'duracion' => $servicio->duracion_minutos ?? 60,
+        ];
+
+        // Solo ofrecer usuarios registrados con el rol de trabajador.
+        $terapeutas = User::where('id', '!=', auth()->id())
+            ->where('rol', 'trabajador')
+            ->orderBy('nombre')
+            ->get();
+
+        return view('clientes.reserva', compact('servicioData', 'terapeutas'));
     }
-    // Función para manejar la creación de una nueva cita.
+
+    /**
+     * Guarda la reserva y redirige al checkout de pago.
+     */
     public function store(Request $request)
     {
-        // Validación de los datos recibidos del formulario.
+        // 1. Validación
         $request->validate([
-            'servicio_id'    => 'required|integer',
-            'trabajador_id'  => 'required', // Recibe 'aleatorio' o el ID numérico.
-            'fecha'          => 'required|date|after_or_equal:today',
-            'hora'           => 'required',
-            'adjunto_receta' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'servicio_id'   => 'required|integer|exists:servicios,id',
+            'trabajador_id' => [
+                'required',
+                'integer',
+                Rule::exists('usuarios', 'id')->where('rol', 'trabajador'),
+            ],
+            'fecha'         => 'required|date|after_or_equal:today',
+            'hora'          => 'required',
         ]);
 
-        // Lógica de asignación de especialista (Aleatorio o Específico).
-        $trabajadorId = $request->trabajador_id;
-        if ($trabajadorId === 'aleatorio') {
-            // Si se selecciona 'aleatorio', se obtiene un especialista al azar de la base de datos.
-            $trabajadorId = User::where('rol', 'trabajador')->inRandomOrder()->first()->id;
-        }
+        // 2. Obtener el servicio
+        $servicio = Servicio::findOrFail($request->servicio_id);
 
-        // Manejo del archivo adjunto de receta si existe.
-        $rutaReceta = null;
-        if ($request->hasFile('adjunto_receta')) {
-            $rutaReceta = $request->file('adjunto_receta')->store('recetas', 'public');
-        }
-        // Creación de la cita en la base de datos.
-        Cita::create([
-            'cliente_id'    => Auth::id(), // Guarda el ID del cliente logueado
-            'trabajador_id' => $trabajadorId,
-            'servicio_id'   => $request->servicio_id,
+        // 3. Crear la cita
+        $cita = Cita::create([
+            'cliente_id'    => auth()->id(),
+            'trabajador_id' => $request->trabajador_id,
+            'servicio_id'   => $servicio->id,
+            'cabina_id'     => null,
+            'monto_total'   => $servicio->precio,
             'fecha'         => $request->fecha,
             'hora'          => $request->hora,
             'estado'        => 'pendiente',
         ]);
 
-        // Redireccionar con éxito.
-        return redirect()->route('catalogo')->with('success', '¡Su sesión ha sido agendada con éxito en nuestro santuario de bienestar!');
-    }
-
-    // Obtener especialistas filtrados por AJAX
-    public function getEspecialistas($id)
-    {
-        // Buscamos el servicio que el cliente seleccionó
-        $servicio = \App\Models\Servicio::find($id);
-
-        if (!$servicio || !$servicio->especialidad_id) {
-            return response()->json([]);
-        }
-
-        // Buscamos los usuarios que tengan la especialidad de ese servicio
-        $especialistas = \App\Models\User::join('trabajador_especialidad', 'usuarios.id', '=', 'trabajador_especialidad.usuario_id')
-            ->where('trabajador_especialidad.especialidad_id', $servicio->especialidad_id)
-            ->select('usuarios.id', 'usuarios.nombre')
-            ->get();
-
-        // Devolvemos los datos en formato JSON para que JavaScript los lea
-        return response()->json($especialistas);
+        // 4. Redirigir al CHECKOUT DE PAGO
+        return redirect()
+            ->route('pago.checkout', ['cita' => $cita->id])
+            ->with('success', 'Cita apartada. Reporta tu pago para confirmarla.');
     }
 }

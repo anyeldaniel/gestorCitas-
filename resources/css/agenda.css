@@ -1,91 +1,422 @@
-/* Paleta de colores sugerida: Elegante, tipo Spa */
+/* ==========================================================================
+   IMPORTACIÓN DE FUENTES
+   ========================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
 :root {
-    --bg-color: #fcfaf8;
-    --primary-color: #a88d75; /* Tono arena/bronce */
-    --text-color: #334155;
-    --white: #ffffff;
-    --border-color: #e2e8f0;
+    --bg-page: #fdfaf6;
+    --primary-brown: #8b5e3c;
+    --primary-brown-hover: #6d4a2f;
+    --text-main: #2d2a26;
+    --text-muted: #7a7a7a;
+    --border-color: #e0dcd5;
+
+    --font-display: 'Cormorant Garamond', serif;
+    --font-body: 'Inter', sans-serif;
+    --font-ui: 'Instrument Sans', sans-serif;
+
+    --color-confirmada: #00796b;
+    --color-pendiente: #8b5e3c;
+    --color-en-curso: #f57c00;
+    --color-completada: #5e35b1;
+    --color-cancelada: #d32f2f;
 }
 
+/* ==========================================================================
+   BASE TIPOGRÁFICA
+   ========================================================================== */
 body {
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    font-family: 'Segoe UI', sans-serif;
+    font-family: var(--font-body);
+    color: var(--text-main);
+    background-color: var(--bg-page);
+    margin: 0;
 }
 
+h1, h2, h3, h4, h5, h6, .titulo-agenda {
+    font-family: var(--font-display) !important;
+    color: var(--text-main);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+/* ==========================================================================
+   MÓDULO AGENDA
+   ========================================================================== */
 .modulo-agenda {
-    max-width: 1100px;
+    max-width: 1200px;
     margin: 2rem auto;
-    padding: 2rem;
-    background: var(--white);
-    border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    padding: 0 1rem;
 }
 
-.agenda-header h1 {
-    color: var(--primary-color);
-    font-weight: 300;
-    margin-bottom: 0.5rem;
-}
-
-/* Filtros */
-.agenda-filtros {
+/* --- Cabecera --- */
+.agenda-header {
     display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 2rem;
     gap: 1.5rem;
-    margin: 2rem 0;
-    padding: 1.5rem;
-    background: #f8fafc;
-    border-radius: 8px;
+    flex-wrap: wrap;
 }
 
-.grupo-filtro {
-    border: none;
+.subtitulo {
+    font-family: var(--font-ui);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin: 0 0 0.5rem 0;
+    font-weight: 600;
+}
+
+.titulo-agenda {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    margin: 0 0 0.4rem 0;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--text-main);
+    line-height: 1.1;
+}
+
+.descripcion-agenda {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin: 0;
+    font-family: var(--font-body);
+}
+
+/* ==========================================================================
+   STATS
+   ========================================================================== */
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    padding: 1rem 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
     flex-direction: column;
+    justify-content: center;
 }
 
-.grupo-filtro select, .grupo-filtro input {
-    padding: 0.6rem;
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 18px rgba(45, 42, 38, 0.1);
+}
+
+.stat-card span {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: 800;
+    font-family: var(--font-display);
+    color: var(--text-main);
+    line-height: 1;
+}
+
+.stat-card small {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.65rem;
+    font-family: var(--font-ui);
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    display: block;
+    margin-top: 0.5rem;
+}
+
+/* ==========================================================================
+   FILTROS
+   ========================================================================== */
+.agenda-filtros {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 1rem;
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
     border: 1px solid var(--border-color);
-    border-radius: 4px;
-    margin-top: 0.3rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    align-items: end;
 }
 
-/* Tabla */
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.filter-label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    font-family: var(--font-ui);
+    letter-spacing: 0.08em;
+    color: #555;
+}
+
+.filter-label i {
+    width: 14px;
+    height: 14px;
+    stroke-width: 2.5;
+}
+
+.filter-group input,
+.filter-group select {
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: #fcfaf8;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    color: var(--text-main);
+    transition: all 0.25s ease;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+    border-color: var(--primary-brown);
+    box-shadow: 0 0 0 3px rgba(139, 94, 60, 0.12);
+    background: #ffffff;
+}
+
+/* ==========================================================================
+   TABLA
+   ========================================================================== */
+.tabla-responsive-wrapper {
+    overflow-x: auto;
+    margin-bottom: 2rem;
+    border-radius: 12px;
+}
+
 .tabla-agenda {
     width: 100%;
-    border-collapse: collapse;
-    margin-top: 1rem;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+    min-width: 600px;
+}
+
+.tabla-agenda thead {
+    background: var(--primary-brown);
+    color: white;
 }
 
 .tabla-agenda th {
-    text-align: left;
     padding: 1rem;
-    border-bottom: 2px solid var(--border-color);
-    color: #64748b;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-family: var(--font-ui);
+    letter-spacing: 0.08em;
+}
+
+.tabla-agenda th:first-child {
+    border-radius: 8px 0 0 8px;
+}
+
+.tabla-agenda th:last-child {
+    border-radius: 0 8px 8px 0;
+}
+
+.tabla-agenda tbody tr {
+    background: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    transition: all 0.25s ease;
+}
+
+.tabla-agenda tbody tr:hover {
+    box-shadow: 0 6px 16px rgba(45, 42, 38, 0.1);
+    transform: translateY(-1px);
 }
 
 .tabla-agenda td {
     padding: 1rem;
-    border-bottom: 1px solid var(--border-color);
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    color: var(--text-main);
+    vertical-align: middle;
 }
 
-.btn-agenda-modificar {
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
+.tabla-agenda td:first-child {
+    border-left: 1px solid #eee;
+    border-radius: 8px 0 0 8px;
+}
+
+.tabla-agenda td:last-child {
+    border-right: 1px solid #eee;
+    border-radius: 0 8px 8px 0;
+}
+
+/* ==========================================================================
+   ESTADOS (BADGES)
+   ========================================================================== */
+.badge-estado {
+    padding: 0.35rem 0.85rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-block;
+    font-family: var(--font-ui);
+    letter-spacing: 0.03em;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.estado-confirmada {
+    background: #e0f2f1;
+    color: var(--color-confirmada);
+}
+
+.estado-pendiente {
+    background: #efebe9;
+    color: var(--color-pendiente);
+}
+
+.estado-en-curso {
+    background: #fff3e0;
+    color: var(--color-en-curso);
+}
+
+.estado-completada {
+    background: #ede7f6;
+    color: var(--color-completada);
+}
+
+.estado-cancelada {
+    background: #ffebee;
+    color: var(--color-cancelada);
+}
+
+/* ==========================================================================
+   BOTONES
+   ========================================================================== */
+.btn-primario {
+    font-family: var(--font-ui);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    border-radius: 6px;
     cursor: pointer;
-    transition: opacity 0.3s;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid var(--primary-brown);
+    padding: 0.75rem 1.25rem;
+    background: var(--primary-brown);
+    color: #ffffff;
+    box-shadow: 0 3px 8px rgba(139, 94, 60, 0.2);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    height: fit-content;
 }
 
-.btn-agenda-modificar:hover {
-    opacity: 0.8;
+.btn-primario i {
+    width: 16px;
+    height: 16px;
 }
 
-/* Responsividad */
+.btn-primario:hover {
+    background: var(--primary-brown-hover);
+    border-color: var(--primary-brown-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 5px 14px rgba(139, 94, 60, 0.35);
+}
+
+.btn-editar {
+    font-family: var(--font-ui);
+    font-weight: 600;
+    font-size: 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    border: 1px solid var(--border-color);
+    padding: 0.4rem 0.8rem;
+    background: #f5efe8;
+    color: var(--primary-brown);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.btn-editar i {
+    width: 14px;
+    height: 14px;
+}
+
+.btn-editar:hover {
+    background: var(--primary-brown);
+    color: #ffffff;
+    border-color: var(--primary-brown);
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+@media (max-width: 1024px) {
+    .agenda-filtros {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
 @media (max-width: 768px) {
-    .agenda-filtros { flex-direction: column; }
-    .tabla-responsiva { overflow-x: auto; }
+    .stats-container {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+    }
+
+    .agenda-filtros {
+        grid-template-columns: 1fr;
+    }
+
+    .titulo-agenda {
+        font-size: 2rem;
+    }
+    
+    .agenda-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+
+    .stat-card {
+        padding: 0.75rem 0.2rem;
+    }
+
+    .stat-card span {
+        font-size: 1.4rem;
+    }
+
+    .stat-card small {
+        font-size: 0.6rem;
+    }
+
+    .titulo-agenda {
+        font-size: 1.75rem;
+    }
 }
