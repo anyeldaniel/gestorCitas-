@@ -6,6 +6,8 @@
     <title>The Beauty Room - Registro</title>
     @vite(['resources/css/auth.css'])
 </head>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
 <script src="https://unpkg.com/lucide@latest"></script>
 <body class="login-container">
 
@@ -37,6 +39,11 @@
                     <div class="form-row">
                         <label for="email">CORREO ELECTRÓNICO</label>
                         <input type="email" id="email" name="email" value="{{ old('email') }}" required placeholder="correo@ejemplo.com">
+                    
+                        @error('email')
+                          <div style="color: #dc3545; font-size: 0.85em; margin-top: 4px;">{{ $message }}</div>
+                        @enderror
+                    
                     </div>
                     
                     <div class="form-row">
@@ -47,12 +54,26 @@
                     <div class="form-row">
                         <label for="password">CONTRASEÑA</label>
                         <input type="password" id="password" name="password" required placeholder="••••••••">
+                    
+                        <div id="password-feedback" style="margin-top: 8px; font-size: 0.85em; display: none; line-height: 1.5;">
+        <span id="length-req" style="color: #dc3545;">✗ Mínimo 8 caracteres</span><br>
+        <span id="alpha-req" style="color: #dc3545;">✗ Alfanumérica (letras y números)</span><br>
+        <span id="special-req" style="color: #dc3545;">✗ Un carácter especial (@, $, !, %, etc.)</span><br>
+        <strong id="strength-text" style="color: #dc3545; display: block; margin-top: 8px;">Estado: Contraseña Poco Segura</strong>
+                       </div>
+                    
                     </div>
                     
                     <div class="form-row">
                         <label for="confirmPassword">CONFIRMAR CONTRASEÑA</label>
                         <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="••••••••">
                     </div>
+
+                    <div class="g-recaptcha mb-3" data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}"></div>
+
+                     @error('captcha')
+                       <div class="text-danger mt-1">{{ $message }}</div>
+                     @enderror
                     
                     <button type="submit" class="btn-primary">REGISTRARME</button>
                     
@@ -64,5 +85,10 @@
      <script>
   lucide.createIcons();
 </script>
+
+
+@vite(['resources/js/auth.js'])
+
+
 </body>
 </html>

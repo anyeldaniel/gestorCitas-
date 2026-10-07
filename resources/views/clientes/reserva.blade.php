@@ -102,26 +102,26 @@
 
                 <div class="lista-servicios">
                     @php
-                        $serviciosDemo = [
-                            ['id' => 1, 'nombre' => 'Consulta general',         'duracion' => 45, 'precio' => 45],
-                            ['id' => 2, 'nombre' => 'Consulta de seguimiento',  'duracion' => 30, 'precio' => 30],
-                            ['id' => 3, 'nombre' => 'Consulta virtual',         'duracion' => 40, 'precio' => 38],
-                            ['id' => 4, 'nombre' => 'Masaje relajante',         'duracion' => 60, 'precio' => 55],
-                        ];
+                    $serviciosDemo = [
+                        ['id' => 1, 'nombre' => 'Consulta general',         'duracion' => 45, 'precio' => 45],
+                        ['id' => 2, 'nombre' => 'Consulta de seguimiento',  'duracion' => 30, 'precio' => 30],
+                        ['id' => 3, 'nombre' => 'Consulta virtual',         'duracion' => 40, 'precio' => 38],
+                        ['id' => 4, 'nombre' => 'Masaje relajante',         'duracion' => 60, 'precio' => 55],
+                    ];
                     @endphp
 
                     @foreach($serviciosDemo as $s)
-                        <label class="servicio-item {{ $servicioData['id'] == $s['id'] ? 'activo' : '' }}"
-                               data-servicio-id="{{ $s['id'] }}"
-                               data-precio="{{ $s['precio'] }}"
-                               data-duracion="{{ $s['duracion'] }}">
-                            <input type="radio" name="servicio_radio" value="{{ $s['id'] }}" {{ $servicioData['id'] == $s['id'] ? 'checked' : '' }}>
-                            <div class="servicio-info">
-                                <strong>{{ $s['nombre'] }}</strong>
-                                <small>{{ $s['duracion'] }} min</small>
-                            </div>
-                            <span class="servicio-precio">${{ $s['precio'] }}</span>
-                        </label>
+                    <label class="servicio-item {{ $servicioData['id'] == $s['id'] ? 'activo' : '' }}"
+                           data-servicio-id="{{ $s['id'] }}"
+                           data-precio="{{ $s['precio'] }}"
+                           data-duracion="{{ $s['duracion'] }}">
+                        <input type="radio" name="servicio_radio" value="{{ $s['id'] }}" {{ $servicioData['id'] == $s['id'] ? 'checked' : '' }}>
+                        <div class="servicio-info">
+                            <strong>{{ $s['nombre'] }}</strong>
+                            <small>{{ $s['duracion'] }} min</small>
+                        </div>
+                        <span class="servicio-precio">${{ $s['precio'] }}</span>
+                    </label>
                     @endforeach
                 </div>
             </section>
@@ -215,6 +215,7 @@
                         @endforeach
                     </select>
                 </label>
+                </label>
             </div>
 
             <div class="resumen-precio">
@@ -237,5 +238,6 @@
     </form>
 </main>
 @endsection
+
 
 @vite(['resources/js/reserva.js'])

@@ -5,11 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+
 class Cita extends Model
 {
     use HasFactory;
 
-    // Nombre real de tu tabla en XAMPP
+    //Nombre real de tu tabla en XAMPP
     protected $table = 'citas';
 
     // Columnas que Laravel puede llenar masivamente
@@ -21,7 +22,7 @@ class Cita extends Model
         'monto_total',
         'fecha',
         'hora',
-        'estado',
+        'estado'
     ];
 
     // Conversión de tipos automática

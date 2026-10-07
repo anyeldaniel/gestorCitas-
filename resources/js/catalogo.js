@@ -2,14 +2,18 @@
  * MÓDULO: Catálogo Zen - Gestión Dinámica de Servicios, Modales y Alertas de Baja
  */
 
+
+// Esperamos a que el DOM esté completamente cargado para inicializar la lógica del catálogo.
 document.addEventListener("DOMContentLoaded", () => {
     const formServicio = document.getElementById("form-servicio");
     const confirmModal = document.getElementById("modal-confirmacion-custom");
     const inputFoto = document.getElementById("servicio_foto");
 
     // ==========================================================================
-    // 1. REUTILIZACIÓN DE ALERTA DE CONFIRMACIÓN CENTRALIZADA EN PANTALLA
+    //     REUTILIZACIÓN DE ALERTA DE CONFIRMACIÓN CENTRALIZADA EN PANTALLA
     // ==========================================================================
+
+    // Función global para mostrar una alerta de confirmación personalizada.
     window.mostrarAlertaConfirmacion = function(titulo, mensaje, callbackAceptar) {
         if (!confirmModal) return;
         document.getElementById("confirm-alerta-titulo").textContent = titulo;
@@ -32,8 +36,10 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // ==========================================================================
-    // 2. PREVISUALIZACIÓN DINÁMICA DE LA FOTO EN EL AVATAR CIRUCLAR
+    //       PREVISUALIZACIÓN DINÁMICA DE LA FOTO EN EL AVATAR CIRUCLAR
     // ==========================================================================
+
+    // Función global para ser llamada desde el onchange del input file.
     window.previsualizarImagenServicio = function(input) {
         const preview = document.getElementById("previsualizacion-avatar-servicio");
         if (input.files && input.files[0]) {
@@ -56,9 +62,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================================================
-    // 3. LOGICA CONTROLADORA: MODALES (REGISTRO / EDICIÓN / CIERRE)
+    //       LOGICA CONTROLADORA: MODALES (REGISTRO / EDICIÓN / CIERRE)
     // ==========================================================================
-    window.abrirModalAgregarServicio = function() {
+
+    // Función para abrir el modal de registro con estado limpio y configuración para creación.
+window.abrirModalAgregarServicio = function() {
         const modal = document.getElementById("modal-servicio");
         if (!modal || !formServicio) return;
 
@@ -70,154 +78,87 @@ document.addEventListener("DOMContentLoaded", () => {
         const checkboxes = formServicio.querySelectorAll('input[name="especialistas[]"]');
         checkboxes.forEach(cb => cb.checked = true);
 
-        formServicio.action = "/admin/servicios/guardar";
+        // ======================================================
+        let baseUrl = window.location.origin;
+        if (window.location.pathname.includes('/public')) {
+            baseUrl += window.location.pathname.substring(0, window.location.pathname.indexOf('/public') + 7);
+        }
+        formServicio.action = `${baseUrl}/admin/servicios/guardar`;
+        // ======================================================
+
+        const metodoOculto = document.getElementById('metodo-put-servicio');
+        if (metodoOculto) metodoOculto.remove(); // Quitamos el PUT por si veníamos de editar
+        
         modal.showModal();
     };
 
+    // Función para cerrar cualquier modal de servicio (registro o edición).
     window.cerrarModalServicio = function() {
         const modal = document.getElementById("modal-servicio");
         if (modal) modal.close();
     };
 
-    window.editarServicio = function(id) {
-        const modal = document.getElementById("modal-servicio");
-        if (!modal || !formServicio) return;
+    // Función para abrir el modal de edición con datos precargados del servicio seleccionado.
+window.editarServicio = function(id) {
+            const modal = document.getElementById("modal-servicio");
+            if (!modal || !formServicio) return;
 
-        document.getElementById("modal-servicio-titulo").textContent = "Editar Servicio del Catálogo";
-        formServicio.reset();
+            document.getElementById("modal-servicio-titulo").textContent = "Editar Servicio del Catálogo";
+            formServicio.reset();
 
-        const tarjeta = document.querySelector(`.tarjeta-servicio-item[data-id="${id}"]`);
-        if (tarjeta) {
-            // Rellenar controles del formulario con los data-attributes de la tarjeta
-            document.getElementById("input_nombre").value = tarjeta.dataset.nombre || '';
-            document.getElementById("input_precio").value = tarjeta.dataset.precio || '';
-            document.getElementById("input_porcentaje").value = tarjeta.dataset.porcentaje || '';
-            document.getElementById("input_tiempo").value = tarjeta.dataset.tiempo || '60 min - 90 min';
-            document.getElementById("input_descripcion").value = tarjeta.dataset.descripcion || '';
-            
-            // Gestión de Checkboxes de especialistas asignados
-            const especialistasIds = JSON.parse(tarjeta.dataset.especialistasIds || '[]');
-            const checkboxes = formServicio.querySelectorAll('input[name="especialistas[]"]');
-            
-            checkboxes.forEach(cb => {
-                cb.checked = especialistasIds.includes(parseInt(cb.value)) || especialistasIds.includes(cb.value);
-            });
+            const tarjeta = document.querySelector(`.tarjeta-servicio-item[data-id="${id}"]`);
+            if (tarjeta) {
 
-            // Replicar foto miniatura en el avatar redondo del modal
-            const fotoSrc = tarjeta.querySelector('.foto-servicio-portada')?.src;
-            const preview = document.getElementById("previsualizacion-avatar-servicio");
-            if (fotoSrc && !fotoSrc.includes('default.jpg')) {
-                preview.innerHTML = `<img src="${fotoSrc}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
-                preview.style.borderStyle = 'solid';
-            } else {
-                preview.innerHTML = "SZ";
-                preview.style.borderStyle = 'dashed';
-            }
-
-            formServicio.action = `/admin/servicios/${id}/actualizar`;
-            formServicio.dataset.idEditando = id;
-            modal.showModal();
-        }
-    };
-
-    // ==========================================================================
-    // 4. INTERCEPCIÓN SUBMIT: ACTUALIZACIÓN INTERACTIVA DE VISTAS (EN CALIENTE)
-    // ==========================================================================
-    if (formServicio) {
-        formServicio.addEventListener("submit", (e) => {
-            const titulo = document.getElementById("modal-servicio-titulo").textContent;
-            const checkboxesSeleccionados = formServicio.querySelectorAll('input[name="especialistas[]"]:checked');
-            const listaNombres = [];
-            const listaIds = [];
-            
-            checkboxesSeleccionados.forEach(cb => {
-                listaIds.push(cb.value);
-                listaNombres.push(cb.parentNode.textContent.trim());
-            });
-
-            if (titulo.includes("Editar")) {
-                e.preventDefault(); // Previene recarga para simular persistencia frontend en caliente
-                const id = formServicio.dataset.idEditando;
-                const tarjeta = document.querySelector(`.tarjeta-servicio-item[data-id="${id}"]`);
+                // Rellenar controles del formulario con los data-attributes de la tarjeta.
+                document.getElementById("input_nombre").value = tarjeta.dataset.nombre || '';
+                document.getElementById("input_precio").value = tarjeta.dataset.precio || '';
+                document.getElementById("input_porcentaje").value = tarjeta.dataset.porcentaje || '';
+                document.getElementById("input_tiempo").value = tarjeta.dataset.tiempo || '60 min - 90 min';
+                document.getElementById("input_descripcion").value = tarjeta.dataset.descripcion || '';
                 
-                if (tarjeta) {
-                    const nombre = document.getElementById("input_nombre").value;
-                    const precio = document.getElementById("input_precio").value;
-                    const porcentaje = document.getElementById("input_porcentaje").value;
-                    const tiempo = document.getElementById("input_tiempo").value;
-                    const descripcion = document.getElementById("input_descripcion").value;
-                    const fotoSrc = document.getElementById("previsualizacion-avatar-servicio").querySelector('img')?.src;
+                // Gestión de Checkboxes de especialistas asignados.
+                const especialistasIds = JSON.parse(tarjeta.dataset.especialistasIds || '[]');
+                const checkboxes = formServicio.querySelectorAll('input[name="especialistas[]"]');
+                
+                checkboxes.forEach(cb => {
+                    cb.checked = especialistasIds.includes(parseInt(cb.value)) || especialistasIds.includes(cb.value);
+                });
 
-                    // Mutar dataset de la tarjeta modificada
-                    tarjeta.dataset.nombre = nombre;
-                    tarjeta.dataset.precio = precio;
-                    tarjeta.dataset.porcentaje = porcentaje;
-                    tarjeta.dataset.tiempo = tiempo;
-                    tarjeta.dataset.descripcion = descripcion;
-                    tarjeta.dataset.especialistasNombres = JSON.stringify(listaNombres);
-                    tarjeta.dataset.especialistasIds = JSON.stringify(listaIds);
-
-                    // Actualizar UI visual de la tarjeta
-                    tarjeta.querySelector('h3').textContent = nombre;
-                    tarjeta.querySelector('.tag-rol.especialista').textContent = tiempo;
-                    tarjeta.querySelector('.price-tag').textContent = `$${precio}`;
-                    if (fotoSrc) {
-                        tarjeta.querySelector('.foto-servicio-portada').src = fotoSrc;
-                    }
+                // Replicar foto miniatura en el avatar redondo del modal.
+                const fotoSrc = tarjeta.querySelector('.foto-servicio-portada')?.src;
+                const preview = document.getElementById("previsualizacion-avatar-servicio");
+                if (fotoSrc && !fotoSrc.includes('default.jpg')) {
+                    preview.innerHTML = `<img src="${fotoSrc}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+                    preview.style.borderStyle = 'solid';
+                } else {
+                    preview.innerHTML = "SZ";
+                    preview.style.borderStyle = 'dashed';
                 }
-                alert("Cambios guardados en el servicio con éxito.");
-                document.getElementById("modal-servicio").close();
-            } else {
-                e.preventDefault();
-                const nombre = document.getElementById("input_nombre").value;
-                const precio = document.getElementById("input_precio").value;
-                const porcentaje = document.getElementById("input_porcentaje").value;
-                const tiempo = document.getElementById("input_tiempo").value;
-                const descripcion = document.getElementById("input_descripcion").value;
-                const fotoSrc = document.getElementById("previsualizacion-avatar-servicio").querySelector('img')?.src || '/img/default.jpg';
-                const nuevaId = Date.now();
 
-                const nuevoHtml = `
-                    <article class="tarjeta-componente tarjeta-servicio-item" 
-                             data-id="${nuevaId}" 
-                             data-nombre="${nombre}" 
-                             data-precio="${precio}" 
-                             data-porcentaje="${porcentaje}" 
-                             data-tiempo="${tiempo}" 
-                             data-descripcion="${descripcion}" 
-                             data-especialistas-nombres='${JSON.stringify(listaNombres)}'
-                             data-especialistas-ids='${JSON.stringify(listaIds)}'
-                             style="display: flex; flex-direction: column; justify-content: space-between; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem; max-width: 310px; width: 100%; box-sizing: border-box; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-                        <div>
-                            <img src="${fotoSrc}" alt="${nombre}" class="img-portada foto-servicio-portada" style="width: 100%; height: 170px; object-fit: cover; border-radius: 8px; margin-bottom: 0.75rem; display: block;">
-                            <header>
-                                <h3 class="text-lg font-semibold capitalize" style="margin: 0 0 0.25rem 0; font-size: 1.15rem; color: #1e293b; line-height: 1.3;">${nombre}</h3>
-                                <p class="text-sm text-gray-500" style="margin: 0 0 0.4rem 0; font-size: 0.85rem; color: #64748b;">Tratamiento exclusivo de nuestro spa.</p>
-                                <small class="texto-atenuado" style="display: block; margin-bottom: 0.75rem; font-size: 0.8rem; color: #94a3b8;">
-                                    ⏱️ Rango: <span class="tag-rol especialista">${tiempo}</span>
-                                </small>
-                            </header>
-                        </div>
-                        <footer class="flex justify-between items-center mt-2" style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 0.4rem; border-top: 1px dashed #e2e8f0; padding-top: 0.75rem; margin-top: auto;">
-                            <span class="precio-tag price-tag" style="font-weight: 700; font-size: 1.1rem; color: #1e293b;">$${precio}</span>
-                            <div class="acciones-catalogo-wrapper" style="display: flex; gap: 0.35rem; align-items: center;">
-                                <button type="button" class="btn-secundario" style="padding: 0.4rem 0.65rem; font-size: 0.8rem; border-radius: 6px; cursor: pointer;" onclick="verServicioDetalle('${nuevaId}')">Consultar</button>
-                                <button type="button" class="btn-secundario" style="background-color: #e2e8f0; color: #334155; padding: 0.4rem 0.65rem; font-size: 0.8rem; border-radius: 6px; border: none; cursor: pointer;" onclick="editarServicio('${nuevaId}')">Editar</button>
-                                <button type="button" class="btn-baja" style="background: rgba(255, 90, 125, 0.08); color: #ff5a7d; border: 1px solid rgba(255, 90, 125, 0.3); padding: 0.4rem 0.65rem; font-size: 0.8rem; border-radius: 6px; cursor: pointer;" onclick="eliminarServicio('${nuevaId}')">Eliminar</button>
-                            </div>
-                        </footer>
-                    </article>
-                `;
-                document.getElementById("contenedor-servicios-catalogo").insertAdjacentHTML('beforeend', nuevoHtml);
-                alert("Servicio de bienestar agregado con éxito.");
-                document.getElementById("modal-servicio").close();
+                // ======================================================
+                let baseUrl = window.location.origin;
+                if (window.location.pathname.includes('/public')) {
+                    baseUrl += window.location.pathname.substring(0, window.location.pathname.indexOf('/public') + 7);
+                }
+                formServicio.action = `${baseUrl}/admin/servicios/${id}/actualizar`;
+                // ======================================================
+
+                formServicio.dataset.idEditando = id;
+                
+                // Forzamos a laravel a usar el método PUT para la actualización.
+                if (!document.getElementById('metodo-put-servicio')) {
+                    formServicio.insertAdjacentHTML('beforeend', '<input type="hidden" name="_method" value="PUT" id="metodo-put-servicio">');
+                }
+
+                modal.showModal();
             }
-        });
-    }
+        };
 
     // ==========================================================================
-    // 5. CONSULTA DETALLADA: CONSTRUCCIÓN DINÁMICA DE LA FICHA TÉCNICA
+    //       CONSULTA DETALLADA: CONSTRUCCIÓN DINÁMICA DE LA FICHA TÉCNICA
     // ==========================================================================
+
+    // Función para mostrar el modal de consulta detallada con información extraída de los data-attributes de la tarjeta.
     window.verServicioDetalle = function(id) {
         const tarjeta = document.querySelector(`.tarjeta-servicio-item[data-id="${id}"]`);
         if (tarjeta) {
@@ -249,26 +190,42 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // ==========================================================================
-    // 6. ADVERTENCIA DE BAJA BAJO VENTANA CRÍTICA DIÁLOGO (ELIMINAR)
+    //       ADVERTENCIA DE BAJA BAJO VENTANA CRÍTICA DIÁLOGO (ELIMINAR)
     // ==========================================================================
+
+    // Función para mostrar una alerta de confirmación antes de eliminar un servicio, con información contextualizada del servicio a eliminar.
     window.eliminarServicio = function(id) {
         const tarjeta = document.querySelector(`.tarjeta-servicio-item[data-id="${id}"]`);
         const nombreServicio = tarjeta ? tarjeta.dataset.nombre : "este servicio";
         
         window.mostrarAlertaConfirmacion(
             "¿Remover tratamiento del catálogo?",
-            `¿Estás seguro de eliminar permanentemente el servicio "${nombreServicio.toUpperCase()}"? Esta operación no se puede deshacer de los registros del spa.`,
+            `¿Estás seguro de eliminar permanentemente "${nombreServicio.toUpperCase()}"?`,
             () => {
-                if (tarjeta) {
-                    tarjeta.remove();
+                // === EL FIX: CREAMOS UN FORMULARIO FANTASMA PARA ENVIAR EL DELETE ===
+                let baseUrl = window.location.origin;
+                if (window.location.pathname.includes('/public')) {
+                    baseUrl += window.location.pathname.substring(0, window.location.pathname.indexOf('/public') + 7);
                 }
+
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `${baseUrl}/admin/servicios/${id}/eliminar`;
+                form.innerHTML = `
+                    <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]')?.content || ''}">
+                    <input type="hidden" name="_method" value="DELETE">
+                `;
+                document.body.appendChild(form);
+                form.submit();
             }
         );
     };
 
     // ==========================================================================
-    // 7. MÁSCARA OSCURA: CIERRE CON CLICK EN BACKDROP OUTSIDE
+    //         MÁSCARA OSCURA: CIERRE CON CLICK EN BACKDROP OUTSIDE
     // ==========================================================================
+
+    // Agregamos un listener global para cerrar cualquier modal al hacer click fuera del contenido (en el backdrop).
     document.querySelectorAll('dialog').forEach(modal => {
         modal.addEventListener('click', function(e) {
             const rect = modal.getBoundingClientRect();

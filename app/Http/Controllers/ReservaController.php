@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Cita;
 use App\Models\Servicio;
 use App\Models\User;
+use Illuminate\Validation\Rule;
 
 class ReservaController extends Controller
 {
@@ -26,8 +27,9 @@ class ReservaController extends Controller
             'duracion' => $servicio->duracion_minutos ?? 60,
         ];
 
-        // ✅ NUEVO: Traer terapeutas para el <select> del formulario
+        // Solo ofrecer usuarios registrados con el rol de trabajador.
         $terapeutas = User::where('id', '!=', auth()->id())
+            ->where('rol', 'trabajador')
             ->orderBy('nombre')
             ->get();
 
@@ -42,7 +44,11 @@ class ReservaController extends Controller
         // 1. Validación
         $request->validate([
             'servicio_id'   => 'required|integer|exists:servicios,id',
-            'trabajador_id' => 'required|integer|exists:usuarios,id',
+            'trabajador_id' => [
+                'required',
+                'integer',
+                Rule::exists('usuarios', 'id')->where('rol', 'trabajador'),
+            ],
             'fecha'         => 'required|date|after_or_equal:today',
             'hora'          => 'required',
         ]);
