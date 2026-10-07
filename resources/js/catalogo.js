@@ -276,7 +276,102 @@ document.addEventListener("DOMContentLoaded", () => {
                                 rect.left <= e.clientX && e.clientX <= rect.left + rect.width);
             if (!isInDialog) {
                 modal.close();
+
+                // 👇 NUEVO: Si se cierra el onboarding haciendo clic fuera,
+                //          guardamos en localStorage para que no vuelva a aparecer.
+                if (modal.id === "onboardingBienvenida") {
+                    localStorage.setItem("onboardingClienteVista_v1", "true");
+                }
             }
         });
     });
+
+    // ==========================================================================
+    // 8. ONBOARDING DE BIENVENIDA — 3 PASOS (NUEVO)
+    // Solo se ejecuta si el cliente tiene el modal en el DOM
+    // ==========================================================================
+    const onboardingModal = document.getElementById("onboardingBienvenida");
+    if (onboardingModal) {
+        const btnCerrar     = document.getElementById("onboardingCerrar");
+        const btnContinuar  = document.getElementById("onboardingContinuar");
+        const btnTexto      = document.getElementById("onboardingBtnTexto");
+        const pasoTexto     = document.getElementById("onboardingPasoTexto");
+        const numero        = document.getElementById("onboardingNumero");
+        const icono         = document.getElementById("onboardingIcono");
+        const lineas        = document.querySelectorAll("#onboardingProgreso .linea");
+        const pasos         = document.querySelectorAll(".onboarding-paso");
+
+        const CLAVE_ONBOARDING = "onboardingClienteVista_v1";
+        let pasoActual = 1;
+        const TOTAL_PASOS = 3;
+
+        // Iconos SVG por paso
+        const iconosSVG = {
+            1: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3m0 12v3m9-9h-3M6 12H3m15.364-6.364l-2.121 2.121M8.757 15.243l-2.121 2.121m12.728 0l-2.121-2.121M8.757 8.757L6.636 6.636"/><circle cx="12" cy="12" r="3"/></svg>`,
+            2: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2"/></svg>`,
+            3: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>`
+        };
+
+        // Mostrar solo si no lo ha visto antes
+        if (!localStorage.getItem(CLAVE_ONBOARDING)) {
+            setTimeout(() => {
+                if (typeof onboardingModal.showModal === "function") {
+                    onboardingModal.showModal();
+                } else {
+                    onboardingModal.setAttribute("open", "");
+                }
+            }, 600);
+        }
+
+        // Función para actualizar el paso
+        function mostrarPaso(n) {
+            pasoActual = n;
+
+            numero.textContent = String(n).padStart(2, "0");
+            icono.innerHTML = iconosSVG[n];
+
+            lineas.forEach((linea, i) => {
+                linea.classList.toggle("activa", i < n);
+            });
+
+            pasos.forEach((p) => {
+                p.classList.toggle("activo", parseInt(p.dataset.paso) === n);
+            });
+
+            pasoTexto.textContent = `Paso ${n} de ${TOTAL_PASOS}`;
+
+            // 👇 CAMBIO: En el último paso el botón dice "Explorar catálogo"
+            btnTexto.textContent = (n === TOTAL_PASOS) ? "Explorar catálogo" : "Continuar";
+        }
+
+        // Cerrar
+        const cerrarOnboarding = () => {
+            localStorage.setItem(CLAVE_ONBOARDING, "true");
+            if (typeof onboardingModal.close === "function") {
+                onboardingModal.close();
+            } else {
+                onboardingModal.removeAttribute("open");
+            }
+        };
+
+        // Botón continuar
+        btnContinuar.addEventListener("click", () => {
+            if (pasoActual < TOTAL_PASOS) {
+                mostrarPaso(pasoActual + 1);
+            } else {
+                // 👇 CAMBIO: En el último paso, SOLO cierra el onboarding.
+                // El cliente se queda en el catálogo para elegir su servicio.
+                cerrarOnboarding();
+            }
+        });
+
+        // Botón cerrar (X)
+        btnCerrar.addEventListener("click", cerrarOnboarding);
+
+        // Cerrar con Escape (evita el cierre automático sin guardar)
+        onboardingModal.addEventListener("cancel", (e) => {
+            e.preventDefault();
+            cerrarOnboarding();
+        });
+    }
 });

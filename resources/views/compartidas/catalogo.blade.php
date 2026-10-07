@@ -138,7 +138,111 @@
     </section>
 </section>
 
-{{-- Inclusión del Modal (Asegúrate de que esté en la carpeta correcta) --}}
+{{-- ============================================
+     ONBOARDING DE BIENVENIDA — 3 PASOS
+     Solo se muestra a clientes (no admin, no recepcionista, no trabajador)
+     ============================================ --}}
+@if(auth()->user()->rol === 'cliente')
+<dialog id="onboardingBienvenida" class="onboarding-bienvenida">
+
+    {{-- Marca superior --}}
+    <div class="onboarding-marca">
+        <div class="logo-circulo">BR</div>
+        <span class="nombre-marca">The Beauty Room</span>
+    </div>
+
+    {{-- Tarjeta principal --}}
+    <div class="onboarding-tarjeta">
+
+        {{-- Botón cerrar --}}
+        <button type="button" class="onboarding-cerrar" id="onboardingCerrar" aria-label="Cerrar">×</button>
+
+        {{-- LADO IZQUIERDO (oscuro) --}}
+        <aside class="onboarding-lado-oscuro">
+            <span class="onboarding-numero" id="onboardingNumero">01</span>
+
+            <div class="onboarding-icono-circulo" id="onboardingIcono">
+                {{-- Icono por defecto: chispa (paso 1) --}}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 3v3m0 12v3m9-9h-3M6 12H3m15.364-6.364l-2.121 2.121M8.757 15.243l-2.121 2.121m12.728 0l-2.121-2.121M8.757 8.757L6.636 6.636"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
+            </div>
+
+            <div class="onboarding-frase">
+                Your Beauty,<br>Your Moment
+            </div>
+        </aside>
+
+        {{-- LADO DERECHO (claro) --}}
+        <div class="onboarding-lado-claro">
+
+            <div class="onboarding-contenido">
+
+                {{-- Barra de progreso --}}
+                <div class="onboarding-progreso" id="onboardingProgreso">
+                    <span class="linea activa"></span>
+                    <span class="linea"></span>
+                    <span class="linea"></span>
+                </div>
+
+                {{-- PASO 1 --}}
+                <div class="onboarding-paso activo" data-paso="1">
+                    <span class="onboarding-etiqueta">Descubre</span>
+                    <p class="onboarding-subtitulo">Bienvenida a The Beauty Room</p>
+                    <h2 class="onboarding-titulo">Explora nuestros rituales</h2>
+                    <p class="onboarding-descripcion">
+                        Conoce todos nuestros servicios, sus beneficios, duración y precio
+                        antes de elegir.
+                    </p>
+                </div>
+
+                {{-- PASO 2 --}}
+                <div class="onboarding-paso" data-paso="2">
+                    <span class="onboarding-etiqueta">Conecta</span>
+                    <p class="onboarding-subtitulo">Conoce a nuestras expertas</p>
+                    <h2 class="onboarding-titulo">Encuentra tu match ideal</h2>
+                    <p class="onboarding-descripcion">
+                        Revisa el perfil y las especialidades de cada profesional para
+                        encontrar a la terapeuta perfecta para ti.
+                    </p>
+                </div>
+
+                {{-- PASO 3 --}}
+                <div class="onboarding-paso" data-paso="3">
+                    <span class="onboarding-etiqueta">Reserva</span>
+                    <p class="onboarding-subtitulo">Agenda en pocos pasos</p>
+                    <h2 class="onboarding-titulo">Tu momento te espera</h2>
+                    <p class="onboarding-descripcion">
+                        Elige servicio, fecha y hora. Recibirás tu confirmación
+                        inmediatamente por correo.
+                    </p>
+                </div>
+
+            </div>
+
+            {{-- Pie: paginación y botón --}}
+            <footer class="onboarding-pie">
+                <span class="onboarding-paso-texto" id="onboardingPasoTexto">Paso 1 de 3</span>
+
+                <button type="button" class="onboarding-btn-continuar" id="onboardingContinuar">
+                    <span id="onboardingBtnTexto">Continuar</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14M13 5l7 7-7 7"/>
+                    </svg>
+                </button>
+            </footer>
+
+        </div>
+
+    </div>
+
+    {{-- Nota inferior --}}
+    <p class="onboarding-nota">Este recorrido solo aparecerá esta vez.</p>
+
+</dialog>
+@endif
+
 @include('compartidas.modal-catalogo')
 @endsection
 

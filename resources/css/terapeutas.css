@@ -107,6 +107,7 @@ body {
     font-size: clamp(1rem, 2.5vw, 1.1rem); 
     font-weight: 600; 
     flex: 1; /* Toma el espacio disponible */
+    color: var(--blanco); /* 👈 LETRAS BLANCAS */
 }
 
 /* --- Tarjetas de Usuario (Filas) --- */
@@ -830,7 +831,7 @@ dialog.modal-contenedor-alerta-critica[open] {
 .cuerpo-alerta-centrado {
     background-color: #ffffff;
     width: 100%;
-    max-width: 420px;
+    max-width: 460px; /* 👈 Aumentado para dar más espacio a los botones */
     text-align: center;
     padding: 2rem;
     align-items: center;
@@ -878,12 +879,13 @@ dialog[open] .cuerpo-alerta-centrado {
     width: 100%;
     justify-content: center;
     flex-wrap: wrap; /* Permite apilar botones en pantallas muy pequeñas */
+    align-items: stretch; /* 👈 Ambos botones misma altura */
 }
 
 .btn-cancelar-alerta,
 .btn-aceptar-eliminar {
-    padding: 15px 24px;
-    font-size: clamp(0.75rem, 2vw, 0.85rem); /* Botones fluidos */
+    padding: 14px 18px; /* 👈 Ajustado para dar aire al texto */
+    font-size: clamp(0.7rem, 1.8vw, 0.8rem); /* 👈 Un poco más pequeño */
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -892,9 +894,17 @@ dialog[open] .cuerpo-alerta-centrado {
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     border: 1px solid transparent;
-    flex: 1;
-    min-width: 120px; /* Asegura que no se hagan demasiado pequeños */
+    flex: 1 1 0;              /* 👈 Reparte el ancho equitativamente */
+    min-width: 0;              /* 👈 CLAVE: permite encoger el botón */
     text-align: center;
+    white-space: normal;       /* 👈 Permite que el texto salte de línea */
+    word-break: break-word;    /* 👈 Rompe palabras largas si es necesario */
+    overflow-wrap: anywhere;   /* 👈 Refuerzo para textos largos */
+    line-height: 1.25;         /* 👈 Mejor lectura en varias líneas */
+    box-sizing: border-box;    /* 👈 El padding no desborda */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn-cancelar-alerta {
@@ -1048,6 +1058,7 @@ dialog[open] .cuerpo-alerta-centrado {
     .btn-cancelar-alerta,
     .btn-aceptar-eliminar {
         width: 100%;
-        min-width: auto;
+        min-width: 0; /* 👈 Evita el desborde en pantallas pequeñas */
+        flex: none;  /* 👈 Que no intente repartir espacio */
     }
 }
