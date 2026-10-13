@@ -36,11 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
         tab.addEventListener('click', () => {
             console.log('🖱️ Tab clickeado:', tab.dataset.filtro);
 
-            // Quitar "activo" de todos y ponerlo solo al clickeado
             tabs.forEach(t => t.classList.remove('activo'));
             tab.classList.add('activo');
 
-            // Aplicar filtro
             aplicarFiltros(tab.dataset.filtro);
         });
     });
@@ -75,20 +73,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const badge = fila.querySelector('.estado-pendiente, .estado-autorizado, .estado-rechazado');
             const estadoFila = badge ? obtenerEstadoClave(badge) : '';
 
-            // Coincidencia por texto
             const coincideBusqueda = !termino || textoFila.includes(termino);
-
-            // Coincidencia por estado
             const coincideEstado = estadoFiltro === 'todos' || estadoFila === estadoFiltro;
 
-            // Coincidencia por fecha (si la fila tiene un data-fecha)
             let coincideFecha = true;
             if (fechaSeleccionada) {
                 const dataFecha = fila.dataset.fecha || '';
                 coincideFecha = !dataFecha || dataFecha === fechaSeleccionada;
             }
 
-            // Mostrar u ocultar
             if (coincideBusqueda && coincideEstado && coincideFecha) {
                 fila.style.display = '';
                 visibles++;
@@ -186,7 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // =====================================================================
     if (btnConfirmar) {
         btnConfirmar.addEventListener('click', () => {
-            // Validación: si es rechazo, el motivo es obligatorio
             if (accionActual === 'rechazar') {
                 if (!motivoRechazo || motivoRechazo.value.trim() === '') {
                     if (motivoRechazo) {
@@ -214,13 +206,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
-                // Deshabilitar botones de esa fila
                 filaActual.querySelectorAll('button').forEach(b => b.disabled = true);
 
-                // Actualizar contadores de tabs
                 actualizarContadores();
 
-                // Re-aplicar filtros por si la fila ya no coincide con el tab actual
                 const tabActivo = document.querySelector('.tab-estado.activo');
                 aplicarFiltros(tabActivo ? tabActivo.dataset.filtro : 'todos');
             }

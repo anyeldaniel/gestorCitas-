@@ -1,5 +1,6 @@
 /**
  * MÓDULO: Gestión de Terapeutas - Vista Pública y Dashboard
+ * CORREGIDO: Rutas dinámicas para funcionar con o sin /public/
  */
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -16,7 +17,6 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // Cerrar modales con click en backdrop
     document.querySelectorAll('.modal-zen, .modal-contenedor-alerta-critica').forEach(modal => {
         modal.addEventListener('click', function(e) {
             if (e.target === this) {
@@ -25,6 +25,17 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 });
+
+// ============================================
+// FUNCIÓN AUXILIAR: DETECTAR URL BASE
+// ============================================
+function getBaseUrl() {
+    let baseUrl = window.location.origin;
+    if (window.location.pathname.includes('/public')) {
+        baseUrl += window.location.pathname.substring(0, window.location.pathname.indexOf('/public') + 7);
+    }
+    return baseUrl;
+}
 
 // ============================================
 // FUNCIONES GLOBALES - TERAPEUTAS
@@ -96,6 +107,7 @@ window.verTerapeutaDetalle = function(id) {
  * RUTA: POST /admin/crear-trabajador
  */
 window.abrirModalAgregar = function() {
+    console.log('✅ abrirModalAgregar ejecutado');
     const modal = document.getElementById('modal-terapeuta');
     const form = document.getElementById('form-terapeuta');
     
@@ -105,7 +117,9 @@ window.abrirModalAgregar = function() {
     }
     
     form.reset();
-    form.action = '/admin/crear-trabajador';
+    
+    // ✅ RUTA DINÁMICA
+    form.action = `${getBaseUrl()}/admin/crear-trabajador`;
     
     const methodInput = document.getElementById('terapeuta_method');
     if (methodInput) {
@@ -163,6 +177,7 @@ window.abrirModalAgregar = function() {
  * RUTA: PUT /admin/trabajador/{id}
  */
 window.editarTerapeuta = function(id) {
+    console.log('✅ editarTerapeuta ejecutado para ID:', id);
     const modal = document.getElementById('modal-terapeuta');
     const form = document.getElementById('form-terapeuta');
     
@@ -172,21 +187,12 @@ window.editarTerapeuta = function(id) {
     }
 
     let tarjeta = document.querySelector(`.tarjeta-terapeuta[data-id="${id}"]`);
-    
     if (!tarjeta) {
-        const fila = document.querySelector(`.tarjeta-fila[data-id="${id}"]`);
-        if (fila) {
-            tarjeta = fila;
-        } else {
-            const btn = document.querySelector(`button[onclick*="editarTerapeuta(${id})"]`) ||
-                        document.querySelector(`button[onclick*="editEsp(${id})"]`);
-            if (btn) {
-                tarjeta = btn.closest('.tarjeta-fila') || btn.closest('.tarjeta-terapeuta');
-            }
-        }
+        tarjeta = document.querySelector(`.tarjeta-fila[data-id="${id}"]`);
     }
 
-    form.action = `/admin/trabajador/${id}`;
+    // ✅ RUTA DINÁMICA
+    form.action = `${getBaseUrl()}/admin/trabajador/${id}`;
     
     const methodInput = document.getElementById('terapeuta_method');
     if (methodInput) {
@@ -218,8 +224,7 @@ window.editarTerapeuta = function(id) {
     let especialidades = '';
 
     if (tarjeta) {
-        nombre = tarjeta.querySelector('.terapeuta-nombre')?.textContent.trim() || 
-                  tarjeta.querySelector('h2')?.textContent.trim() || '';
+        nombre = tarjeta.querySelector('.terapeuta-nombre')?.textContent.trim() || '';
         email = tarjeta.querySelector('.terapeuta-email')?.textContent.trim() || '';
         telefono = tarjeta.querySelector('.terapeuta-telefono')?.textContent.replace('Teléfono:', '').trim() || '';
         descripcion = tarjeta.querySelector('.terapeuta-descripcion')?.textContent.trim() || '';
@@ -233,20 +238,12 @@ window.editarTerapeuta = function(id) {
                 if (badges.length > 0) {
                     especialidades = Array.from(badges).map(b => b.textContent.trim()).join(',');
                 }
-                email = tarjeta.querySelector('.terapeuta-email')?.textContent.trim() || '';
-                telefono = tarjeta.querySelector('.terapeuta-telefono')?.textContent.trim() || '';
-                descripcion = tarjeta.querySelector('.terapeuta-descripcion')?.textContent.trim() || '';
             }
         }
     }
 
     if (!nombre) {
-        const nombreElement = document.querySelector(`.tarjeta-fila[data-id="${id}"] .info-usuario h4`);
-        if (nombreElement) {
-            nombre = nombreElement.textContent.trim();
-        } else {
-            nombre = `Especialista #${id}`;
-        }
+        nombre = `Especialista #${id}`;
     }
 
     document.getElementById('nombre').value = nombre;
@@ -292,8 +289,6 @@ window.editarTerapeuta = function(id) {
 /**
  * Eliminar terapeuta
  * RUTA: DELETE /admin/usuario/{id}
- * 
- * ✅ ALERTA UNIFICADA CON EL ESTILO DEL CATÁLOGO
  */
 window.eliminarTerapeuta = function(id) {
     const modal = document.getElementById('modal-confirmacion-custom');
@@ -303,7 +298,7 @@ window.eliminarTerapeuta = function(id) {
             const token = document.querySelector('input[name="_token"]')?.value || '';
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = `/admin/usuario/${id}`;
+            form.action = `${getBaseUrl()}/admin/usuario/${id}`;
             form.innerHTML = `
                 <input type="hidden" name="_token" value="${token}">
                 <input type="hidden" name="_method" value="DELETE">
@@ -314,7 +309,6 @@ window.eliminarTerapeuta = function(id) {
         return;
     }
 
-    // Buscar el nombre del terapeuta para personalizar el mensaje
     let nombreTerapeuta = '';
     const tarjeta = document.querySelector(`.tarjeta-terapeuta[data-id="${id}"], .tarjeta-fila[data-id="${id}"]`);
     if (tarjeta) {
@@ -338,7 +332,7 @@ window.eliminarTerapeuta = function(id) {
         const token = document.querySelector('input[name="_token"]')?.value || '';
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = `/admin/usuario/${id}`;
+        form.action = `${getBaseUrl()}/admin/usuario/${id}`;
         form.innerHTML = `
             <input type="hidden" name="_token" value="${token}">
             <input type="hidden" name="_method" value="DELETE">
@@ -353,7 +347,7 @@ window.eliminarTerapeuta = function(id) {
 };
 
 // ============================================
-// FUNCIONES DE UTILIDAD (sin cambios)
+// FUNCIONES DE UTILIDAD
 // ============================================
 
 window.agregarCampoEspecialidad = function(valor = '') {

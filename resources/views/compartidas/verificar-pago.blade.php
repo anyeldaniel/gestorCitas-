@@ -292,7 +292,7 @@
 </main>
 
 {{-- ============================================================
-     MODAL CONFIRMACIÓN - ESTILO CATÁLOGO
+     MODAL CONFIRMACIÓN - ESTILO IMAGEN
      ============================================================ --}}
 <dialog id="modal-confirmacion" class="modal-contenedor-alerta-critica">
     <article class="cuerpo-alerta-centrado">

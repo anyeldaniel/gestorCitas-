@@ -20,6 +20,8 @@
                         'resources/js/pasarela-pago.js',
                         'resources/css/reserva.css',
                         'resources/js/reserva.js',
+                        'resources/css/pago-checkout.css',
+                        'resources/js/pago-checkout.js',
 
                     ],
                 refresh: true,

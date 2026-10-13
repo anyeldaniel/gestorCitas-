@@ -6,9 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'The Beauty Room')</title>
     
-    {{-- Vite carga los estilos globales y tus archivos --}}
-@vite(['resources/css/app.css',  'resources/css/agenda.css', 'resources/css/terapeutas.css','resources/css/pago-checkout.css','resources/js/pago-checkout.js', 'resources/css/verificar-pago.css', 'resources/css/reserva.css', 'resources/js/app.js', 'resources/js/layout.js', 'resources/js/terapeutas.js', 'resources/js/dashboard.js', 'resources/js/reserva.js', 'resources/js/verificar-pago.js'])    
-    {{-- AGREGADO: Stack para que tus vistas hijas inyecten sus estilos --}}
+    {{-- Estilos globales --}}
+    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/layout.js'])
+    
+    {{-- Stack para que tus vistas hijas inyecten sus estilos --}}
     @stack('styles')
 </head>
 <body>
@@ -45,7 +46,7 @@
                     @endif
 
                     @if($isAdmin || $isRecepcionista)
-                        <a href="{{ url('/recepcion/pagos') }}" class="nav-item">Verificar Pagos</a>
+                        <a href="{{ route('pago.verificar') }}" class="nav-item">Verificar Pagos</a>
                     @endif
 
                     @if($isCliente)
@@ -76,7 +77,7 @@
                         <a href="{{ route('admin.reportes') }}" class="text-white text-lg font-medium border-b border-white/20 pb-2">Reportes</a>
                     @endif
                     @if($isAdmin || $isRecepcionista)
-                        <a href="{{ url('/recepcion/pagos') }}" class="text-white text-lg font-medium border-b border-white/20 pb-2">Verificar Pagos</a>
+                        <a href="{{ route('pago.verificar') }}" class="text-white text-lg font-medium border-b border-white/20 pb-2">Verificar Pagos</a>
                     @endif
                     @if($isCliente)
                         <a href="{{ url('/reservas') }}" class="text-white text-lg font-medium border-b border-white/20 pb-2">Reservas</a>
@@ -126,7 +127,6 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         lucide.createIcons();
-        // Asegúrate de que aquí esté tu lógica de menú móvil si la tenías escrita directo en el layout
         document.getElementById('hamburger-btn')?.addEventListener('click', () => {
             document.getElementById('mobile-menu').classList.add('active');
         });

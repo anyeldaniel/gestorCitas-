@@ -10,22 +10,29 @@ class PagoController extends Controller
 {
     /**
      * ============================================================
-     * Endpoint de prueba (ya lo tenías)
+     * Panel admin/recepción para verificar pagos
+     * ✅ Devuelve la VISTA (no JSON), así el navegador renderiza
+     * el Blade con estilos en lugar de mostrar texto plano.
      * ============================================================
      */
     public function index()
     {
-        return response()->json([
-            'status'  => 'success',
-            'modulo'  => 'Verificar Pagos',
-            'mensaje' => 'El backend de Verificar Pagos responde correctamente',
-        ]);
+        // Cuando tengas la tabla 'pagos' con datos reales,
+        // descomenta las siguientes líneas:
+        //
+        // $transacciones = Pago::where('estado', 'pendiente')
+        //     ->orderBy('created_at', 'desc')
+        //     ->get();
+        //
+        // return view('compartidas.verificar-pago', compact('transacciones'));
+
+        return view('compartidas.verificar-pago');
     }
 
     /**
      * ============================================================
      * Vista del panel admin/recepción para verificar pagos
-     * (ya lo tenías)
+     * (método alternativo / alias del anterior)
      * ============================================================
      */
     public function mostrarVistaAdmin()

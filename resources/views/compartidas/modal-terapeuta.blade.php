@@ -49,7 +49,7 @@
             <label>Especialidades</label>
             <div id="wrapper-especialidades-lista" class="contenedor-especialidades-dinamicas">
                 <div class="fila-especialidad">
-                    <input type="text" class="input-especialidad-item" placeholder="Ej. Rejuvenecimiento Facial">
+                    <input type="text" class="input-especialidad-item" placeholder="Ej. Rejuvenecimiento Facial" required>
                     <button type="button" class="btn-añadir-especialidad" onclick="agregarCampoEspecialidad('')">+</button>
                 </div>
             </div>
@@ -96,7 +96,7 @@
         <!-- ACCIONES -->
         <footer class="modal-acciones">
             <button type="button" class="btn-zen btn-secundario" onclick="cerrarModal()">Cancelar</button>
-            <button type="button" onclick="sincronizarEspecialidades(); this.form.submit();" class="btn-zen btn-primario">Guardar Especialista</button>
+            <button type="submit" class="btn-zen btn-primario">Guardar Especialista</button>
         </footer>
     </form>
 </dialog>
@@ -111,7 +111,6 @@
         <button type="button" class="btn-cerrar-modal" onclick="document.getElementById('modal-ver-terapeuta').close()">&times;</button>
     </header>
     <div class="modal-form">
-        <!-- Avatar y Nombre -->
         <div style="display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem;">
             <div id="view-terapeuta-foto" class="avatar-preview" style="width:70px; height:70px; font-size:1.5rem;">TF</div>
             <div>
@@ -120,7 +119,6 @@
             </div>
         </div>
 
-        <!-- Información -->
         <div style="display:flex; flex-direction:column; gap:0.8rem; margin-top:0.5rem;">
             <div><strong>Contacto Telefónico:</strong> <span id="view-terapeuta-telefono">No disponible</span></div>
             <div><strong>Correo Electrónico:</strong> <span id="view-terapeuta-email">No disponible</span></div>
@@ -135,12 +133,10 @@
             </div>
         </div>
 
-        <!-- Acciones - Solo visibles para admin -->
         <footer class="modal-acciones" style="margin-top:1rem; border-top:1px solid #e2e8f0; padding-top:1rem;">
             <button type="button" class="btn-zen btn-secundario" onclick="document.getElementById('modal-ver-terapeuta').close()">Regresar</button>
             <div id="view-acciones-admin" style="display:flex; gap:0.5rem;">
                 @if(isset($userRole) && $userRole === 'admin')
-                <!-- Los botones se inyectan desde JS en editar/eliminar -->
                 @endif
             </div>
         </footer>
@@ -148,7 +144,7 @@
 </dialog>
 
 <!-- ============================================
-     MODAL CONFIRMACIÓN PERSONALIZADA - ESTILO CATÁLOGO
+     MODAL CONFIRMACIÓN PERSONALIZADA
      ============================================ -->
 
 <dialog id="modal-confirmacion-custom" class="modal-contenedor-alerta-critica">

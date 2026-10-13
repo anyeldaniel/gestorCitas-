@@ -2,6 +2,10 @@
 
 @section('title', 'Historial de Pacientes Atendidos')
 
+@push('styles')
+    @vite(['resources/css/agenda.css'])
+@endpush
+
 @section('content')
 <section class="modulo-vista">
     <header class="encabezado-modulo">

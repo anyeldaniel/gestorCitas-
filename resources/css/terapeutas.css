@@ -1058,7 +1058,7 @@ dialog[open] .cuerpo-alerta-centrado {
     .btn-cancelar-alerta,
     .btn-aceptar-eliminar {
         width: 100%;
-        min-width: 0; /* 👈 Evita el desborde en pantallas pequeñas */
-        flex: none;  /* 👈 Que no intente repartir espacio */
+        min-width: 0; 
+        flex: none;  
     }
 }

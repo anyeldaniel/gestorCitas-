@@ -2,6 +2,10 @@
 
 @section('title', 'Gestión de Servicios - Syncrostyle')
 
+@push('styles')
+    @vite(['resources/css/terapeutas.css'])
+@endpush
+
 @section('content')
 <main class="modulo-vista catalogos-admin">
     <header class="encabezado-modulo">

@@ -1,9 +1,23 @@
 /**
  * MÓDULO: Dashboard Administrativo - Acciones de Panel, Recepcionistas y Paginación
- * RUTAS CORREGIDAS según web.php
+ * CORREGIDO: Rutas dinámicas para funcionar con o sin /public/
  */
 
+// ============================================
+// FUNCIÓN AUXILIAR: DETECTAR URL BASE
+// ============================================
+function getBaseUrl() {
+    let baseUrl = window.location.origin;
+    if (window.location.pathname.includes('/public')) {
+        baseUrl += window.location.pathname.substring(0, window.location.pathname.indexOf('/public') + 7);
+    }
+    return baseUrl;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+    console.log('✅ Dashboard.js cargado');
+    console.log('🔗 Base URL detectada:', getBaseUrl());
+
     let paginaTerapeutas = 1;
     let paginaRecepcionistas = 1;
     const itemsPorPagina = 2;
@@ -42,7 +56,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Inicializar Syncro si existe en el window
     if (typeof window.Syncro !== 'undefined' && window.Syncro.init) {
+        console.log('✅ Inicializando Syncro desde dashboard.js');
         window.Syncro.init();
+    } else {
+        console.warn('⚠️ Syncro no está definido o no tiene init');
     }
     
     // Inicializar vistas
@@ -68,7 +85,8 @@ window.abrirModalRecepcionista = function() {
     document.getElementById('modal-recepcionista-titulo').textContent = 'Agregar Nuevo Recepcionista';
     form.reset();
     
-    form.action = '/admin/crear-recepcionista';
+    // ✅ RUTA DINÁMICA
+    form.action = `${getBaseUrl()}/admin/crear-recepcionista`;
     delete form.dataset.idEditando;
     
     const methodInput = document.getElementById('recep_method');
@@ -112,7 +130,8 @@ window.editarRecepcionista = function(id, nombre, email, telefono) {
     
     document.getElementById('modal-recepcionista-titulo').textContent = 'Editar Recepcionista';
     
-    form.action = `/admin/recepcionista/${id}/actualizar`;
+    // ✅ RUTA DINÁMICA
+    form.action = `${getBaseUrl()}/admin/recepcionista/${id}/actualizar`;
     form.dataset.idEditando = id;
     
     const methodInput = document.getElementById('recep_method');
@@ -147,9 +166,8 @@ window.editarRecepcionista = function(id, nombre, email, telefono) {
 
 /**
  * Eliminar recepcionista
- * RUTA: DELETE /admin/eliminar-recepcionista/{id}
- * 
- * ✅ ALERTA UNIFICADA CON EL ESTILO DEL CATÁLOGO
+ * RUTA: DELETE /admin/usuario/{id}
+ * (Unificada con la ruta de eliminar usuario)
  */
 window.eliminarRecepcionista = function(id) {
     const modal = document.getElementById('modal-confirmacion-custom');
@@ -158,7 +176,8 @@ window.eliminarRecepcionista = function(id) {
             const token = document.querySelector('input[name="_token"]')?.value || '';
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = `/admin/eliminar-recepcionista/${id}`;
+            // ✅ RUTA DINÁMICA
+            form.action = `${getBaseUrl()}/admin/usuario/${id}`;
             form.innerHTML = `
                 <input type="hidden" name="_token" value="${token}">
                 <input type="hidden" name="_method" value="DELETE">
@@ -169,7 +188,6 @@ window.eliminarRecepcionista = function(id) {
         return;
     }
 
-    // Buscar el nombre del recepcionista para personalizar el mensaje
     let nombreRecepcionista = '';
     const tarjeta = document.querySelector(`.tarjeta-fila[data-id="${id}"]`);
     if (tarjeta) {
@@ -186,7 +204,6 @@ window.eliminarRecepcionista = function(id) {
     const btnAceptar = document.getElementById('btn-confirm-aceptar');
     const btnCancelar = document.getElementById('btn-confirm-cancelar');
 
-    // Clonar para limpiar listeners previos
     const nuevoAceptar = btnAceptar.cloneNode(true);
     btnAceptar.parentNode.replaceChild(nuevoAceptar, btnAceptar);
 
@@ -195,7 +212,8 @@ window.eliminarRecepcionista = function(id) {
         const token = document.querySelector('input[name="_token"]')?.value || '';
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = `/admin/eliminar-recepcionista/${id}`;
+        // ✅ RUTA DINÁMICA
+        form.action = `${getBaseUrl()}/admin/usuario/${id}`;
         form.innerHTML = `
             <input type="hidden" name="_token" value="${token}">
             <input type="hidden" name="_method" value="DELETE">
@@ -252,6 +270,7 @@ window.paginarBloque = function(contenedorId, numPagina, btnPrevId, btnNextId, i
 
 window.Syncro = {
     init: function() {
+        console.log('✅ Syncro.init ejecutado');
         const btnAddRecep = document.getElementById('btn-add-recep');
         const btnAddEsp = document.getElementById('btn-add-esp');
         
@@ -292,6 +311,7 @@ window.Syncro = {
     },
 
     openEsp: function() {
+        console.log('✅ Syncro.openEsp ejecutado');
         if (typeof window.abrirModalAgregar === 'function') {
             window.abrirModalAgregar();
         } else {
@@ -315,3 +335,5 @@ window.Syncro = {
         }
     }
 };
+
+console.log('✅ Dashboard.js cargado completamente');

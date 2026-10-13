@@ -2,6 +2,10 @@
 
 @section('title', 'Panel del Especialista — Kanban')
 
+@push('styles')
+    @vite(['resources/css/agenda.css'])
+@endpush
+
 @section('content')
 <section class="modulo-vista">
     <header class="encabezado-modulo">
