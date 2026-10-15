@@ -4,12 +4,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-    --bg-page: #fdfaf6;
+    --bg-page: #f8f4ee;
     --primary-brown: #8b5e3c;
     --primary-brown-hover: #6d4a2f;
     --text-main: #2d2a26;
     --text-muted: #7a7a7a;
-    --border-color: #e0dcd5;
+    --border-color: #e5dfd6;
 
     --font-display: 'Cormorant Garamond', serif;
     --font-body: 'Inter', sans-serif;
@@ -24,9 +24,9 @@
     --bg-suave: #f5efe8;
     --radius-card: 12px;
     --radius-pill: 22px;
-    --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.04);
-    --shadow-card: 0 4px 14px rgba(45, 42, 38, 0.06);
-    --shadow-hover: 0 10px 24px rgba(45, 42, 38, 0.09);
+    --shadow-soft: 0 2px 10px rgba(45, 42, 38, 0.06);
+    --shadow-card: 0 6px 18px rgba(45, 42, 38, 0.08);
+    --shadow-hover: 0 14px 32px rgba(45, 42, 38, 0.14);
 }
 
 /* ==========================================================================
@@ -46,10 +46,10 @@
     font-family: var(--font-body);
     color: var(--text-main);
     background: var(--bg-page);
-    max-width: 1200px;
+    max-width: 1600px;
     width: 100%;
     margin: 0 auto;
-    padding: 2.5rem 1.5rem 4rem;
+    padding: 2.5rem 2rem 4rem;
     min-height: 100vh;
 }
 
@@ -131,7 +131,7 @@
     border-left: 3px solid #4ba3a3;
     border-radius: 6px;
     padding: 0.95rem 1.4rem;
-    box-shadow: var(--shadow-soft);
+    box-shadow: 0 4px 14px rgba(45, 42, 38, 0.07);
     display: flex;
     flex-direction: column;
     gap: 0.15rem;
@@ -179,9 +179,9 @@
     gap: 0.9rem;
     padding: 1.15rem 1.25rem;
     border-radius: 14px;
-    border: 1px solid transparent;
+    border: 1px solid var(--border-color);
     background: #ffffff;
-    box-shadow: 0 2px 10px rgba(45, 42, 38, 0.05);
+    box-shadow: 0 4px 10px rgba(45, 42, 38, 0.04);
     transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
     overflow: hidden;
 }
@@ -212,7 +212,7 @@
 
 .stat-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 10px 26px rgba(45, 42, 38, 0.1);
+    box-shadow: 0 4px 10px rgba(45, 42, 38, 0.08), 0 12px 28px rgba(45, 42, 38, 0.12);
     border-color: currentColor;
 }
 
@@ -248,7 +248,7 @@
 
 .stat-numero {
     font-family: var(--font-display);
-    font-size: 1.9rem;
+    font-size: 2.2rem;
     font-weight: 700;
     line-height: 1;
     color: var(--text-main);
@@ -276,21 +276,238 @@
 .stat-cancelada   { background: linear-gradient(135deg, #ffffff 0%, #fceceb 100%); }
 
 /* ==========================================================================
-   BLOQUE SEMANA ("Mi horario")
+   LAYOUT CON SIDEBAR DERECHA
    ========================================================================== */
-.bloque-semana {
+.agenda-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 2.5rem;
+    align-items: start;
+}
+
+.agenda-columna-principal {
+    min-width: 0;
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 2rem 2.2rem;
+    box-shadow: 0 10px 30px rgba(45, 42, 38, 0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.agenda-columna-principal .bloque-semana,
+.agenda-columna-principal .agenda-filtros,
+.agenda-columna-principal .stats-container,
+.agenda-columna-principal .bloque-dia {
+    margin-bottom: 0; 
+    background: transparent;
+    box-shadow: none;
+    border: none;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.agenda-columna-principal .agenda-filtros {
+    background: #fdfaf6;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 1.5rem;
+}
+
+.agenda-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    position: sticky;
+    top: 1.5rem;
+}
+
+/* ==========================================================================
+   WIDGETS DE LA SIDEBAR
+   ========================================================================== */
+.widget-clima,
+.widget-tip,
+.widget-top {
     background: #ffffff;
     border: 1px solid var(--border-color);
     border-radius: 14px;
-    padding: 1.75rem 1.75rem 1.5rem;
-    margin-bottom: 2.25rem;
-    box-shadow: var(--shadow-soft);
+    padding: 1.5rem;
+    box-shadow: 0 4px 14px rgba(45, 42, 38, 0.07);
+    transition: all 0.3s ease;
 }
 
+.widget-clima { border-top: 4px solid #4ba3a3; }
+.widget-tip { border-top: 4px solid var(--primary-brown); }
+.widget-top { border-top: 4px solid #b5854a; }
+
+.widget-clima:hover,
+.widget-tip:hover,
+.widget-top:hover {
+    box-shadow: 0 8px 22px rgba(45, 42, 38, 0.11);
+    transform: translateY(-2px);
+}
+
+/* Widget Clima - Formato Horizontal */
+.widget-clima {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(135deg, #ffffff 0%, #f0f8f8 100%);
+}
+
+.clima-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.clima-icono {
+    font-size: 2.8rem;
+    margin-bottom: 0;
+    margin-right: 1rem;
+}
+
+.clima-temp {
+    font-family: var(--font-display);
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1;
+}
+
+.clima-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.2rem;
+}
+
+.clima-ciudad {
+    font-family: var(--font-ui);
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    margin-top: 0.4rem;
+    font-weight: 600;
+}
+
+/* Widget Tip - Tipografía más grande */
+.widget-tip {
+    background: linear-gradient(135deg, #fdfbf7 0%, #f7f4ee 100%);
+    padding: 1.5rem 1.5rem;
+}
+
+.widget-tip .widget-titulo {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: #b5854a;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tip-texto {
+    font-family: var(--font-display);
+    font-size: 1.15rem; /* Aumentado para mejor legibilidad */
+    font-style: italic;
+    color: #6d4a2f;
+    line-height: 1.6;
+    margin: 0;
+    font-weight: 500;
+}
+
+/* Widget Top Terapeutas */
+.widget-top {
+    padding: 1.25rem 1.5rem;
+}
+
+.widget-top .widget-titulo {
+    font-family: var(--font-ui);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: #b5854a;
+    font-weight: 700;
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.widget-top .widget-titulo::before {
+    content: "🏆";
+    font-size: 0.9rem;
+}
+
+.top-lista {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.top-lista li {
+    display: grid;
+    grid-template-columns: 20px 1fr auto;
+    gap: 0.6rem;
+    align-items: center;
+    font-size: 0.88rem;
+}
+
+.top-num {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #b5854a;
+}
+
+.top-nombre {
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+.top-estrellas {
+    font-size: 0.72rem;
+    color: #e8b44a;
+    letter-spacing: 1px;
+}
+
+.top-vacio {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 0;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-align: center;
+    gap: 0.5rem;
+}
+
+.top-vacio i {
+    width: 24px;
+    height: 24px;
+    color: #d4c5b5;
+    stroke-width: 1.5;
+}
+
+/* ==========================================================================
+   BLOQUE SEMANA ("Mi horario")
+   ========================================================================== */
 .bloque-semana-cabecera {
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
+    align-items: center;
     gap: 1rem;
     flex-wrap: wrap;
     margin-bottom: 1.5rem;
@@ -298,8 +515,9 @@
 
 .bloque-semana-titulo {
     display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 1rem;
 }
 
 .titulo-seccion {
@@ -337,6 +555,27 @@
 .punto-disponible { background: #4ba3a3; }
 .punto-con-citas  { background: var(--primary-brown); }
 
+.btn-ver-semana {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--primary-brown);
+    background: transparent;
+    border: 1px solid var(--border-color);
+    padding: 0.4rem 1rem;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.btn-ver-semana:hover {
+    background: var(--primary-brown);
+    color: #ffffff;
+    border-color: var(--primary-brown);
+}
+
 .chips-semana {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
@@ -362,7 +601,7 @@
 .chip-dia:hover {
     border-color: var(--primary-brown);
     transform: translateY(-2px);
-    box-shadow: var(--shadow-soft);
+    box-shadow: 0 4px 12px rgba(45, 42, 38, 0.08);
 }
 
 .chip-dia.is-active {
@@ -421,15 +660,9 @@
    ========================================================================== */
 .agenda-filtros {
     display: grid;
-    grid-template-columns: 1.4fr 1fr 1fr 1fr auto;
-    gap: 1.1rem;
-    background: #ffffff;
-    padding: 1.4rem 1.6rem;
-    border-radius: 14px;
-    border: 1px solid var(--border-color);
-    margin-bottom: 2.25rem;
-    box-shadow: var(--shadow-soft);
-    align-items: end;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr auto;
+    gap: 1rem;
+    align-items: center;
 }
 
 .filter-group {
@@ -462,7 +695,7 @@
     padding: 0.65rem 0.85rem;
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    background: #fcfaf8;
+    background: #ffffff;
     font-family: var(--font-body);
     font-size: 0.9rem;
     color: var(--text-main);
@@ -484,7 +717,7 @@
     align-items: flex-end;
     gap: 0.2rem;
     padding-left: 1.25rem;
-    border-left: 1px solid var(--border-color);
+    border-left: 2px solid var(--border-color);
     min-width: 150px;
 }
 
@@ -494,9 +727,9 @@
 
 .filter-resumen-valor {
     font-family: var(--font-display);
-    font-size: 1.7rem;
+    font-size: 1.6rem;
     font-weight: 700;
-    color: var(--text-main);
+    color: var(--primary-brown);
     line-height: 1;
     white-space: nowrap;
 }
@@ -566,7 +799,7 @@
     grid-template-columns: 105px 1.9fr 1.4fr 1fr auto;
     gap: 1.5rem;
     align-items: center;
-    box-shadow: var(--shadow-soft);
+    box-shadow: 0 4px 14px rgba(45, 42, 38, 0.06);
     transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
     overflow: hidden;
@@ -583,7 +816,6 @@
 .tarjeta-cita.estado-completada { border-left-color: #6a45c2; background: linear-gradient(135deg, #ffffff 0%, #f6f2fd 100%); }
 .tarjeta-cita.estado-cancelada  { border-left-color: #c0392b; background: linear-gradient(135deg, #ffffff 0%, #fdf0ef 100%); opacity: 0.82; }
 
-/* --- Hora --- */
 .cita-hora {
     text-align: center;
     border-right: 1px solid var(--border-color);
@@ -617,7 +849,6 @@
     margin-top: 0.2rem;
 }
 
-/* --- Cliente --- */
 .cita-cliente {
     display: flex;
     gap: 0.85rem;
@@ -683,7 +914,6 @@
     line-height: 1.3;
 }
 
-/* --- Servicio --- */
 .cita-servicio {
     display: flex;
     flex-direction: column;
@@ -717,7 +947,6 @@
     stroke-width: 2.2;
 }
 
-/* --- Estado --- */
 .cita-estado {
     display: flex;
     justify-content: center;
@@ -752,7 +981,6 @@
 .badge-estado.estado-completada { background: #e5ddf5; color: #6a45c2; border-color: #cfc0ea; }
 .badge-estado.estado-cancelada  { background: #f8dede; color: #c0392b; border-color: #efc0c0; }
 
-/* --- Acciones --- */
 .cita-acciones {
     display: flex;
     flex-direction: column;
@@ -832,6 +1060,7 @@
     border-radius: 14px;
     color: var(--text-muted);
     background: #ffffff;
+    box-shadow: 0 4px 14px rgba(45, 42, 38, 0.05);
 }
 
 .estado-vacio i {
@@ -1073,7 +1302,6 @@ dialog::backdrop {
     background: var(--bg-suave);
 }
 
-/* Lista de estados */
 .lista-estados {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -1161,6 +1389,15 @@ dialog::backdrop {
    RESPONSIVE
    ========================================================================== */
 @media (max-width: 1024px) {
+    .agenda-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .agenda-sidebar {
+        position: static;
+        order: -1;
+    }
+
     .stats-container {
         grid-template-columns: repeat(3, 1fr);
     }
@@ -1192,6 +1429,26 @@ dialog::backdrop {
     .cita-servicio  { grid-area: servicio; }
     .cita-estado    { grid-area: estado; justify-content: flex-start; }
     .cita-acciones  { grid-area: acciones; flex-direction: row; min-width: 0; }
+    
+    .agenda-columna-principal {
+        padding: 1.5rem;
+    }
+
+    .widget-clima {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .clima-icono {
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+    }
+    
+    .bloque-semana-titulo {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
 }
 
 @media (max-width: 768px) {
@@ -1305,6 +1562,11 @@ dialog::backdrop {
 
     .modal-titulo {
         font-size: 1.35rem;
+    }
+    
+    .agenda-columna-principal {
+        padding: 1rem;
+        border-radius: 14px;
     }
 }
 

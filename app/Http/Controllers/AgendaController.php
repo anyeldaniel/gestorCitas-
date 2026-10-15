@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Cita;
 use App\Models\User;
 use Carbon\Carbon;
+use App\Services\WeatherService;
 
 class AgendaController extends Controller
 {
@@ -21,6 +22,23 @@ class AgendaController extends Controller
 
         return User::where('rol', 'trabajador')
             ->orderBy('nombre')
+            ->get(['id', 'nombre']);
+    }
+
+    /**
+     * Top 5 de terapeutas por citas completadas.
+     * Solo devuelve las que tienen al menos 1 cita completada.
+     */
+    private function topTerapeutas()
+    {
+        return User::where('rol', 'trabajador')
+            ->withCount(['citasComoTrabajador as citas_completadas' => function ($q) {
+                $q->where('estado', 'completada');
+            }])
+            ->having('citas_completadas', '>', 0)
+            ->orderByDesc('citas_completadas')
+            ->orderBy('nombre')
+            ->limit(5)
             ->get(['id', 'nombre']);
     }
 
@@ -112,7 +130,11 @@ class AgendaController extends Controller
             ->where('estado', '!=', 'cancelada')
             ->sum(fn($c) => (int) ($c->servicio->duracion_minutos ?? 0));
 
-        $terapeutas = $this->terapeutasDisponibles($user);
+        $terapeutas    = $this->terapeutasDisponibles($user);
+        $topTerapeutas = $this->topTerapeutas();
+
+        // Clima actual (se cachea 30 min en el servicio).
+        $clima = app(WeatherService::class)->obtenerClima();
 
         return view('compartidas.agenda', compact(
             'user',
@@ -122,7 +144,9 @@ class AgendaController extends Controller
             'citas',
             'stats',
             'minutosReservados',
-            'terapeutas'
+            'terapeutas',
+            'topTerapeutas',
+            'clima'
         ));
     }
 

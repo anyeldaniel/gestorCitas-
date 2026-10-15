@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Cita;
 
 class User extends Authenticatable
 {
@@ -70,5 +71,12 @@ class User extends Authenticatable
     public function routeNotificationForMail($notification)
     {
         return $this->correo;
+    }
+        /**
+     * Relación: citas donde este usuario es el trabajador asignado.
+     */
+    public function citasComoTrabajador()
+    {
+        return $this->hasMany(Cita::class, 'trabajador_id');
     }
 }
