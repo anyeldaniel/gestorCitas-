@@ -10,6 +10,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const inputFoto = document.getElementById("servicio_foto");
 
     // ==========================================================================
+    //     UTILIDAD: CONSTRUIR BASE URL (con o sin /public)
+    // ==========================================================================
+    function obtenerBaseUrl() {
+        let baseUrl = window.location.origin;
+        if (window.location.pathname.includes('/public')) {
+            baseUrl += window.location.pathname.substring(0, window.location.pathname.indexOf('/public') + 7);
+        }
+        return baseUrl;
+    }
+
+    // ==========================================================================
     //     REUTILIZACIÓN DE ALERTA DE CONFIRMACIÓN CENTRALIZADA EN PANTALLA
     // ==========================================================================
 
@@ -65,30 +76,28 @@ document.addEventListener("DOMContentLoaded", () => {
     //       LOGICA CONTROLADORA: MODALES (REGISTRO / EDICIÓN / CIERRE)
     // ==========================================================================
 
+    // Variable global para saber si estamos editando (null = creación)
+    let servicioEditandoId = null;
+
     // Función para abrir el modal de registro con estado limpio y configuración para creación.
-window.abrirModalAgregarServicio = function() {
+    window.abrirModalAgregarServicio = function() {
         const modal = document.getElementById("modal-servicio");
         if (!modal || !formServicio) return;
+
+        servicioEditandoId = null; // Modo creación
 
         document.getElementById("modal-servicio-titulo").textContent = "Registrar Nuevo Servicio";
         formServicio.reset();
         document.getElementById("previsualizacion-avatar-servicio").innerHTML = "SZ";
         document.getElementById("previsualizacion-avatar-servicio").style.borderStyle = 'dashed';
-        
+
         const checkboxes = formServicio.querySelectorAll('input[name="especialistas[]"]');
         checkboxes.forEach(cb => cb.checked = true);
 
-        // ======================================================
-        let baseUrl = window.location.origin;
-        if (window.location.pathname.includes('/public')) {
-            baseUrl += window.location.pathname.substring(0, window.location.pathname.indexOf('/public') + 7);
-        }
-        formServicio.action = `${baseUrl}/admin/servicios/guardar`;
-        // ======================================================
-
+        // Quitamos el _method PUT si veníamos de editar
         const metodoOculto = document.getElementById('metodo-put-servicio');
-        if (metodoOculto) metodoOculto.remove(); // Quitamos el PUT por si veníamos de editar
-        
+        if (metodoOculto) metodoOculto.remove();
+
         modal.showModal();
     };
 
@@ -99,60 +108,90 @@ window.abrirModalAgregarServicio = function() {
     };
 
     // Función para abrir el modal de edición con datos precargados del servicio seleccionado.
-window.editarServicio = function(id) {
-            const modal = document.getElementById("modal-servicio");
-            if (!modal || !formServicio) return;
+    window.editarServicio = function(id) {
+        const modal = document.getElementById("modal-servicio");
+        if (!modal || !formServicio) return;
 
-            document.getElementById("modal-servicio-titulo").textContent = "Editar Servicio del Catálogo";
-            formServicio.reset();
+        servicioEditandoId = id; // Modo edición
 
-            const tarjeta = document.querySelector(`.tarjeta-servicio-item[data-id="${id}"]`);
-            if (tarjeta) {
+        document.getElementById("modal-servicio-titulo").textContent = "Editar Servicio del Catálogo";
+        formServicio.reset();
 
-                // Rellenar controles del formulario con los data-attributes de la tarjeta.
-                document.getElementById("input_nombre").value = tarjeta.dataset.nombre || '';
-                document.getElementById("input_precio").value = tarjeta.dataset.precio || '';
-                document.getElementById("input_porcentaje").value = tarjeta.dataset.porcentaje || '';
-                document.getElementById("input_tiempo").value = tarjeta.dataset.tiempo || '60 min - 90 min';
-                document.getElementById("input_descripcion").value = tarjeta.dataset.descripcion || '';
-                
-                // Gestión de Checkboxes de especialistas asignados.
-                const especialistasIds = JSON.parse(tarjeta.dataset.especialistasIds || '[]');
-                const checkboxes = formServicio.querySelectorAll('input[name="especialistas[]"]');
-                
-                checkboxes.forEach(cb => {
-                    cb.checked = especialistasIds.includes(parseInt(cb.value)) || especialistasIds.includes(cb.value);
-                });
+        const tarjeta = document.querySelector(`.tarjeta-servicio-item[data-id="${id}"]`);
+        if (!tarjeta) return;
 
-                // Replicar foto miniatura en el avatar redondo del modal.
-                const fotoSrc = tarjeta.querySelector('.foto-servicio-portada')?.src;
-                const preview = document.getElementById("previsualizacion-avatar-servicio");
-                if (fotoSrc && !fotoSrc.includes('default.jpg')) {
-                    preview.innerHTML = `<img src="${fotoSrc}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
-                    preview.style.borderStyle = 'solid';
-                } else {
-                    preview.innerHTML = "SZ";
-                    preview.style.borderStyle = 'dashed';
-                }
+        // Rellenar controles del formulario con los data-attributes de la tarjeta.
+        document.getElementById("input_nombre").value = tarjeta.dataset.nombre || '';
+        document.getElementById("input_precio").value = tarjeta.dataset.precio || '';
+        document.getElementById("input_porcentaje").value = tarjeta.dataset.porcentaje || '';
+        document.getElementById("input_tiempo").value = tarjeta.dataset.tiempo || '60 min - 90 min';
+        document.getElementById("input_descripcion").value = tarjeta.dataset.descripcion || '';
 
-                // ======================================================
-                let baseUrl = window.location.origin;
-                if (window.location.pathname.includes('/public')) {
-                    baseUrl += window.location.pathname.substring(0, window.location.pathname.indexOf('/public') + 7);
-                }
-                formServicio.action = `${baseUrl}/admin/servicios/${id}/actualizar`;
-                // ======================================================
+        // Gestión de Checkboxes de especialistas asignados.
+        const especialistasIds = JSON.parse(tarjeta.dataset.especialistasIds || '[]');
+        const checkboxes = formServicio.querySelectorAll('input[name="especialistas[]"]');
+        checkboxes.forEach(cb => {
+            cb.checked = especialistasIds.includes(parseInt(cb.value)) || especialistasIds.includes(cb.value);
+        });
 
-                formServicio.dataset.idEditando = id;
-                
-                // Forzamos a laravel a usar el método PUT para la actualización.
-                if (!document.getElementById('metodo-put-servicio')) {
-                    formServicio.insertAdjacentHTML('beforeend', '<input type="hidden" name="_method" value="PUT" id="metodo-put-servicio">');
-                }
+        // Replicar foto miniatura en el avatar redondo del modal.
+        const fotoSrc = tarjeta.querySelector('.foto-servicio-portada')?.src;
+        const preview = document.getElementById("previsualizacion-avatar-servicio");
+        if (fotoSrc && !fotoSrc.includes('default.jpg')) {
+            preview.innerHTML = `<img src="${fotoSrc}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+            preview.style.borderStyle = 'solid';
+        } else {
+            preview.innerHTML = "SZ";
+            preview.style.borderStyle = 'dashed';
+        }
 
-                modal.showModal();
+        modal.showModal();
+    };
+
+    // ==========================================================================
+    //   SUBMIT DEL FORMULARIO — DECIDE ENTRE POST (crear) y PUT (editar)
+    // ==========================================================================
+    if (formServicio) {
+        formServicio.addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(formServicio);
+            const baseUrl = obtenerBaseUrl();
+
+            let url;
+            if (servicioEditandoId) {
+                // Editar → POST + _method=PUT
+                url = `${baseUrl}/admin/servicios/${servicioEditandoId}/actualizar`;
+                formData.append('_method', 'PUT');
+            } else {
+                // Crear → POST directo
+                url = `${baseUrl}/admin/servicios/guardar`;
             }
-        };
+
+            fetch(url, {
+                method: 'POST', // Siempre POST, Laravel lee _method
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                    'Accept': 'application/json',
+                },
+                body: formData,
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => Promise.reject(err));
+                }
+                return response.json().catch(() => ({}));
+            })
+            .then(() => {
+                // Recargar el catálogo para ver los cambios
+                window.location.reload();
+            })
+            .catch(err => {
+                console.error('Error al guardar servicio:', err);
+                alert('No se pudo guardar el servicio. Revisa la consola y el log de Laravel.');
+            });
+        });
+    }
 
     // ==========================================================================
     //       CONSULTA DETALLADA: CONSTRUCCIÓN DINÁMICA DE LA FICHA TÉCNICA
@@ -171,7 +210,7 @@ window.editarServicio = function(id) {
 
             const contenedorTags = document.getElementById("view-servicio-especialistas");
             contenedorTags.innerHTML = '';
-            
+
             const especialistas = JSON.parse(tarjeta.dataset.especialistasNombres || '[]');
             if (especialistas.length > 0) {
                 especialistas.forEach(esp => {
@@ -197,16 +236,13 @@ window.editarServicio = function(id) {
     window.eliminarServicio = function(id) {
         const tarjeta = document.querySelector(`.tarjeta-servicio-item[data-id="${id}"]`);
         const nombreServicio = tarjeta ? tarjeta.dataset.nombre : "este servicio";
-        
+
         window.mostrarAlertaConfirmacion(
             "¿Remover tratamiento del catálogo?",
             `¿Estás seguro de eliminar permanentemente "${nombreServicio.toUpperCase()}"?`,
             () => {
-                // === EL FIX: CREAMOS UN FORMULARIO FANTASMA PARA ENVIAR EL DELETE ===
-                let baseUrl = window.location.origin;
-                if (window.location.pathname.includes('/public')) {
-                    baseUrl += window.location.pathname.substring(0, window.location.pathname.indexOf('/public') + 7);
-                }
+                // Formulario fantasma para enviar DELETE
+                const baseUrl = obtenerBaseUrl();
 
                 const form = document.createElement('form');
                 form.method = 'POST';
@@ -234,8 +270,8 @@ window.editarServicio = function(id) {
             if (!isInDialog) {
                 modal.close();
 
-                // 👇 NUEVO: Si se cierra el onboarding haciendo clic fuera,
-                //          guardamos en localStorage para que no vuelva a aparecer.
+                // Si se cierra el onboarding haciendo clic fuera,
+                // guardamos en localStorage para que no vuelva a aparecer.
                 if (modal.id === "onboardingBienvenida") {
                     localStorage.setItem("onboardingClienteVista_v1", "true");
                 }
@@ -297,7 +333,7 @@ window.editarServicio = function(id) {
 
             pasoTexto.textContent = `Paso ${n} de ${TOTAL_PASOS}`;
 
-            // 👇 CAMBIO: En el último paso el botón dice "Explorar catálogo"
+            // En el último paso el botón dice "Explorar catálogo"
             btnTexto.textContent = (n === TOTAL_PASOS) ? "Explorar catálogo" : "Continuar";
         }
 
@@ -316,8 +352,7 @@ window.editarServicio = function(id) {
             if (pasoActual < TOTAL_PASOS) {
                 mostrarPaso(pasoActual + 1);
             } else {
-                // 👇 CAMBIO: En el último paso, SOLO cierra el onboarding.
-                // El cliente se queda en el catálogo para elegir su servicio.
+                // En el último paso, SOLO cierra el onboarding.
                 cerrarOnboarding();
             }
         });

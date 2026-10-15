@@ -19,7 +19,8 @@ class User extends Authenticatable
      * @var list<string>
      */
 
-    protected $table = 'usuarios'; // Especifica el nombre de la tabla
+    // ⚠️ SE ELIMINÓ: protected $table = 'usuarios';
+    // Ahora Laravel usará la tabla 'users' por defecto (el plural del modelo).
 
     protected $fillable = [
         'nombre',
@@ -49,13 +50,13 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'contraseña' => 'hashed', //Voy a dejar la encriptación solo aquí anyel, para no tener que encriptar cada vez que se necesite en un controlador, solo llamando al modelo
+            'contraseña' => 'hashed',
         ];
     }
 
     public function getAuthPassword()
     {
-        return $this->contraseña; // Le indicamos a Laravel que tu columna tiene la "ñ"
+        return $this->contraseña;
     }
 
     /**

@@ -2,116 +2,121 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Servicio; // Importamos el modelo que acabamos de crear.
-use App\Models\User; // Importamos el modelo User para obtener los trabajadores.''
-use Illuminate\Http\Request; // Importamos la clase Request para manejar los datos del formulario.
-use Illuminate\Support\Facades\Storage; // Importamos la clase Storage para manejar archivos (imágenes).
+use App\Models\Servicio;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ServicioController extends Controller
 {
-    // ===================================
-    // Esta función lee la base de datos y manda los servicios y especialistas a la vista del catálogo.
+    /**
+     * Muestra el catálogo público con servicios y especialistas.
+     */
     public function index()
     {
-        $servicios = Servicio::all();
-        $especialistas = User::where('rol', 'trabajador')->get(); //''
+        $servicios = Servicio::orderBy('id', 'desc')->get();
+
+        // Tolerante a varios nombres de rol por si en tu BD usás "especialista",
+        // "terapeuta" o "trabajador".
+        $especialistas = User::whereIn('rol', ['trabajador', 'especialista', 'terapeuta'])
+            ->orderBy('nombre')
+            ->get();
 
         return view('compartidas.catalogo', compact('servicios', 'especialistas'));
     }
-    // ===================================
 
-    // Esta función simplemente muestra la vista con el formulario HTML.
+    /**
+     * Vista de administración del catálogo (formulario admin).
+     */
     public function create()
     {
-        // Más adelante crearemos este archivo blade para que el admin vea el formulario.
-        return view('admin.servicios_crear');
+        // ⚠️ La vista correcta es admin.servicios (no admin.servicios_crear, que no existe)
+        $servicios = Servicio::orderBy('id', 'desc')->get();
+        $especialistas = User::whereIn('rol', ['trabajador', 'especialista', 'terapeuta'])
+            ->orderBy('nombre')
+            ->get();
+
+        return view('admin.servicios', compact('servicios', 'especialistas'));
     }
 
-    // Esta función recibe los datos del formulario al darle al botón "Guardar".
+    /**
+     * Guarda un nuevo servicio, incluyendo la imagen.
+     */
     public function store(Request $request)
     {
-        // Validación. 
-        // Revisamos que el admin no deje campos vacíos o ponga letras en los precios.
-        $request->validate([
-            'nombre_servicio' => 'required|string|max:255',
-            'descripcion' => 'nullable|string',
-            'precio' => 'required|numeric|min:0', // Numeric asegura que sean números (enteros o decimales).
-            'duracion_minutos' => 'required|integer|min:1',
-            'imagen' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // Valida que si suben un archivo, sea una imagen que pese máximo 2MB.
+        // ✅ Validación ampliada: webp, hasta 4 MB y campos que envía el modal.
+        $datos = $request->validate([
+            'nombre_servicio'     => 'required|string|min:3|max:255',
+            'descripcion'         => 'nullable|string',
+            'precio'              => 'required|numeric|min:0',
+            'duracion_minutos'    => 'required|integer|min:1',
+            'imagen'              => 'nullable|image|mimes:jpeg,png,jpg,webp|max:4096',
+            'especialistas'       => 'nullable|array',
+            'especialistas.*'     => 'exists:users,id',
+            'porcentaje_agendado' => 'nullable|integer|min:0|max:100',
         ]);
 
-        // Manejar la Imagen.
-        $rutaImagen = null;
+        // Guardar imagen en storage/app/public/servicios/
         if ($request->hasFile('imagen')) {
-            // Si el admin subió una imagen, la guardamos en la carpeta "storage/app/public/servicios".
-            // y guardamos la ruta de texto en la variable $rutaImagen.
-            $rutaImagen = $request->file('imagen')->store('servicios', 'public');
+            $datos['imagen'] = $request->file('imagen')->store('servicios', 'public');
         }
 
-        // Guardar en la Base de Datos.
-        // Usamos el Modelo Servicio para insertar una nueva fila en la tabla.
-        Servicio::create([
-            'nombre_servicio' => $request->nombre_servicio,
-            'descripcion' => $request->descripcion,
-            'precio' => $request->precio,
-            'duracion_minutos' => $request->duracion_minutos,
-            'imagen' => $rutaImagen, // Guardamos la ruta, no la imagen como tal.
-        ]);
-        
+        // Crear el servicio con todos los campos validados
+        Servicio::create($datos);
 
-        // Redireccionar.
-        // Devolvemos al usuario a la página anterior con un mensajito de que todo salió bien.
-        return redirect()->back()->with('success', '¡Tratamiento registrado exitosamente en The Beauty Room!');
+        return redirect()
+            ->back()
+            ->with('success', '¡Tratamiento registrado exitosamente en The Beauty Room!');
     }
 
-    // Esta función recibe los datos editados y los actualiza en la base de datos.
+    /**
+     * Actualiza un servicio existente (y reemplaza la imagen si suben una nueva).
+     */
     public function update(Request $request, $id)
     {
-        // Buscamos el servicio que queremos editar. Si no existe, da error 404.
         $servicio = Servicio::findOrFail($id);
 
-        // Validamos los datos (igual que al crear).
-        $request->validate([
-            'nombre_servicio' => 'required|string|max:255',
-            'descripcion' => 'nullable|string',
-            'precio' => 'required|numeric|min:0',
-            'duracion_minutos' => 'required|integer|min:1',
-            'imagen' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        $datos = $request->validate([
+            'nombre_servicio'     => 'required|string|min:3|max:255',
+            'descripcion'         => 'nullable|string',
+            'precio'              => 'required|numeric|min:0',
+            'duracion_minutos'    => 'required|integer|min:1',
+            'imagen'              => 'nullable|image|mimes:jpeg,png,jpg,webp|max:4096',
+            'especialistas'       => 'nullable|array',
+            'especialistas.*'     => 'exists:users,id',
+            'porcentaje_agendado' => 'nullable|integer|min:0|max:100',
         ]);
 
-        // Manejar la Imagen.
-        // Por defecto, conservamos la imagen que ya tenía guardada en la base de datos.
-        $rutaImagen = $servicio->imagen; 
-
+        // Si suben nueva imagen: borrar la anterior y guardar la nueva
         if ($request->hasFile('imagen')) {
-            // Si el admin subió una NUEVA imagen, la guardamos y actualizamos la variable.
-            $rutaImagen = $request->file('imagen')->store('servicios', 'public');
+            if ($servicio->imagen && Storage::disk('public')->exists($servicio->imagen)) {
+                Storage::disk('public')->delete($servicio->imagen);
+            }
+            $datos['imagen'] = $request->file('imagen')->store('servicios', 'public');
         }
 
-        // Actualizamos la fila en la Base de Datos.
-        $servicio->update([
-            'nombre_servicio' => $request->nombre_servicio,
-            'descripcion' => $request->descripcion,
-            'precio' => $request->precio,
-            'duracion_minutos' => $request->duracion_minutos,
-            'imagen' => $rutaImagen, 
-        ]);
+        $servicio->update($datos);
 
-        // 5. Redireccionamos con mensaje de éxito.
-        return redirect()->back()->with('success', '¡Tratamiento actualizado exitosamente!');
+        return redirect()
+            ->back()
+            ->with('success', '¡Tratamiento actualizado exitosamente!');
     }
 
-    // Esta función elimina un servicio de la base de datos y borra su imagen del servidor si existe.
+    /**
+     * Elimina un servicio y su imagen asociada.
+     */
     public function destroy($id)
     {
         $servicio = Servicio::findOrFail($id);
-        
-        // Borramos la foto física del servidor si existe
-        if ($servicio->imagen) {
+
+        if ($servicio->imagen && Storage::disk('public')->exists($servicio->imagen)) {
             Storage::disk('public')->delete($servicio->imagen);
         }
 
         $servicio->delete();
-        return redirect()->back()->with('success', '¡Servicio eliminado correctamente!');
+
+        return redirect()
+            ->back()
+            ->with('success', '¡Servicio eliminado correctamente!');
     }
 }

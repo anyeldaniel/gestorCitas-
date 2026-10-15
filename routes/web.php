@@ -53,7 +53,23 @@ Route::middleware(['auth'])->group(function () {
     //   RUTAS COMPARTIDAS (Multirrol)
     // ==========================================
 
+    // ----------------------------------------------------------
+    //   AGENDA COMPARTIDA (admin, recepcionista y trabajador)
+    // ----------------------------------------------------------
     Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda');
+
+    // Cambiar estado de una cita (solo admin/recepción)
+    Route::patch('/agenda/cita/{id}/estado', [AgendaController::class, 'updateStatus'])
+        ->name('agenda.cita.estado');
+
+    // Cancelar una cita con motivo (admin, recepción y trabajador asignado)
+    Route::post('/agenda/cita/{id}/cancelar', [AgendaController::class, 'cancelar'])
+        ->name('agenda.cita.cancelar');
+
+    // ----------------------------------------------------------
+
+
+
     Route::get('/catalogo', [ServicioController::class, 'index'])->name('catalogo');
     Route::get('/terapeutas', [TerapeutaController::class, 'index'])->name('terapeutas.index');
 
@@ -84,15 +100,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/servicios', [AdminController::class, 'servicios'])->name('admin.servicios');
 
         // --- CRUD de Trabajadores (Especialistas y Recepcionistas) ---
-        // ✅ POST para crear (recibe datos del formulario/modal)
         Route::post('/crear-trabajador', [AdminController::class, 'CreateTrabajador'])->name('admin.create-trabajador');
         Route::post('/crear-recepcionista', [AdminController::class, 'CreateRecepcionista'])->name('admin.create-recepcionista');
 
-        // ✅ PUT para actualizar
         Route::put('/trabajador/{id}', [AdminController::class, 'updateTrabajador'])->name('admin.update-trabajador');
         Route::put('/recepcionista/{id}/actualizar', [AdminController::class, 'updateRecepcionista'])->name('admin.update-recepcionista');
 
-        // ✅ DELETE para eliminar (unificado para cualquier usuario)
         Route::delete('/usuario/{id}', [AdminController::class, 'destroyUsuario'])->name('admin.destroy-usuario');
 
         // --- CRUD de Servicios de Spa ---
@@ -105,14 +118,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
 
-    // ==========================================
-    //   MÓDULO RECEPCIÓN (Prefijo 'recepcion')
-    // ==========================================
-    Route::prefix('recepcion')->group(function () {
-        Route::post('/cita/{id}/actualizar', [AgendaController::class, 'updateStatus'])->name('cita.update');
-    });
-
-
+   
     // ==========================================
     //   VERIFICAR PAGOS
     // ==========================================
