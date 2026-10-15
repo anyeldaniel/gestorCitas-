@@ -26,7 +26,14 @@ class RegisterUserRequest extends FormRequest
             'username'     => 'required|string|max:100|min:3 ',
             'email'    => 'required|string|email|max:255|unique:usuarios,correo',
             'telefono' => 'required|digits_between:7,20',
-            'password' => 'required|string|min:8|max:20|regex:/[a-zA-Z]/|regex:/[!@#$%^&*(),.?":{}|<>]/', // Debe contener un carácter especial
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'max:20',
+                'regex:/[a-zA-Z]/',
+                'regex:/[!@#$%^&*(),.?":{}|<>]/',
+            ],
 
             'confirmPassword' => 'required|string|min:8|max:20|same:password',
         ];
