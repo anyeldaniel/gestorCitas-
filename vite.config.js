@@ -3,6 +3,7 @@ import laravel from 'laravel-vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
+    base: './',   // ✅ NUEVO: hace que las rutas del CSS sean relativas
     plugins: [
         laravel({
             input: [
@@ -12,7 +13,7 @@ export default defineConfig({
                 'resources/js/layout.js',
                 'resources/js/bootstrap.js',
 
-                // === Auth (login/registro) ===
+                // === Auth (login/registro/password) ===
                 'resources/css/auth.css',
                 'resources/js/auth.js',
 

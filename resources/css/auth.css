@@ -23,7 +23,7 @@ body, html {
 /* Lado Izquierdo (Imagen) */
 .image-side { 
     flex: 1; 
-    background: url('/public/asset/img/imagen-login.jpg') center/cover no-repeat; 
+    background: url('../img/imagen-login.jpg') center/cover no-repeat;
     display: flex;
     align-items: flex-end;
     padding: 60px;
@@ -111,7 +111,7 @@ input:focus { border-color: #8b5e3c; }
 
     .form-side {
         padding: 40px 20px;
-        align-items: flex-start; /* Alinea hacia arriba para mejor lectura */
+        align-items: flex-start;
     }
 
     .form-inner {
