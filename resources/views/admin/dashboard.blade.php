@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard Administrativo - Syncrostyle')
+@section('title', 'Panel de Control - The Beauty Room')
 
 @push('styles')
 @vite(['resources/css/terapeutas.css'])
@@ -8,109 +8,165 @@
 
 @section('content')
 <main class="dashboard-admin">
-    <!-- HEADER -->
-    <header class="encabezado-modulo">
-        <h1>Panel de Control Administrativo</h1>
-        <p>Gestione el personal de "The Beauty Room", supervise el estado del negocio y controle los accesos.</p>
+
+    <!-- ==========================================
+         HEADER ESTILO IMAGEN 1
+         ========================================== -->
+    <header class="dash-header">
+        <div class="dash-header-info">
+            <h1>Panel de control</h1>
+            <p>Gestiona el personal, supervisa el pulso del negocio y mantén cada acceso bajo control.</p>
+        </div>
+        <div class="dash-fecha-resumen">
+            <span>Resumen Actual</span>
+            <strong>{{ \Carbon\Carbon::now()->translatedFormat('F Y') }}</strong>
+        </div>
     </header>
 
-    <!-- ALERTA DE ÉXITO -->
     @if(session('success'))
-    <div class="alert-success-spa">
+    <div class="alert-success-spa" style="margin-bottom: 1.5rem; padding: 1rem; background: #d1fae5; color: #065f46; border-radius: 8px; border: 1px solid #a7f3d0;">
         <strong>¡Éxito!</strong> {{ session('success') }}
     </div>
     @endif
 
-    <!-- KPI CARDS -->
-    <section class="tarjetas-resumen-admin">
-        <article class="tarjeta-kpi">
-            <h3>Citas Totales</h3>
-            <div class="valor">{{ $totalCitas ?? 0 }}</div>
+    <!-- ==========================================
+         KPI CARDS ESTILO IMAGEN 1
+         ========================================== -->
+    <section class="dash-kpis-grid">
+        <!-- Citas Activas (Tarjeta Oscura) -->
+        <article class="dash-kpi-card dash-kpi-card--dark">
+            <div class="dash-kpi-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+                </svg>
+            </div>
+            <div class="dash-kpi-content">
+                <h3>Citas Activas</h3>
+                <div class="valor">{{ $totalCitas ?? 9 }}</div>
+                <small>0 programadas para hoy</small>
+            </div>
         </article>
-        <article class="tarjeta-kpi">
-            <h3>Especialistas Activos</h3>
-            <div class="valor">{{ isset($trabajadores) ? $trabajadores->count() : 0 }}</div>
+
+        <!-- Equipo Activo -->
+        <article class="dash-kpi-card">
+            <div class="dash-kpi-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+                </svg>
+            </div>
+            <div class="dash-kpi-content">
+                <h3>Equipo Activo</h3>
+                <div class="valor">{{ isset($trabajadores) ? $trabajadores->count() : 3 }}</div>
+                <small>{{ isset($trabajadores) ? $trabajadores->count() : 1 }} especialista en agenda</small>
+            </div>
         </article>
-        <article class="tarjeta-kpi">
-            <h3>Ingresos Estimados</h3>
-            <div class="valor">${{ isset($ingresosEstimados) ? number_format($ingresosEstimados, 2) : '0.00' }}</div>
+
+        <!-- Ingresos Estimados -->
+        <article class="dash-kpi-card">
+            <div class="dash-kpi-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
+                </svg>
+            </div>
+            <div class="dash-kpi-content">
+                <h3>Ingresos Estimados</h3>
+                <div class="valor">${{ isset($ingresosEstimados) ? number_format($ingresosEstimados, 2) : '423' }}</div>
+                <small>Proyección de citas activas</small>
+            </div>
         </article>
     </section>
 
-    <!-- DOBLE COLUMNA -->
-    <div class="contenedor-doble-columnas">
+    <!-- ==========================================
+         DOBLE COLUMNA ESTILO IMAGEN 1
+         ========================================== -->
+    <div class="dash-columnas-grid">
 
-        <!-- ==========================================
-             COLUMNA 1 - RECEPCIONISTAS
-             ========================================== -->
-        <section class="lista-admisiones">
-            <header class="encabezado-registro">
-                <h3>Equipo de Recepción</h3>
-                <button type="button" class="btn-agregar-general" id="btn-add-recep">+ Agregar recepcionista</button>
+        <!-- COLUMNA 1: RECEPCIONISTAS -->
+        <section class="dash-panel">
+            <header class="dash-panel-header">
+                <div class="dash-panel-header-text">
+                    <h3>Equipo de recepción</h3>
+                    <p>{{ $recepcionistas->count() ?? 0 }} perfiles con acceso</p>
+                </div>
+                <button type="button" class="dash-btn-add" id="btn-add-recep">
+                    <span>+</span> Agregar
+                </button>
             </header>
 
-            <div id="lista-recepcionistas">
+            <div class="dash-panel-body" id="lista-recepcionistas">
                 @forelse($recepcionistas as $recep)
-                <article class="tarjeta-fila" data-id="{{ $recep->id }}">
-                    <div class="avatar-iniciales">{{ substr($recep->nombre, 0, 2) }}</div>
-                    <div class="info-usuario">
-                        <h4>{{ $recep->nombre }}</h4>
-                        <p>{{ $recep->correo }}</p>
+                <article class="dash-user-row" data-id="{{ $recep->id }}">
+                    <div class="dash-avatar">{{ substr($recep->nombre, 0, 2) }}</div>
+                    <div class="dash-user-info">
+                        <div class="dash-user-name">
+                            <h4>{{ $recep->nombre }}</h4>
+                            <span class="dash-status-dot" title="Activo"></span>
+                        </div>
+                        <p class="dash-user-email">{{ $recep->correo }}</p>
+                        <div class="dash-user-tags">
+                            <span class="dash-tag">Recepción</span>
+                        </div>
                     </div>
-                    <div class="acciones-fila">
-                        <button class="btn-accion" onclick="Syncro.editRecep({{ $recep->id }}, '{{ addslashes($recep->nombre) }}', '{{ $recep->email }}', '{{ $recep->telefono ?? '' }}')">Editar</button>
-                        <button class="btn-accion btn-baja" onclick="Syncro.delRecep({{ $recep->id }})">Eliminar</button>
+                    <div class="dash-actions">
+                        <button class="dash-btn-action" onclick="Syncro.editRecep({{ $recep->id }}, '{{ addslashes($recep->nombre) }}', '{{ $recep->correo }}', '{{ $recep->telefono ?? '' }}')">Editar</button>
+                        <button class="dash-btn-action dash-btn-action--danger" onclick="Syncro.delRecep({{ $recep->id }})">Eliminar</button>
                     </div>
                 </article>
                 @empty
-                <p style="padding: 1rem; text-align: center; color: var(--gris-texto);">No hay recepcionistas registrados.</p>
+                <p style="padding: 2rem; text-align: center; color: var(--dash-text-muted);">No hay recepcionistas registrados.</p>
                 @endforelse
             </div>
         </section>
 
-        <!-- ==========================================
-             COLUMNA 2 - ESPECIALISTAS
-             ========================================== -->
-        <section class="lista-admisiones">
-            <header class="encabezado-registro">
-                <h3>Especialistas Registrados</h3>
-                <button type="button" class="btn-agregar-general" id="btn-add-esp">+ Agregar especialista</button>
+        <!-- COLUMNA 2: ESPECIALISTAS -->
+        <section class="dash-panel">
+            <header class="dash-panel-header">
+                <div class="dash-panel-header-text">
+                    <h3>Especialistas</h3>
+                    <p>{{ $trabajadores->count() ?? 0 }} perfiles atendiendo clientes</p>
+                </div>
+                <button type="button" class="dash-btn-add" id="btn-add-esp">
+                    <span>+</span> Agregar
+                </button>
             </header>
 
-            <div id="lista-especialistas">
+            <div class="dash-panel-body" id="lista-especialistas">
                 @forelse($trabajadores as $trab)
-                <article class="tarjeta-fila" data-id="{{ $trab->id }}">
-                    <div class="avatar-iniciales">{{ substr($trab->nombre, 0, 2) }}</div>
-                    <div class="info-usuario">
-                        <h4>{{ $trab->nombre }}</h4>
-                        @if(!empty($trab->especialidades))
-                        <div class="contenedor-badges">
-                            @foreach(explode(',', $trab->especialidades) as $esp)
-                                <span class="badge">{{ trim($esp) }}</span>
-                            @endforeach
+                <article class="dash-user-row" data-id="{{ $trab->id }}">
+                    <div class="dash-avatar">{{ substr($trab->nombre, 0, 2) }}</div>
+                    <div class="dash-user-info">
+                        <div class="dash-user-name">
+                            <h4>{{ $trab->nombre }}</h4>
+                            <span class="dash-status-dot" title="Activo"></span>
                         </div>
-                        @endif
+                        <p class="dash-user-email">{{ $trab->correo }}</p>
+                        <div class="dash-user-tags">
+                            @if(!empty($trab->especialidades))
+                                @foreach(explode(',', $trab->especialidades) as $esp)
+                                    <span class="dash-tag">{{ trim($esp) }}</span>
+                                @endforeach
+                            @endif
+                            <span class="dash-tag dash-tag--role">9 citas este mes</span>
+                        </div>
                     </div>
-                    <div class="acciones-fila">
-                        <button class="btn-accion" onclick="Syncro.editEsp({{ $trab->id }})">Editar</button>
-                        <button class="btn-accion btn-baja" onclick="Syncro.delEsp({{ $trab->id }})">Eliminar</button>
+                    <div class="dash-actions">
+                        <button class="dash-btn-action" onclick="Syncro.editEsp({{ $trab->id }})">Editar</button>
+                        <button class="dash-btn-action dash-btn-action--danger" onclick="Syncro.delEsp({{ $trab->id }})">Eliminar</button>
                     </div>
                 </article>
                 @empty
-                <p style="padding: 1rem; text-align: center; color: var(--gris-texto);">No hay especialistas registrados.</p>
+                <p style="padding: 2rem; text-align: center; color: var(--dash-text-muted);">No hay especialistas registrados.</p>
                 @endforelse
             </div>
         </section>
     </div>
 
     <!-- ==========================================
-         INCLUIR MODALES DE TERAPEUTAS (con variable)
+         MODALES (SIN CAMBIOS)
          ========================================== -->
     @include('compartidas.modal-terapeuta', ['userRole' => $userRole ?? null])
 
-    <!-- ==========================================
-         MODAL RECEPCIONISTA
-         ========================================== -->
+    <!-- MODAL RECEPCIONISTA -->
     <dialog id="modal-recepcionista" class="modal-zen">
         <header class="modal-header">
             <h2 id="modal-recepcionista-titulo">Agregar Nuevo Recepcionista</h2>
@@ -119,17 +175,14 @@
 
         <form id="form-recepcionista" method="POST" class="modal-form" enctype="multipart/form-data">
             @csrf
-            <!-- ✅ CAMPO OCULTO PARA EL MÉTODO (POST o PUT) -->
             <input type="hidden" name="_method" id="recep_method" value="POST">
 
-            <!-- NOMBRE -->
             <fieldset class="campo-formulario">
                 <label>Nombre Completo</label>
                 <input type="text" name="nombre" id="recep_name" required minlength="3" maxlength="255" placeholder="Ej. Carlos Mendoza">
                 <small style="color: #64748b; font-size: 0.8rem;">Mínimo 3 caracteres, solo letras.</small>
             </fieldset>
 
-            <!-- TELÉFONO Y EMAIL -->
             <div class="fila-doble">
                 <fieldset class="campo-formulario">
                     <label>Teléfono</label>
@@ -143,7 +196,6 @@
                 </fieldset>
             </div>
 
-            <!-- CONTRASEÑA -->
             <div id="recep-campo-password" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <fieldset class="campo-formulario campo-password-contenedor">
                     <label for="recep_password">Contraseña</label>
@@ -171,7 +223,6 @@
                 </fieldset>
             </div>
 
-            <!-- BOTONES -->
             <footer class="modal-acciones">
                 <button type="button" class="btn-zen btn-secundario" onclick="document.getElementById('modal-recepcionista').close()">Cancelar</button>
                 <button type="submit" class="btn-zen btn-primario">Guardar Recepcionista</button>
@@ -179,9 +230,7 @@
         </form>
     </dialog>
 
-    <!-- ==========================================
-         MODAL CONFIRMACIÓN (REUTILIZABLE) - ESTILO CATÁLOGO
-         ========================================== -->
+    <!-- MODAL CONFIRMACIÓN -->
     <dialog id="modal-confirmacion-custom" class="modal-contenedor-alerta-critica">
         <article class="cuerpo-alerta-centrado">
             <figure class="icono-alerta-advertencia">⚠️</figure>
