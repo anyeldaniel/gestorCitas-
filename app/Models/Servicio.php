@@ -16,7 +16,7 @@ class Servicio extends Model
         'precio',
         'duracion_minutos',
         'especialidad_id',
-        'porcentaje_agendado'
+        'porcentaje_abono',
     ];
 
     // Relación Muchos a Muchos con Usuarios (Especialistas).

@@ -80,4 +80,27 @@
 @vite(['resources/css/verificar-pago.css', 'resources/js/verificar-pago.js'])
 
 @include('clientes.modal-pago')
+
+<!-- ======================================================== -->
+<!-- SWEETALERT2: AVISO DE PAGO EXITOSO O RESERVA CONFIRMADA  -->
+<!-- ======================================================== -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+@if(session('success'))
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        Swal.fire({
+            icon: 'success',
+            title: '¡Operación Exitosa!',
+            text: @json(session('success')),
+            confirmButtonColor: '#5A6B5D',
+            timer: 4500,
+            showConfirmButton: true,
+            customClass: {
+                popup: 'swal2-premium-popup'
+            }
+        });
+    });
+</script>
+@endif
+
 @endsection

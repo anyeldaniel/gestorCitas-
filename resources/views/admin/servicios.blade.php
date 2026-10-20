@@ -17,7 +17,7 @@
                 <small>Ingrese las especificaciones del servicio</small>
             </header>
 
-            <form id="form-servicios-spa" autocomplete="off" class="formulario-express">
+            <form action="{{ route('servicios.guardar') }}" method="POST" id="form-servicios-spa" autocomplete="off" class="formulario-express">
                 @csrf
                 <fieldset class="campo-formulario">
                     <label for="service_name">Nombre del Tratamiento</label>

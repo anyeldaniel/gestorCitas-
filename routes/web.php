@@ -55,7 +55,7 @@ Route::get('/reset-password', function () {
     return redirect()->route('passwordRequest.view');
 });
 
-// 4. Procesar el cambio de contraseña real
+// Procesar el cambio de contraseña real
 Route::post('/reset-password', [PasswordController::class, 'resetPassword'])->name('password.update');
 
 
@@ -91,11 +91,29 @@ Route::middleware(['auth'])->group(function () {
     // Ruta para procesar la reserva de un servicio, apuntando al método store del controlador de reservas.
     Route::post('/reservas', [ReservaController::class, 'store'])->name('clientes.reserva.store');
 
-    // 
+    // Rutas para la pasarela de pago.
+    Route::get('/checkout/{cita_id}', [App\Http\Controllers\PagoController::class, 'checkout'])->name('checkout.view');
+    Route::post('/checkout/procesar', [App\Http\Controllers\PagoController::class, 'procesarPago'])->name('checkout.procesar');
+
+    // Ruta para obtener los especialistas disponibles para un servicio específico, apuntando al método getEspecialistas del controlador de reservas.
     Route::get('/get-especialistas/{id}', [App\Http\Controllers\ReservaController::class, 'getEspecialistas']);
 
     // Ruta para conectar los especialistas con los servicios.
     Route::get('/especialistas-por-servicio/{id}', [\App\Http\Controllers\ReservaController::class, 'getEspecialistas']);
+
+    // Nueva ruta para ver el historial de citas del cliente
+    Route::get('/mis-reservas', [ReservaController::class, 'misReservas'])->name('clientes.mis.reservas');
+
+    // Vista para que los clientes puedan ver el catálogo de servicios y reservar
+    Route::get('/reservas', [ReservaController::class, 'index'])->name('clientes.reserva');
+    
+    Route::prefix('recepcion')->group(function () {
+    // ... tus otras rutas de recepción ...
+    Route::get('/verificar-pagos', [\App\Http\Controllers\PagoController::class, 'index'])->name('pago.verificar');
+
+    // Añade esta ruta para procesar la aprobación del pago:
+    Route::post('/aprobar-pago/{id}', [\App\Http\Controllers\PagoController::class, 'aprobarPago'])->name('recepcion.aprobar.pago');
+});
 
     // ==========================================
     //   MÓDULO ADMINISTRADOR (Prefijo 'admin')
@@ -162,7 +180,9 @@ Route::middleware(['auth'])->group(function () {
 
         // Ruta para mostrar la vista de verificación de pagos, apuntando al método index del PagoController.
         Route::get('/verificar-pagos', [\App\Http\Controllers\PagoController::class, 'index'])->name('pago.verificar');
-    });
+    
+        Route::post('/aprobar-pago/{id}', [PagoController::class, 'aprobarPago'])->name('recepcion.aprobar.pago');
+        });
 
     // ==========================================
     //   MÓDULO ESPECIALISTAS / TRABAJADORES

@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Syncrostyle SPA') — The Beauty Room</title>
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
@@ -14,48 +15,49 @@
 
     @stack('styles')<!--Acá añado estilos específicos de cada vista, att: Andrés -->
 </head>
+
 <body>
 
     <header class="header-spa">
         <picture class="logo-contenedor">
             <img src="{{ asset('logo/logo-the-beauty-room.PNG') }}" alt="Logotipo Oficial de The Beauty Room Spa" class="logo-spa">
         </picture>
-<!--Aquì estoy añadiendo el nav para que se muestre en todas las vistas, y se adapte segun el rol del usuario logueado, mostrando solo las opciones correspondientes a su rol.-->
+        <!--Aquì estoy añadiendo el nav para que se muestre en todas las vistas, y se adapte segun el rol del usuario logueado, mostrando solo las opciones correspondientes a su rol.-->
         <nav class="nav-roles" aria-label="Navegación de Roles Operativos">
             @auth
-                @if(auth()->user()->rol === 'admin' || auth()->user()->rol === 'recepcion' || auth()->user()->rol === 'trabajador')
-                    <a href="{{ route('agenda') }}" class="{{ Request::is('agenda*') ? 'active' : '' }}">Agenda</a>
-                @endif
+            @if(auth()->user()->rol === 'admin' || auth()->user()->rol === 'recepcion' || auth()->user()->rol === 'trabajador')
+            <a href="{{ route('agenda') }}" class="{{ Request::is('agenda*') ? 'active' : '' }}">Agenda</a>
+            @endif
 
-                @if(auth()->user()->rol === 'admin' || auth()->user()->rol === 'recepcion' || auth()->user()->rol === 'cliente')
-                    <a href="{{ url('/terapeutas') }}" class="{{ Request::is('terapeutas*') ? 'active' : '' }}">Terapeutas</a>
-                @endif
+            @if(auth()->user()->rol === 'admin' || auth()->user()->rol === 'recepcion' || auth()->user()->rol === 'cliente')
+            <a href="{{ url('/terapeutas') }}" class="{{ Request::is('terapeutas*') ? 'active' : '' }}">Terapeutas</a>
+            @endif
 
-                @if(auth()->user()->rol === 'admin')
-                    <a href="{{ url('/admin/dashboard') }}" class="{{ Request::is('admin/dashboard*') ? 'active' : '' }}">Administración</a>
-                @endif
+            @if(auth()->user()->rol === 'admin')
+            <a href="{{ url('/admin/dashboard') }}" class="{{ Request::is('admin/dashboard*') ? 'active' : '' }}">Administración</a>
+            @endif
 
-                @if(auth()->user()->rol === 'admin')
-                    <a href="{{ route('admin.reportes') }}" class="{{ Request::is('admin/reportes*') ? 'active' : '' }}">Reportes</a>
-                @endif
+            @if(auth()->user()->rol === 'admin')
+            <a href="{{ route('admin.reportes') }}" class="{{ Request::is('admin/reportes*') ? 'active' : '' }}">Reportes</a>
+            @endif
 
-                @if(auth()->user()->rol === 'recepcion' || auth()->user()->rol === 'admin')
-                    <a href="{{ route('pago.verificar') }}">Verificar Pagos</a>
-                @endif
+            @if(auth()->user()->rol === 'recepcion' || auth()->user()->rol === 'admin')
+            <a href="{{ route('pago.verificar') }}">Verificar Pagos</a>
+            @endif
 
-                @if(auth()->user()->rol === 'cliente')
-                    <a href="{{ url('/reservas') }}" class="{{ Request::is('reservas*') ? 'active' : '' }}">Reservas</a>
-                @endif
+            @if(auth()->user()->rol === 'cliente')
+            <a href="{{ route('clientes.mis.reservas') }}" class="{{ Request::is('mis-reservas*') ? 'active' : '' }}">Mis Reservas</a>
+            @endif
 
-                    <a href="{{ route('catalogo') }}" class="{{ Request::is('catalogo*') ? 'active' : '' }}">Catálogo Zen</a>
+            <a href="{{ route('catalogo') }}" class="{{ Request::is('catalogo*') ? 'active' : '' }}">Catálogo Zen</a>
 
-                <a href="#" class="btn-logout" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                    Cerrar Sesión
-                </a>
+            <a href="#" class="btn-logout" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                Cerrar Sesión
+            </a>
 
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                    @csrf
-                </form>
+            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                @csrf
+            </form>
             @endauth
         </nav>
     </header>
@@ -70,4 +72,5 @@
     </footer>
     @stack('scripts')
 </body>
+
 </html>

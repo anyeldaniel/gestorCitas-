@@ -1,120 +1,412 @@
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap');
-@import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap');
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+/* =========================================
+    ESTILOS GENERALES Y DE ESTRUCTURA
+========================================= */
+body {
+  font-family: 'Montserrat', sans-serif !important; 
+  margin: 0; 
+  min-height: 100vh; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-body, html {
-    height: 100%;
-    font-family: 'Inter', sans-serif;
-    color: #333;
+h1, h2 {
+  font-family: 'Playfair Display', serif !important; 
+  color: #2C352D; 
+  margin-top: 0;
+  margin-bottom: 25px;
+  text-align: center;
+  font-size: 34px;
 }
 
-/* Layout de dos columnas */
-.login-container { height: 100vh; }
-.split-layout { 
-    display: flex; 
-    height: 100vh; 
+/* =========================================
+        BACKGROUND Y ESTRUCTURA BASE
+========================================= */
+body {
+  font-family: 'Montserrat', sans-serif; 
+  /* Imagen de fondo de Spa con filtro oscuro integrado para resaltar la tarjeta */
+  background: linear-gradient(rgba(20, 30, 25, 0.6), rgba(20, 30, 25, 0.6)), 
+  url('/asset/img/parts/fdp.jpg') center/cover no-repeat fixed;
+  margin: 0; 
+  min-height: 100vh; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-/* Lado Izquierdo (Imagen) */
-.image-side { 
-    flex: 1; 
-    background: url('/public/asset/img/imagen-login.jpg') center/cover no-repeat; 
-    display: flex;
-    align-items: flex-end;
-    padding: 60px;
-    color: white;
+h1, h2 {
+  font-family: 'Playfair Display', serif; 
+  color: #2C352D; 
+  margin-top: 0;
+  margin-bottom: 25px;
+  text-align: center;
+  font-size: 32px;
 }
 
-.overlay h1 { 
-    font-family: 'Cormorant Garamond', serif; 
-    font-size: 3.5rem; 
-    margin-bottom: 10px;
+.contenedor-formularios {
+  display: flex; 
+  flex-direction: row; 
+  background-color: #FFFFFF; 
+  border-radius: 20px; 
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3); 
+  width: 1000px; /* Aumentado */
+  min-height: 600px; /* Aumentado */
+  position: relative; 
+  overflow: hidden; 
 }
 
-.overlay p { letter-spacing: 2px; font-size: 0.9rem; }
-
-/* Lado Derecho (Formulario) */
-.form-side { 
-    flex: 1; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    background-color: #fff9f0;
+/* =========================================
+         TARJETAS Y FORMULARIOS
+========================================= */
+.tarjeta-registro, .tarjeta-login {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 50%; 
+  display: flex; 
+  flex-direction: column; 
+  justify-content: center;
+  align-items: center; 
+  transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1); 
+  padding: 40px;
+  box-sizing: border-box;
 }
 
-.form-inner { width: 100%; max-width: 400px; padding: 20px; }
+.tarjeta-login { left: 0; opacity: 1; visibility: visible; z-index: 2; }
+.tarjeta-registro { left: 0; opacity: 0; visibility: hidden; z-index: 1; }
 
-header small { color: #8b5e3c; font-size: 0.8rem; letter-spacing: 1px; }
-header h1 { 
-    font-family: 'Cormorant Garamond', serif; 
-    font-size: 2.5rem; 
-    margin: 10px 0;
-    color: #2d2a26;
+/* Identidad visual interna */
+.logo-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #B59B74;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
 }
 
-header p { color: #7a7a7a; margin-bottom: 30px; font-size: 0.95rem; }
-
-/* Inputs y Formulario */
-.form-row { margin-bottom: 20px; }
-label { 
-    display: block; 
-    font-size: 0.7rem; 
-    font-weight: 700; 
-    margin-bottom: 8px; 
-    letter-spacing: 1px;
-    color: #555;
+form {
+  display: flex; 
+  flex-direction: column; 
+  gap: 15px; 
+  width: 100%; 
+  max-width: 340px;
 }
 
-input { 
-    width: 100%; 
-    padding: 14px; 
-    border: 1px solid #e0dcd5; 
-    border-radius: 6px; 
-    background: #fcfaf8; 
-    outline: none;
+.password-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: -6px;
 }
 
-input:focus { border-color: #8b5e3c; }
-
-/* Botones */
-.btn-primary { 
-    width: 100%; 
-    padding: 15px; 
-    background: #8b5e3c; 
-    color: white; 
-    border: none; 
-    border-radius: 6px; 
-    cursor: pointer; 
-    font-weight: 600;
-    transition: background 0.3s;
+form label {
+  font-size: 11px; 
+  font-weight: 600; 
+  color: #727A74; 
+  margin-bottom: -6px; 
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
-.btn-primary:hover { background: #6d4a2f; }
+form input {
+  padding: 14px 16px; 
+  border: 1px solid #E5E2DC; 
+  border-radius: 8px; 
+  font-size: 14px; 
+  font-family: 'Montserrat', sans-serif;
+  background-color: #FAFAFA;
+  transition: all 0.3s ease; 
+  color: #2C352D;
+}
 
-.register-link { text-align: center; margin-top: 25px; font-size: 0.9rem; color: #777; }
-.register-link a { color: #8b5e3c; font-weight: 600; text-decoration: none; }
+form input::placeholder { color: #AFAFAF; }
 
-/* --- RESPONSIVE DESIGN --- */
-@media (max-width: 768px) {
-    .split-layout {
-        flex-direction: column;
-    }
+form input:focus {
+  outline: none; 
+  border-color: #839788; 
+  box-shadow: 0 0 0 3px rgba(131, 151, 136, 0.15); 
+  background-color: #FFFFFF;
+}
 
-    .image-side {
-        display: none; /* Oculta la imagen en móviles */
-    }
+.link-olvido {
+  color: #839788; 
+  font-size: 12px; 
+  text-decoration: none; 
+  font-weight: 500; 
+  transition: color 0.3s ease; 
+}
 
-    .form-side {
-        padding: 40px 20px;
-        align-items: flex-start; /* Alinea hacia arriba para mejor lectura */
-    }
+.link-olvido:hover { color: #B59B74; }
 
-    .form-inner {
-        max-width: 100%;
-    }
+.grid-2-columnas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* =========================================
+                BOTONES
+========================================= */
+.button-aceptar {
+  padding: 14px 20px; 
+  background: linear-gradient(135deg, #5A6B5D, #2C352D); 
+  color: #FFFFFF; 
+  border: none; 
+  border-radius: 8px; 
+  cursor: pointer; 
+  width: 100%; 
+  font-weight: 600;
+  letter-spacing: 1px;
+  font-size: 13px;
+  transition: all 0.3s ease; 
+  margin-top: 10px;
+  box-shadow: 0 4px 15px rgba(44, 53, 45, 0.2); /* Sombra suave para dar volumen */
+}
+
+.button-aceptar:hover {
+  /* Se ilumina ligeramente al pasar el mouse */
+  background: linear-gradient(135deg, #6D8071, #3A463B); 
+  box-shadow: 0 8px 20px rgba(44, 53, 45, 0.35); 
+  transform: translateY(-1px);
+}
+
+.separador {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: #AFAFAF;
+  font-size: 11px;
+  text-transform: uppercase;
+  margin: 5px 0;
+}
+
+.separador::before, .separador::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #E5E2DC;
+}
+
+.separador span { padding: 0 10px; }
+
+.btn-google {
+  background: #FFFFFF; 
+  color: #2C352D; 
+  border: 1px solid #E5E2DC; 
+  padding: 12px 20px; 
+  border-radius: 8px; 
+  font-weight: 500; 
+  font-size: 13px;
+  cursor: pointer; 
+  transition: all 0.3s ease; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-google:hover {
+  background: #F9F9F9; 
+  border-color: #C0C0C0;
+}
+
+/* =========================================
+    EL PANEL DESLIZANTE CON DEGRADADO
+========================================= */
+.panel-superpuesto {
+  position: absolute; 
+  top: 0; 
+  left: 50%; 
+  width: 50%; 
+  height: 100%; 
+  /* Degradado mucho más notorio: De Verde Zen claro a Verde Bosque oscuro */
+  /* background: linear-gradient(135deg, #a3b899, #2C352D); */
+  z-index: 10; 
+  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.7s cubic-bezier(0.4, 0, 0.2, 1); 
+  border-radius: 150px 0 0 150px; 
+  overflow: hidden; 
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.1); /* Ligera sombra interna para dar volumen */
+}
+
+.panel-superpuesto::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  /* background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); */
+  z-index: -1;
+}
+
+.panel-texto-registro, .panel-texto-login {
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  justify-content: center; 
+  height: 100%; 
+  width: 100%; 
+  position: absolute; 
+  padding: 0 50px; 
+  box-sizing: border-box; 
+  transition: all 0.6s ease; 
+  text-align: center;
+}
+
+.panel-texto-registro { opacity: 1; visibility: visible; }
+.panel-texto-login { opacity: 0; visibility: hidden; transform: translateX(50px); }
+
+.panel-superpuesto h2 {
+  color: #FFFFFF; 
+  margin-bottom: 20px;
+  font-size: 36px;
+}
+
+.panel-superpuesto p {
+  color: #F0F4F1; 
+  font-size: 15px; 
+  line-height: 1.7; 
+  margin-bottom: 35px; 
+  font-weight: 300;
+}
+
+.btn-outline {
+  background-color: transparent; 
+  color: #FFFFFF; 
+  border: 1px solid #FFFFFF; 
+  padding: 12px 35px; 
+  border-radius: 8px; 
+  font-weight: 600; 
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-size: 12px;
+  cursor: pointer; 
+  transition: all 0.3s ease; 
+}
+
+.btn-outline:hover {
+  background-color: #FFFFFF; 
+  color: #5A6B5D; 
+}
+
+/* =========================================
+        ANIMACIÓN JS (CLASE ACTIVA)
+========================================= */
+.contenedor-formularios.activo .tarjeta-login {
+  opacity: 0; visibility: hidden; transform: translateX(100%);
+}
+
+.contenedor-formularios.activo .tarjeta-registro {
+  opacity: 1; visibility: visible; transform: translateX(100%); z-index: 5;
+}
+
+.contenedor-formularios.activo .panel-superpuesto {
+  transform: translateX(-100%); 
+  border-radius: 0 150px 150px 0; 
+}
+
+.contenedor-formularios.activo .panel-texto-registro {
+  opacity: 0; visibility: hidden; transform: translateX(-50px);
+}
+
+.contenedor-formularios.activo .panel-texto-login {
+  opacity: 1; visibility: visible; transform: translateX(0);
+}
+
+/* =========================================
+                CONTRASEÑAS
+========================================= */
+.caja-input-clave { position: relative; width: 100%; }
+.caja-input-clave input { width: 100%; box-sizing: border-box; padding-right: 40px; }
+
+.btn-ver-clave {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%); 
+  cursor: pointer; font-size: 16px; user-select: none; transition: transform 0.2s ease;
+  filter: grayscale(100%) opacity(0.5);
+}
+
+.btn-ver-clave:hover {
+  transform: translateY(-50%) scale(1.1); filter: grayscale(0) opacity(1);
+}
+
+/* =========================================
+   RECAPTCHA (Escalado al 100% del form)
+========================================= */
+.caja-recaptcha {
+  width: 100%;
+  overflow: hidden; /* Evita que los bordes invisibles rompan el diseño */
+  margin-top: 5px;
+  border-radius: 8px;
+}
+
+.caja-recaptcha > div {
+  /* Multiplica los 304px nativos por 1.115 para alcanzar los 340px de tus inputs */
+  transform: scale(1.115);
+  transform-origin: 0 0; /* Asegura que crezca desde la esquina superior izquierda */
+}
+
+/* =========================================
+   ESTÉTICA SPA PARA ALERTAS (SWEETALERT2)
+========================================= */
+.swal2-popup {
+  font-family: 'Montserrat', sans-serif !important;
+  background-color: #FCFBF9 !important;
+  border-radius: 16px !important;
+  padding: 30px !important;
+  box-shadow: 0 20px 40px rgba(30, 35, 32, 0.25) !important;
+  border: 1px solid #E5E2DC !important;
+}
+
+/* Título con la fuente elegante del Spa */
+.swal2-title {
+  font-family: 'Playfair Display', serif !important;
+  color: #2C352D !important;
+  font-size: 26px !important;
+  font-weight: 600 !important;
+}
+
+/* Texto descriptivo */
+.swal2-html-container {
+  font-family: 'Montserrat', sans-serif !important;
+  color: #5C665E !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+}
+
+/* Cambiar el círculo de carga azul por Verde Salvia */
+.swal2-loader {
+  border-color: #5A6B5D transparent #5A6B5D transparent !important;
+}
+
+/* Botón de confirmación con el degradado verde */
+.swal2-confirm {
+  background: linear-gradient(135deg, #5A6B5D, #2C352D) !important;
+  color: #FFFFFF !important;
+  border-radius: 8px !important;
+  font-family: 'Montserrat', sans-serif !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase !important;
+  padding: 12px 28px !important;
+  box-shadow: 0 4px 15px rgba(44, 53, 45, 0.2) !important;
+  transition: all 0.3s ease !important;
+}
+
+.swal2-confirm:hover {
+  background: linear-gradient(135deg, #6D8071, #3A463B) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Ícono de éxito en tono verde salvia suave */
+.swal2-icon.swal2-success {
+  border-color: #839788 !important;
+  color: #5A6B5D !important;
+}
+.swal2-icon.swal2-success [class^='swal2-success-line'] {
+  background-color: #5A6B5D !important;
+}
+.swal2-icon.swal2-success .swal2-success-ring {
+  border: 0.25em solid rgba(131, 151, 136, 0.3) !important;
 }
