@@ -8,9 +8,6 @@ use Illuminate\Support\Facades\Auth; // Para obtener el usuario autenticado.
 
 class TerapeutaController extends Controller
 {
-
-
-
     // Mostrar el tablero del terapeuta con sus citas asignadas
     public function index()
     {
@@ -33,7 +30,6 @@ class TerapeutaController extends Controller
     // Ver los servicios que el terapeuta tiene asignados.
     public function tablero()
     {
-        // Traeremos solo las citas que le corresponden al terapeuta logueado.
         // cambiamos "user_id" por "trabajador_id" para que busque las citas asignadas al terapeuta.
         $misCitas = Cita::where('trabajador_id', Auth::id())->get();
         return view('especialistas.tablero', compact('misCitas'));

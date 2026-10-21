@@ -46,6 +46,7 @@ export default defineConfig({
                 // === Reserva ===
                 'resources/css/reserva.css',
                 'resources/js/reserva.js',
+                'resources/css/mis-reservas.css',
             ],
             refresh: true,
         }),

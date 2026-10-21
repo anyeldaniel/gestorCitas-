@@ -1,190 +1,256 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Procesar Pago - The Beauty Room</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-        body { font-family: 'Montserrat', sans-serif; background-color: #F4F1EB; margin: 0; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .checkout-container { background-color: #FFFFFF; width: 100%; max-width: 520px; border-radius: 16px; box-shadow: 0 15px 35px rgba(44, 53, 45, 0.08); padding: 40px; }
-        h2 { font-family: 'Playfair Display', serif; color: #2C352D; text-align: center; margin-top: 0; font-size: 28px; }
-        .resumen { background-color: #FAFAFA; border: 1px solid #E5E2DC; padding: 20px; border-radius: 12px; margin-bottom: 25px; text-align: center; }
-        .resumen p { margin: 5px 0; color: #5C665E; font-size: 14px; }
-        .monto-total { font-size: 24px !important; font-weight: 600; color: #2C352D !important; margin-top: 10px !important; }
-        
-        .opciones-pago { display: flex; gap: 10px; margin-bottom: 20px; }
-        .opcion-card { flex: 1; border: 1px solid #DCD7CE; padding: 12px; border-radius: 8px; text-align: center; cursor: pointer; font-size: 13px; background: #FCFBF9; transition: all 0.2s; }
-        .opcion-card input { display: none; }
-        .opcion-card.seleccionado { border-color: #5A6B5D; background: #F0F4F1; font-weight: 600; color: #2C352D; }
+@extends('layouts.app')
 
-        label { display: block; font-size: 12px; font-weight: 600; color: #5C665E; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
-        select, input { width: 100%; padding: 12px 15px; margin-bottom: 20px; border: 1px solid #DCD7CE; border-radius: 8px; font-family: 'Montserrat', sans-serif; font-size: 14px; background-color: #FCFBF9; box-sizing: border-box; }
-        select:focus, input:focus { outline: none; border-color: #839788; background-color: #FFFFFF; }
-        
-        .btn-pagar { width: 100%; padding: 15px; background: linear-gradient(135deg, #5A6B5D, #2C352D); color: #FFFFFF; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px; }
-        .btn-pagar:hover { background: linear-gradient(135deg, #6D8071, #3A463B); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(44, 53, 45, 0.2); }
-    </style>
-</head>
-<body>
+@section('title', 'Finalizar Reserva - The Beauty Room')
 
-    @if($errors->any())
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            Swal.fire({
-                icon: 'error',
-                title: 'Transacción rechazada',
-                text: @json($errors->first()),
-                confirmButtonColor: '#2C352D'
-            });
-        });
-    </script>
-    @endif
+@push('styles')
+    @vite(['resources/css/pago-checkout.css'])
+@endpush
 
-    <div class="checkout-container">
-        <h2>Finaliza tu Reserva</h2>
-        
-        @php
-            // Calculamos el porcentaje de abono requerido (ej. 50% por defecto si el servicio no especifica otro)
-            $porcentaje = $cita->servicio->porcentaje_abono ?? 50;
-            $montoTotal = $cita->monto_total;
-            $montoAbono = round(($montoTotal * $porcentaje) / 100, 2);
-        @endphp
+@section('content')
+<main class="checkout-wrapper">
 
-        <div class="resumen">
-            <p><strong>Cita #{{ $cita->id }} — {{ $cita->servicio->nombre_servicio ?? 'Servicio Spa' }}</strong></p>
-            <p>Fecha: {{ \Carbon\Carbon::parse($cita->fecha)->format('d/m/Y') }} a las {{ \Carbon\Carbon::parse($cita->hora)->format('h:i A') }}</p>
-            <p>Costo Total del Servicio: ${{ number_format($montoTotal, 2) }}</p>
-            <p class="monto-total" id="etiqueta-monto">A pagar ahora: ${{ number_format($montoAbono, 2) }}</p>
+    <!-- INDICADOR DE PASOS -->
+    <nav class="checkout-steps" aria-label="Progreso de la reserva">
+        <div class="step completed">
+            <span class="step-icon">✓</span>
+            <span class="step-label">Reserva</span>
         </div>
+        <div class="step-line"></div>
+        <div class="step active">
+            <span class="step-icon">2</span>
+            <span class="step-label">Pago</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+            <span class="step-icon">3</span>
+            <span class="step-label">Confirmación</span>
+        </div>
+    </nav>
 
-        <form action="{{ route('checkout.procesar') }}" method="POST" id="form-pago">
-            @csrf
-            <input type="hidden" name="cita_id" value="{{ $cita->id }}">
-            <!-- Input oculto que enviará el monto real que el cliente decidió pagar -->
-            <input type="hidden" name="monto" id="input-monto" value="{{ $montoAbono }}">
+    <!-- CABECERA -->
+    <header class="checkout-header">
+        <span class="hero-subtitle">Último paso</span>
+        <h1>Finaliza tu reserva</h1>
+        <p>Asegura tu momento de bienestar. Elige cómo prefieres realizar el pago.</p>
+    </header>
 
-            <!-- SELECCIÓN DE TIPO DE PAGO (ABONO VS TOTAL) -->
-            <label>Modalidad de Pago</label>
-            <div class="opciones-pago">
-                <label class="opcion-card seleccionado" id="card-abono" onclick="seleccionarTipoPago('abono')">
-                    <input type="radio" name="tipo_pago" value="abono" checked>
-                    <strong>Abono del {{ $porcentaje }}%</strong><br>
-                    <span>${{ number_format($montoAbono, 2) }}</span>
+    <form action="{{ route('checkout.procesar') }}" method="POST" id="form-pago">
+        @csrf
+        <input type="hidden" name="cita_id" value="{{ $cita->id }}">
+        <input type="hidden" name="monto" id="input-monto" value="{{ $montoAbono }}">
+        <input type="hidden" id="monto-abono-data" value="{{ $montoAbono }}">
+        <input type="hidden" id="monto-total-data" value="{{ $montoTotal }}">
+
+        <section class="checkout-card">
+            
+            <!-- COLUMNA IZQUIERDA: DETALLES Y FORMULARIO -->
+            <section class="checkout-main">
+                
+                <header class="cita-info-header">
+                    <span class="kicker">Tu cita</span>
+                    <div class="cita-duracion-badge">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                        60 min
+                    </div>
+                </header>
+                <h2 class="service-title">{{ $nombreServicio }}</h2>
+                
+                <div class="service-meta-grid">
+                    <article class="meta-item">
+                        <div class="meta-icon">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>
+                        </div>
+                        <div class="meta-text">
+                            <small>Fecha y hora</small>
+                            <strong>{{ $fecha->translatedFormat('d \d\e F') }} - {{ $hora }}</strong>
+                        </div>
+                    </article>
+                    <article class="meta-item">
+                        <div class="meta-icon">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2"/></svg>
+                        </div>
+                        <div class="meta-text">
+                            <small>Especialista</small>
+                            <strong>{{ $cita->trabajador->nombre ?? 'Por asignar' }}</strong>
+                        </div>
+                    </article>
+                </div>
+
+                <!-- SELECCIÓN DE MÉTODO DE PAGO -->
+                <section class="payment-methods-section">
+                    <header class="section-header-inline">
+                        <h3><span class="icon-circle">$</span> ¿Cómo deseas pagar?</h3>
+                        <span class="helper-text">Elige una opción</span>
+                    </header>
+                    
+                    <div class="payment-methods-grid">
+                        <label class="payment-card active-card" id="card-c2p">
+                            <input type="radio" name="metodo_pago" value="c2p" required checked>
+                            <div class="card-content">
+                                <div class="card-icon">
+                                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>
+                                </div>
+                                <div class="card-text">
+                                    <strong>Pago móvil</strong>
+                                    <small>Confirmación manual</small>
+                                </div>
+                            </div>
+                            <div class="card-radio"></div>
+                        </label>
+
+                        <label class="payment-card" id="card-transferencia">
+                            <input type="radio" name="metodo_pago" value="transferencia" required>
+                            <div class="card-content">
+                                <div class="card-icon">
+                                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11"/></svg>
+                                </div>
+                                <div class="card-text">
+                                    <strong>Transferencia</strong>
+                                    <small>Cuenta bancaria</small>
+                                </div>
+                            </div>
+                            <div class="card-radio"></div>
+                        </label>
+
+                        <label class="payment-card" id="card-efectivo">
+                            <input type="radio" name="metodo_pago" value="divisas_efectivo" required>
+                            <div class="card-content">
+                                <div class="card-icon">
+                                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                                </div>
+                                <div class="card-text">
+                                    <strong>Efectivo</strong>
+                                    <small>Pagar en el local</small>
+                                </div>
+                            </div>
+                            <div class="card-radio"></div>
+                        </label>
+                    </div>
+
+                    <!-- ALERTA PAGO MÓVIL -->
+                    <div id="alerta-c2p" class="alert-box">
+                        <div class="alert-icon">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>
+                        </div>
+                        <div class="alert-text">
+                            <strong>Reporta tu pago móvil</strong>
+                            <p>Realiza el pago a través del <strong>0416-000-0000</strong> y el <strong>V-12.345.678</strong> y completa los datos.</p>
+                        </div>
+                    </div>
+
+                    <!-- CAMPOS PAGO MÓVIL -->
+                    <div id="campos_c2p" class="form-fields-grid">
+                        <div class="form-group">
+                            <label for="banco">Banco emisor</label>
+                            <select name="banco" id="banco" class="form-control">
+                                <option value="0134">Banesco</option>
+                                <option value="0102">Banco de Venezuela</option>
+                                <option value="0105">Banco Mercantil</option>
+                                <option value="0108">Banco Provincial</option>
+                                <option value="0191">Banco Nacional de Crédito (BNC)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="telefono">Teléfono</label>
+                            <input type="text" name="telefono" id="telefono" class="form-control" placeholder="0414-000-0000">
+                        </div>
+                        <div class="form-group">
+                            <label for="token">Últimos 6 dígitos</label>
+                            <input type="text" name="token" id="token" class="form-control" placeholder="000000" maxlength="6">
+                        </div>
+                    </div>
+
+                    <!-- CAMPOS TRANSFERENCIA (OCULTOS) -->
+                    <div id="campos_transferencia" class="form-fields-grid hidden">
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label for="referencia">Número de referencia</label>
+                            <input type="text" name="referencia" id="referencia" class="form-control" placeholder="Últimos 6 dígitos de la transacción">
+                        </div>
+                    </div>
+                </section>
+
+                <footer class="checkout-security-footer">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Tu información está protegida. Conexión segura para procesar tus datos.
+                </footer>
+            </section>
+
+            <!-- COLUMNA DERECHA: RESUMEN -->
+            <aside class="checkout-sidebar">
+                
+                <header class="sidebar-header">
+                    <span class="sidebar-kicker">Resumen de pago</span>
+                    <div class="sidebar-sello">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                        USD
+                    </div>
+                </header>
+
+                <div class="sidebar-resumen-servicio">
+                    <h3>{{ $nombreServicio }}</h3>
+                    <p>1 sesión · 60 minutos</p>
+                    <div class="sidebar-precio-total">${{ number_format($montoTotal, 2) }}</div>
+                </div>
+
+                <section class="sidebar-section">
+                    <span class="sidebar-label">Selecciona tu modalidad</span>
+                    <div class="modalidad-toggle">
+                        <button type="button" class="modalidad-btn seleccionado" id="btn-modalidad-abono">
+                            <div class="modalidad-radio"></div>
+                            <div class="modalidad-text">
+                                <strong>Abono del {{ $porcentaje }}%</strong>
+                                <small>Restante al dar</small>
+                            </div>
+                            <span class="modalidad-precio">${{ number_format($montoAbono, 2) }}</span>
+                        </button>
+                        
+                        <button type="button" class="modalidad-btn" id="btn-modalidad-total">
+                            <div class="modalidad-radio"></div>
+                            <div class="modalidad-text">
+                                <strong>Pago total</strong>
+                                <small>Sin saldo pendiente</small>
+                            </div>
+                            <span class="modalidad-precio">${{ number_format($montoTotal, 2) }}</span>
+                        </button>
+                    </div>
+                </section>
+
+                <div class="a-pagar-box">
+                    <span class="sidebar-label">A pagar ahora</span>
+                    <div class="monto-display">
+                        <span class="currency-symbol">$</span>
+                        <h3 id="display-monto">{{ number_format($montoAbono, 2) }}</h3>
+                    </div>
+                    <p class="restante-text" id="restante-text">Restante en el local: ${{ number_format($montoRestante, 2) }}</p>
+                </div>
+
+                <label class="checkout-terms">
+                    <input type="checkbox" required checked>
+                    <span class="checkmark"></span>
+                    <span class="terms-text">Acepto las <a href="#">políticas de reserva</a> y cancelación.</span>
                 </label>
-                <label class="opcion-card" id="card-total" onclick="seleccionarTipoPago('total')">
-                    <input type="radio" name="tipo_pago" value="total">
-                    <strong>Pago Completo</strong><br>
-                    <span>${{ number_format($montoTotal, 2) }}</span>
-                </label>
-            </div>
 
-            <label for="metodo_pago">Método de Pago</label>
-            <select name="metodo_pago" id="metodo_pago" onchange="toggleCampos()" required>
-                <option value="">Seleccione una opción...</option>
-                <option value="c2p">Pago Móvil (C2P - Automático)</option>
-                <option value="transferencia">Transferencia / Zelle (Manual)</option>
-                <option value="divisas_efectivo">Efectivo en el Local</option>
-            </select>
+                <button type="submit" class="btn-pagar" id="btn-submit">
+                    <span id="btn-text">Confirmar y pagar ${{ number_format($montoAbono, 2) }}</span>
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
 
-            <!-- CAMPOS PARA PAGO MÓVIL (CON TODOS LOS BANCOS DE VENEZUELA) -->
-            <div id="campos_c2p" style="display: none;">
-                <label for="banco">Banco de Origen</label>
-                <select name="banco" id="banco">
-                    <option value="0102">0102 - Banco de Venezuela</option>
-                    <option value="0134">0134 - Banesco</option>
-                    <option value="0105">0105 - Banco Mercantil</option>
-                    <option value="0108">0108 - Banco Provincial</option>
-                    <option value="0191">0191 - Banco Nacional de Crédito (BNC)</option>
-                    <option value="0114">0114 - Bancaribe</option>
-                    <option value="0151">0151 - Banco Fondo Común (BFC)</option>
-                    <option value="0163">0163 - Banco del Tesoro</option>
-                    <option value="0175">0175 - Banco Bicentenario</option>
-                    <option value="0128">0128 - Banco Caroní</option>
-                    <option value="0138">0138 - Banco Plaza</option>
-                    <option value="0104">0104 - Venezolano de Crédito</option>
-                    <option value="0157">0157 - Del Sur Banco Universal</option>
-                    <option value="0168">0168 - Bancrecer</option>
-                    <option value="0177">0177 - Banco de la Fuerza Armada Nacional (Banfanb)</option>
-                    <option value="0174">0174 - Banplus</option>
-                </select>
+                <footer class="sidebar-footer">
+                    <span><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Pago protegido</span>
+                    <span><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Datos cifrados</span>
+                </footer>
 
-                <label for="telefono">Teléfono Afiliado</label>
-                <input type="text" name="telefono" id="telefono" placeholder="Ej: 04141234567">
+            </aside>
+        </section>
+    </form>
+</main>
 
-                <label for="token">Clave de Pago (Token OTP)</label>
-                <input type="text" name="token" id="token" placeholder="Ej: 123456 (Simulador aprueba con 123456)" maxlength="6">
-            </div>
+<script>
+    window.LaravelErrors = @json($errors->all());
+</script>
+@endsection
 
-            <!-- CAMPOS PARA TRANSFERENCIA -->
-            <div id="campos_transferencia" style="display: none;">
-                <label for="referencia">Número de Referencia</label>
-                <input type="text" name="referencia" id="referencia" placeholder="Últimos 6 dígitos de la transacción">
-            </div>
-
-            <button type="submit" class="btn-pagar" id="btn-submit">Procesar Pago</button>
-        </form>
-    </div>
-
-    <script>
-        const montoAbonoVal = {{ $montoAbono }};
-        const montoTotalVal = {{ $montoTotal }};
-
-        function seleccionarTipoPago(tipo) {
-            const cardAbono = document.getElementById('card-abono');
-            const cardTotal = document.getElementById('card-total');
-            const inputMonto = document.getElementById('input-monto');
-            const etiquetaMonto = document.getElementById('etiqueta-monto');
-
-            if (tipo === 'abono') {
-                cardAbono.classList.add('seleccionado');
-                cardTotal.classList.remove('seleccionado');
-                cardAbono.querySelector('input').checked = true;
-                inputMonto.value = montoAbonoVal;
-                etiquetaMonto.innerText = 'A pagar ahora: $' + montoAbonoVal.toFixed(2);
-            } else {
-                cardTotal.classList.add('seleccionado');
-                cardAbono.classList.remove('seleccionado');
-                cardTotal.querySelector('input').checked = true;
-                inputMonto.value = montoTotalVal;
-                etiquetaMonto.innerText = 'A pagar ahora: $' + montoTotalVal.toFixed(2);
-            }
-        }
-
-        function toggleCampos() {
-            const metodo = document.getElementById('metodo_pago').value;
-            const camposC2P = document.getElementById('campos_c2p');
-            const camposTransferencia = document.getElementById('campos_transferencia');
-            const btnSubmit = document.getElementById('btn-submit');
-
-            camposC2P.style.display = 'none';
-            camposTransferencia.style.display = 'none';
-
-            if (metodo === 'c2p') {
-                camposC2P.style.display = 'block';
-                btnSubmit.innerText = 'Pagar y Confirmar Cita';
-            } else if (metodo === 'transferencia') {
-                camposTransferencia.style.display = 'block';
-                btnSubmit.innerText = 'Enviar Reporte de Pago';
-            } else if (metodo === 'divisas_efectivo') {
-                btnSubmit.innerText = 'Agendar y Pagar en Local';
-            } else {
-                btnSubmit.innerText = 'Procesar Pago';
-            }
-        }
-
-        document.getElementById('form-pago').addEventListener('submit', function(e) {
-            e.preventDefault();
-            Swal.fire({
-                title: 'Procesando transacción',
-                html: 'Conectando con la red bancaria nacional...<br><br><span style="color: #727A74; font-size: 13px;">Por favor, espere un momento.</span>',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
-            setTimeout(() => { this.submit(); }, 2500);
-        });
-    </script>
-</body>
-</html>
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @vite(['resources/js/pago-checkout.js'])
+@endpush

@@ -1,172 +1,117 @@
-/* =========================================================================
-   VERIFICACIÓN DE PAGOS - Controlador interactivo
-   Con tabs de filtrado + modal unificado estilo catálogo
-   ========================================================================= */
+/**
+ * Módulo de Verificación de Pagos
+ * Controla el filtrado de la tabla, la búsqueda, el filtro por fecha
+ * y la interacción con el modal de confirmación.
+ */
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('✅ Verificar pagos - JS iniciado');
+    // Referencias del DOM
+    const tablaBody = document.querySelector('.tabla-transacciones tbody');
+    const filas = document.querySelectorAll('.tabla-transacciones tbody tr');
+    const tabs = document.querySelectorAll('.tab-estado');
+    const inputBusqueda = document.getElementById('input-busqueda-pagos');
+    const inputFecha = document.getElementById('input-fecha-pagos');
+    const footerContador = document.getElementById('footer-contador');
+    
+    // Referencias del Modal
+    const modal = document.getElementById('modal-confirmacion');
+    const modalTitulo = document.getElementById('modal-titulo');
+    const modalMensaje = document.getElementById('modal-mensaje');
+    const modalTextarea = document.getElementById('motivo-rechazo');
+    const btnConfirmar = document.getElementById('btn-modal-confirmar');
+    const btnCancelar = document.getElementById('btn-modal-cancelar');
 
-    // =====================================================================
-    // REFERENCIAS (con protección contra null)
-    // =====================================================================
-    const modal         = document.getElementById('modal-confirmacion');
-    const modalTitulo   = document.getElementById('modal-titulo');
-    const modalMensaje  = document.getElementById('modal-mensaje');
-    const motivoRechazo = document.getElementById('motivo-rechazo');
-    const btnConfirmar  = document.getElementById('btn-modal-confirmar');
-    const btnCancelar   = document.getElementById('btn-modal-cancelar');
-
-    // Tabs y buscador
-    const tabs          = document.querySelectorAll('.tab-estado');
-    const inputBusqueda = document.querySelector('.campo-busqueda input');
-    const inputFecha    = document.querySelector('.campo-fecha input');
-    const filas         = document.querySelectorAll('.tabla-transacciones tbody tr');
-
-    // Debug
-    console.log('🔍 Tabs:', tabs.length, '| Filas:', filas.length, '| Modal:', !!modal);
-
-    // Estado local
+    // Estado de la aplicación
     let accionActual = '';
     let filaActual = null;
 
     // =====================================================================
-    // 1. TABS DE FILTRADO
+    // 1. Lógica de Filtrado (Tabs, Búsqueda y Fecha)
     // =====================================================================
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            console.log('🖱️ Tab clickeado:', tab.dataset.filtro);
-
-            tabs.forEach(t => t.classList.remove('activo'));
-            tab.classList.add('activo');
-
-            aplicarFiltros(tab.dataset.filtro);
-        });
-    });
-
-    // =====================================================================
-    // 2. BUSCADOR + FECHA
-    // =====================================================================
-    if (inputBusqueda) {
-        inputBusqueda.addEventListener('input', () => {
-            const tabActivo = document.querySelector('.tab-estado.activo');
-            aplicarFiltros(tabActivo ? tabActivo.dataset.filtro : 'todos');
-        });
-    }
-
-    if (inputFecha) {
-        inputFecha.addEventListener('change', () => {
-            const tabActivo = document.querySelector('.tab-estado.activo');
-            aplicarFiltros(tabActivo ? tabActivo.dataset.filtro : 'todos');
-        });
-    }
-
-    // =====================================================================
-    // 3. FUNCIÓN CENTRAL DE FILTRADO
-    // =====================================================================
-    function aplicarFiltros(estadoFiltro) {
-        const termino = (inputBusqueda?.value || '').toLowerCase().trim();
-        const fechaSeleccionada = inputFecha?.value || '';
+    function aplicarFiltros() {
+        const tabActivo = document.querySelector('.tab-estado.activo');
+        const filtroEstado = tabActivo ? tabActivo.dataset.filtro : 'todos';
+        const terminoBusqueda = inputBusqueda ? inputBusqueda.value.toLowerCase().trim() : '';
+        const fechaFiltro = inputFecha ? inputFecha.value : '';
         let visibles = 0;
 
         filas.forEach(fila => {
             const textoFila = fila.textContent.toLowerCase();
-            const badge = fila.querySelector('.estado-pendiente, .estado-autorizado, .estado-rechazado');
-            const estadoFila = badge ? obtenerEstadoClave(badge) : '';
+            const estadoFila = fila.dataset.estado;
+            const fechaFila = fila.dataset.fecha;
 
-            const coincideBusqueda = !termino || textoFila.includes(termino);
-            const coincideEstado = estadoFiltro === 'todos' || estadoFila === estadoFiltro;
+            const coincideEstado = (filtroEstado === 'todos') || (estadoFila === filtroEstado);
+            const coincideBusqueda = !terminoBusqueda || textoFila.includes(terminoBusqueda);
+            const coincideFecha = !fechaFiltro || (fechaFila === fechaFiltro);
 
-            let coincideFecha = true;
-            if (fechaSeleccionada) {
-                const dataFecha = fila.dataset.fecha || '';
-                coincideFecha = !dataFecha || dataFecha === fechaSeleccionada;
-            }
-
-            if (coincideBusqueda && coincideEstado && coincideFecha) {
-                fila.style.display = '';
+            if (coincideEstado && coincideBusqueda && coincideFecha) {
+                fila.classList.remove('fila-oculta');
                 visibles++;
             } else {
-                fila.style.display = 'none';
+                fila.classList.add('fila-oculta');
             }
         });
 
-        console.log(`📊 Mostrando ${visibles} de ${filas.length} (filtro: ${estadoFiltro})`);
+        if (footerContador) {
+            footerContador.textContent = visibles;
+        }
     }
 
-    function obtenerEstadoClave(badge) {
-        if (!badge) return '';
-        if (badge.classList.contains('estado-pendiente')) return 'pendiente';
-        if (badge.classList.contains('estado-autorizado')) return 'autorizado';
-        if (badge.classList.contains('estado-rechazado')) return 'rechazado';
-        return '';
+    // Event Listeners para filtros
+    if (tabs.length) {
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('activo'));
+                tab.classList.add('activo');
+                aplicarFiltros();
+            });
+        });
     }
+
+    if (inputBusqueda) inputBusqueda.addEventListener('input', aplicarFiltros);
+    if (inputFecha) inputFecha.addEventListener('change', aplicarFiltros);
 
     // =====================================================================
-    // 4. ABRIR MODAL — AUTORIZAR
+    // 2. Lógica del Modal (Abrir y Cerrar)
     // =====================================================================
     document.querySelectorAll('.btn-autorizar').forEach(boton => {
         boton.addEventListener('click', (e) => {
-            console.log('✅ Click autorizar');
-
             accionActual = 'autorizar';
             filaActual = e.target.closest('tr');
-
-            if (!modal) return;
-
-            modalTitulo.textContent = '¿Autorizar esta transacción?';
-            modalMensaje.textContent = 'La reserva del cliente se marcará como confirmada automáticamente una vez que apruebes este pago móvil. Esta acción no se puede deshacer.';
-
-            if (motivoRechazo) {
-                motivoRechazo.classList.add('hidden');
-                motivoRechazo.value = '';
-                motivoRechazo.style.borderColor = '';
-            }
-
-            if (btnConfirmar) {
-                btnConfirmar.classList.remove('accion-rechazar');
-                btnConfirmar.classList.add('accion-autorizar');
-                btnConfirmar.textContent = 'Autorizar pago';
-            }
-
-            modal.showModal();
+            abrirModal();
         });
     });
 
-    // =====================================================================
-    // 5. ABRIR MODAL — RECHAZAR
-    // =====================================================================
     document.querySelectorAll('.btn-rechazar').forEach(boton => {
         boton.addEventListener('click', (e) => {
-            console.log('❌ Click rechazar');
-
             accionActual = 'rechazar';
             filaActual = e.target.closest('tr');
-
-            if (!modal) return;
-
-            modalTitulo.textContent = '¿Rechazar esta transacción?';
-            modalMensaje.textContent = 'Indica el motivo del rechazo. Este mensaje será visible para el cliente y no se podrá modificar después.';
-
-            if (motivoRechazo) {
-                motivoRechazo.classList.remove('hidden');
-                motivoRechazo.value = '';
-                motivoRechazo.style.borderColor = '';
-            }
-
-            if (btnConfirmar) {
-                btnConfirmar.classList.remove('accion-autorizar');
-                btnConfirmar.classList.add('accion-rechazar');
-                btnConfirmar.textContent = 'Rechazar pago';
-            }
-
-            modal.showModal();
-            setTimeout(() => motivoRechazo?.focus(), 250);
+            abrirModal();
         });
     });
 
-    // =====================================================================
-    // 6. CANCELAR
-    // =====================================================================
+    function abrirModal() {
+        if (!modal) return;
+
+        if (accionActual === 'autorizar') {
+            modalTitulo.textContent = '¿Autorizar esta transacción?';
+            modalMensaje.textContent = 'La reserva del cliente se marcará como confirmada automáticamente. Esta acción no se puede deshacer.';
+            modalTextarea.classList.add('hidden');
+            btnConfirmar.textContent = 'Autorizar pago';
+            btnConfirmar.className = 'btn-confirmar-accion btn-accion-autorizar';
+        } else {
+            modalTitulo.textContent = '¿Rechazar esta transacción?';
+            modalMensaje.textContent = 'Indica el motivo del rechazo. Este mensaje será visible para el cliente.';
+            modalTextarea.classList.remove('hidden');
+            modalTextarea.value = '';
+            btnConfirmar.textContent = 'Rechazar pago';
+            btnConfirmar.className = 'btn-confirmar-accion btn-accion-rechazar';
+            setTimeout(() => modalTextarea.focus(), 100);
+        }
+
+        modal.showModal();
+    }
+
     if (btnCancelar && modal) {
         btnCancelar.addEventListener('click', () => {
             modal.close();
@@ -174,119 +119,74 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // =====================================================================
-    // 7. CONFIRMAR ACCIÓN
-    // =====================================================================
-    if (btnConfirmar) {
-        btnConfirmar.addEventListener('click', () => {
-            if (accionActual === 'rechazar') {
-                if (!motivoRechazo || motivoRechazo.value.trim() === '') {
-                    if (motivoRechazo) {
-                        motivoRechazo.style.borderColor = 'var(--color-danger)';
-                        motivoRechazo.focus();
-                    }
-                    return;
-                }
-            }
-
-            if (filaActual) {
-                const badgeEstado = filaActual.querySelector('.estado-pendiente, .estado-autorizado, .estado-rechazado');
-
-                if (badgeEstado) {
-                    if (accionActual === 'autorizar') {
-                        badgeEstado.textContent = 'Autorizado';
-                        badgeEstado.className = 'estado-autorizado';
-                    } else {
-                        badgeEstado.textContent = 'Rechazado';
-                        badgeEstado.className = 'estado-rechazado';
-                        if (motivoRechazo) {
-                            badgeEstado.setAttribute('title', 'Motivo: ' + motivoRechazo.value.trim());
-                            badgeEstado.setAttribute('data-motivo', motivoRechazo.value.trim());
-                        }
-                    }
-                }
-
-                filaActual.querySelectorAll('button').forEach(b => b.disabled = true);
-
-                actualizarContadores();
-
-                const tabActivo = document.querySelector('.tab-estado.activo');
-                aplicarFiltros(tabActivo ? tabActivo.dataset.filtro : 'todos');
-            }
-
-            if (modal) modal.close();
-            resetEstado();
-        });
-    }
-
-    // =====================================================================
-    // 8. CERRAR POR BACKDROP
-    // =====================================================================
     if (modal) {
         modal.addEventListener('click', (e) => {
             const rect = modal.getBoundingClientRect();
-            const dentro =
-                e.clientX >= rect.left &&
-                e.clientX <= rect.right &&
-                e.clientY >= rect.top &&
-                e.clientY <= rect.bottom;
-
-            if (!dentro) {
+            const fuera = e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom;
+            if (fuera) {
                 modal.close();
                 resetEstado();
             }
         });
+    }
 
-        modal.addEventListener('close', resetEstado);
+    // =====================================================================
+    // 3. Confirmar Acción (Fetch al Backend)
+    // =====================================================================
+    if (btnConfirmar) {
+        btnConfirmar.addEventListener('click', () => {
+            if (accionActual === 'rechazar' && (!modalTextarea.value.trim())) {
+                modalTextarea.style.borderColor = 'var(--color-danger)';
+                modalTextarea.focus();
+                return;
+            }
+
+            if (!filaActual) return;
+
+            // Obtenemos la URL real desde el botón original (data-url)
+            const urlBase = accionActual === 'autorizar' 
+                ? filaActual.querySelector('.btn-autorizar').dataset.url 
+                : filaActual.querySelector('.btn-rechazar').dataset.url;
+                
+            const token = document.querySelector('meta[name="csrf-token"]').content;
+
+            btnConfirmar.textContent = 'Procesando...';
+            btnConfirmar.disabled = true;
+
+            fetch(urlBase, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': token,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ motivo: modalTextarea.value })
+            })
+            .then(res => {
+                if (res.ok) {
+                    window.location.reload(); // Recarga para actualizar contadores
+                } else {
+                    alert('Ocurrió un error al procesar la transacción.');
+                    btnConfirmar.textContent = accionActual === 'autorizar' ? 'Autorizar pago' : 'Rechazar pago';
+                    btnConfirmar.disabled = false;
+                }
+            })
+            .catch(() => {
+                alert('Error de conexión.');
+                btnConfirmar.disabled = false;
+            });
+        });
     }
 
     function resetEstado() {
         accionActual = '';
         filaActual = null;
-        if (motivoRechazo) {
-            motivoRechazo.value = '';
-            motivoRechazo.style.borderColor = '';
-            motivoRechazo.classList.add('hidden');
+        if (modalTextarea) {
+            modalTextarea.value = '';
+            modalTextarea.style.borderColor = '';
         }
         if (btnConfirmar) {
-            btnConfirmar.classList.remove('accion-autorizar', 'accion-rechazar');
+            btnConfirmar.disabled = false;
         }
     }
-
-    // =====================================================================
-    // 9. ACTUALIZAR CONTADORES DE LOS TABS
-    // =====================================================================
-    function actualizarContadores() {
-        const contadores = { pendiente: 0, autorizado: 0, rechazado: 0, todos: 0 };
-
-        document.querySelectorAll('.tabla-transacciones tbody tr').forEach(fila => {
-            const badge = fila.querySelector('.estado-pendiente, .estado-autorizado, .estado-rechazado');
-            if (!badge) return;
-
-            if (badge.classList.contains('estado-pendiente')) contadores.pendiente++;
-            if (badge.classList.contains('estado-autorizado')) contadores.autorizado++;
-            if (badge.classList.contains('estado-rechazado')) contadores.rechazado++;
-            contadores.todos++;
-        });
-
-        tabs.forEach(tab => {
-            const filtro = tab.dataset.filtro;
-            const contador = tab.querySelector('.tab-contador');
-            if (contador && contadores[filtro] !== undefined) {
-                contador.textContent = contadores[filtro];
-            }
-        });
-    }
-
-    // =====================================================================
-    // 10. APLICAR FILTRO INICIAL AL CARGAR
-    // =====================================================================
-    actualizarContadores();
-
-    const tabInicial = document.querySelector('.tab-estado.activo') || tabs[0];
-    if (tabInicial) {
-        aplicarFiltros(tabInicial.dataset.filtro);
-    }
-
-    console.log('✅ Verificar pagos - listo');
 });

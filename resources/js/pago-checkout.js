@@ -1,84 +1,93 @@
-/* =========================================================================
-   PAGO CHECKOUT - JS del cliente
-   ========================================================================= */
-
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('✅ Pago checkout cargado');
 
-    // =====================================================================
-    // 1. VALIDACIÓN DEL FORMULARIO
-    // =====================================================================
-    const form = document.querySelector('.checkout-form');
-    if (form) {
-        form.addEventListener('submit', (e) => {
-            const metodo = form.querySelector('input[name="metodo"]:checked');
-            const referencia = form.querySelector('input[name="referencia"]');
-
-            if (!metodo) {
-                e.preventDefault();
-                alert('Por favor selecciona un método de pago.');
-                return false;
-            }
-
-            if (!referencia || referencia.value.trim().length < 4) {
-                e.preventDefault();
-                alert('La referencia debe tener al menos 4 caracteres.');
-                if (referencia) referencia.focus();
-                return false;
-            }
+    // Errores de Laravel
+    if (window.LaravelErrors && window.LaravelErrors.length > 0) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Transacción rechazada',
+            text: window.LaravelErrors[0],
+            confirmButtonColor: '#3b2a20'
         });
     }
 
-    // =====================================================================
-    // 2. PREVISUALIZACIÓN DEL COMPROBANTE
-    // =====================================================================
-    const inputComprobante = document.querySelector('input[name="comprobante"]');
-    const textoComprobante = document.querySelector('.input-archivo-texto');
+    const montoAbonoVal = parseFloat(document.getElementById('monto-abono-data').value);
+    const montoTotalVal = parseFloat(document.getElementById('monto-total-data').value);
 
-    if (inputComprobante && textoComprobante) {
-        const textoOriginal = textoComprobante.innerHTML;
+    const btnAbono = document.getElementById('btn-modalidad-abono');
+    const btnTotal = document.getElementById('btn-modalidad-total');
+    const inputMonto = document.getElementById('input-monto');
+    const displayMonto = document.getElementById('display-monto');
+    const restanteText = document.getElementById('restante-text');
+    const btnText = document.getElementById('btn-text');
+    
+    const cards = document.querySelectorAll('.payment-card');
+    const alertaC2P = document.getElementById('alerta-c2p');
+    const camposC2P = document.getElementById('campos_c2p');
+    const camposTransferencia = document.getElementById('campos_transferencia');
 
-        inputComprobante.addEventListener('change', (e) => {
-            const archivo = e.target.files[0];
+    const formatMoney = (amount) => amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-            if (archivo) {
-                if (archivo.size > 2 * 1024 * 1024) {
-                    alert('El archivo es demasiado grande. Máximo 2MB.');
-                    inputComprobante.value = '';
-                    return;
-                }
+    const actualizarModalidad = (esAbono) => {
+        if (esAbono) {
+            btnAbono.classList.add('seleccionado');
+            btnTotal.classList.remove('seleccionado');
+            inputMonto.value = montoAbonoVal;
+            displayMonto.innerText = formatMoney(montoAbonoVal);
+            btnText.innerText = `Confirmar y pagar $${formatMoney(montoAbonoVal)}`;
+            restanteText.innerText = `Restante en el local: $${formatMoney(montoTotalVal - montoAbonoVal)}`;
+            restanteText.style.display = 'block';
+        } else {
+            btnTotal.classList.add('seleccionado');
+            btnAbono.classList.remove('seleccionado');
+            inputMonto.value = montoTotalVal;
+            displayMonto.innerText = formatMoney(montoTotalVal);
+            btnText.innerText = `Confirmar y pagar $${formatMoney(montoTotalVal)}`;
+            restanteText.style.display = 'none';
+        }
+    };
 
-                textoComprobante.innerHTML = `
-                    <strong style="color: var(--primary-brown); font-weight: 600;">
-                        ✓ ${archivo.name}
-                    </strong>
-                    <small>${(archivo.size / 1024).toFixed(1)} KB</small>
-                `;
-            } else {
-                textoComprobante.innerHTML = textoOriginal;
-            }
-        });
+    if (btnAbono && btnTotal) {
+        btnAbono.addEventListener('click', (e) => { e.preventDefault(); actualizarModalidad(true); });
+        btnTotal.addEventListener('click', (e) => { e.preventDefault(); actualizarModalidad(false); });
     }
 
-    // =====================================================================
-    // 3. ESTILO ACTIVO EN MÉTODOS DE PAGO
-    // =====================================================================
-    const metodos = document.querySelectorAll('.metodo-opcion');
+    cards.forEach(card => {
+        const radio = card.querySelector('input[type="radio"]');
+        
+        card.addEventListener('click', () => {
+            cards.forEach(c => c.classList.remove('active-card'));
+            card.classList.add('active-card');
+            radio.checked = true;
+            radio.dispatchEvent(new Event('change'));
+        });
 
-    metodos.forEach(metodo => {
-        const radio = metodo.querySelector('input[type="radio"]');
+        radio.addEventListener('change', (e) => {
+            const metodo = e.target.value;
+            alertaC2P.classList.add('hidden');
+            camposC2P.classList.add('hidden');
+            camposTransferencia.classList.add('hidden');
 
-        if (radio && radio.checked) {
-            metodo.classList.add('activo');
-        }
-
-        if (radio) {
-            radio.addEventListener('change', () => {
-                metodos.forEach(m => m.classList.remove('activo'));
-                metodo.classList.add('activo');
-            });
-        }
+            if (metodo === 'c2p') {
+                alertaC2P.classList.remove('hidden');
+                camposC2P.classList.remove('hidden');
+            } else if (metodo === 'transferencia') {
+                camposTransferencia.classList.remove('hidden');
+            }
+        });
     });
 
-    console.log('✅ Checkout listo');
+    const formPago = document.getElementById('form-pago');
+    if (formPago) {
+        formPago.addEventListener('submit', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Procesando transacción',
+                html: 'Conectando con la red bancaria...<br><br><span style="color: #727A74; font-size: 13px;">Por favor, espere un momento.</span>',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+            setTimeout(() => { this.submit(); }, 1500);
+        });
+    }
 });

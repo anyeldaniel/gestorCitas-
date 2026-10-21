@@ -11,7 +11,7 @@
        ROLES Y PERMISOS
        ============================================================ */
     $esAdmin        = $user->rol === 'admin';
-    $esRecepcion    = $user->rol === 'recepcionista';
+    $esRecepcion    = $user->rol === 'recepcion';
     $esTrabajador   = $user->rol === 'trabajador';
     $puedeGestionar = $esAdmin || $esRecepcion;
     $puedeCancelar  = $puedeGestionar || $esTrabajador;

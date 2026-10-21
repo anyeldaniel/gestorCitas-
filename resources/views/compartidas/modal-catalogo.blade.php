@@ -148,10 +148,10 @@
                 </p>
 
                 
-                {{-- <nav class="bloque-informacion-celda col-span-full border-t border-slate-200/60 pt-2">
+                 <nav class="bloque-informacion-celda col-span-full border-t border-slate-200/60 pt-2">
                     <span class="subtitulo-informacion mb-1.5">Especialistas Certificados:</span>
                     <section id="view-servicio-especialistas" class="flex flex-wrap gap-1.5"></section>
-                </nav> --}}
+                </nav> 
                 
 
                 <p class="bloque-informacion-celda col-span-full border-t border-slate-200/60 pt-2">

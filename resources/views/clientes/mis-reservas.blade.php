@@ -2,94 +2,185 @@
 
 @section('title', 'Mis Reservas - The Beauty Room')
 
+@push('styles')
+    @vite(['resources/css/mis-reservas.css'])
+@endpush
+
 @section('content')
-<div style="width: 100%; min-height: 80vh; background-color: #F4F1EB; padding: 40px 0;">
-    <div style="width: 92%; max-width: 1400px; margin: 0 auto; font-family: 'Montserrat', sans-serif;">
+@php
+    $proximaCita = $citas->whereIn('estado', ['pendiente', 'confirmada'])->sortBy('fecha')->first();
+    $historialCitas = $citas->where('estado', 'completada')->sortByDesc('fecha');
+    
+    $totalPendiente = $citas->whereIn('estado', ['pendiente', 'confirmada'])->sum('monto_total'); 
+    $visitasRealizadas = $historialCitas->count();
+@endphp
+
+<main class="dashboard-wrapper">
+    
+    <!-- HERO & STATS -->
+    <header class="hero-section">
+        <section class="hero-text">
+            <span class="hero-subtitle">Tu espacio personal</span>
+            <h1>Tus momentos de bienestar,<br>en un solo lugar</h1>
+            <p>Consulta tus próximas citas, completa pagos pendientes y vuelve a reservar tus rituales favoritos.</p>
+        </section>
         
-        <header style="text-align: center; margin-bottom: 40px;">
-            <h1 style="font-family: 'Playfair Display', serif; color: #2C352D; font-size: 38px; font-weight: 600; margin-bottom: 10px;">Mis Citas y Reservas</h1>
-            <p style="color: #5C665E; font-size: 15px;">Consulta el estatus de tus tratamientos de bienestar y el historial de tus pagos.</p>
+        <aside class="stats-box">
+            <article class="stat-item">
+                <h2>{{ $proximaCita ? '01' : '00' }}</h2>
+                <span>Próxima cita</span>
+            </article>
+            <hr class="stat-divider">
+            <article class="stat-item">
+                <h2>{{ str_pad($visitasRealizadas, 2, '0', STR_PAD_LEFT) }}</h2>
+                <span>Visitas realizadas</span>
+            </article>
+            <hr class="stat-divider">
+            <article class="stat-item">
+                <h2>${{ number_format($totalPendiente, 0) }}</h2>
+                <span>Pendiente</span>
+            </article>
+        </aside>
+    </header>
+
+    <!-- PRÓXIMA CITA -->
+    <section class="proxima-cita-section">
+        <header class="section-header">
+            <div class="section-title">
+                <span>Próxima cita</span>
+                <h2>Todo listo para tu próxima visita</h2>
+            </div>
+            <a href="{{ route('catalogo') }}" class="btn-nueva-reserva">Nueva reserva <span>+</span></a>
         </header>
 
-        @if(session('success'))
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    Swal.fire({ icon: 'success', title: '¡Éxito!', text: "{{ session('success') }}", confirmButtonColor: '#5A6B5D' });
-                });
-            </script>
-        @endif
+        @if($proximaCita)
+            @php
+                $fechaCarbon = \Carbon\Carbon::parse($proximaCita->fecha);
+                $totalPagado = $proximaCita->pagos->where('estado_pago', 'aprobado')->sum('monto_anticipado');
+                $enRevision = $proximaCita->pagos->where('estado_pago', 'revision')->sum('monto_anticipado');
+                $montoRestante = $proximaCita->monto_total - $totalPagado;
+                $estaPagado = $totalPagado >= $proximaCita->monto_total;
+            @endphp
 
-        <!-- CONTENEDOR FLEX/GRID ESTRICTO PARA 3 COLUMNAS -->
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; align-items: stretch;">
-            @forelse($citas as $cita)
-                <div style="background: #FFFFFF; border: 1px solid #E5E2DC; border-radius: 16px; padding: 24px; box-shadow: 0 10px 30px rgba(44, 53, 45, 0.06); display: flex; flex-direction: column; justify-content: space-between;">
-                    
-                    <div>
-                        <!-- Cabecera de la Tarjeta -->
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #F4F1EB; padding-bottom: 14px; margin-bottom: 16px;">
-                            <h3 style="margin: 0; font-family: 'Playfair Display', serif; color: #2C352D; font-size: 20px; font-weight: 600; line-height: 1.2;">
-                                {{ $cita->servicio->nombre_servicio ?? 'Tratamiento Spa' }}
-                            </h3>
-                            <span style="padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;
-                                @if($cita->estado === 'confirmada') background: #E2ECE9; color: #3A463B;
-                                @elseif($cita->estado === 'pendiente') background: #FCF3E3; color: #8A6D3B;
-                                @else background: #FADBD8; color: #900C3F; @endif">
-                                {{ ucfirst($cita->estado) }}
+            <article class="proxima-cita-card">
+                <!-- Fecha -->
+                <time class="cita-fecha-sidebar" datetime="{{ $fechaCarbon->format('Y-m-d') }}">
+                    <span class="mes">{{ $fechaCarbon->translatedFormat('M') }}</span>
+                    <span class="dia">{{ $fechaCarbon->format('d') }}</span>
+                    <span class="dia-semana">{{ $fechaCarbon->translatedFormat('l') }}</span>
+                </time>
+
+                <!-- Detalles -->
+                <div class="cita-detalles-main">
+                    <header class="cita-header-info">
+                        <div>
+                            <span class="cita-ref">Reserva #BR-{{ $proximaCita->id }}-{{ $fechaCarbon->format('Ymd') }}</span>
+                            <h3 class="cita-titulo">{{ $proximaCita->servicio->nombre_servicio ?? 'Tratamiento Spa' }}</h3>
+                        </div>
+                        <span class="badge {{ $estaPagado ? 'badge-pagado' : 'badge-pendiente' }}">
+                            {{ $estaPagado ? '✓ Pagado' : '● Pendiente de pago' }}
+                        </span>
+                    </header>
+
+                    <div class="cita-meta-grid">
+                        <div class="meta-info-item">
+                            <span class="meta-icon-circle">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
                             </span>
+                            <div>
+                                <small>Hora</small>
+                                <strong>{{ \Carbon\Carbon::parse($proximaCita->hora)->format('h:i A') }}</strong>
+                            </div>
+                        </div>
+                        
+                        <div class="meta-info-item">
+                            <span class="meta-icon-circle">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2"/></svg>
+                            </span>
+                            <div>
+                                <small>Especialista</small>
+                                <strong>{{ $proximaCita->trabajador->nombre ?? 'Por asignar' }}</strong>
+                            </div>
                         </div>
 
-                        <!-- Detalles con fuente Montserrat -->
-                        <div style="display: flex; flex-direction: column; gap: 10px; font-size: 13px; color: #5C665E; margin-bottom: 20px;">
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <span>📅</span> <strong>Fecha:</strong> {{ \Carbon\Carbon::parse($cita->fecha)->format('d/m/Y') }}
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <span>⏰</span> <strong>Hora:</strong> {{ \Carbon\Carbon::parse($cita->hora)->format('h:i A') }}
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <span>💆</span> <strong>Especialista:</strong> {{ $cita->trabajador->nombre ?? 'Asignado por el Spa' }}
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <span>💵</span> <strong>Costo Total:</strong> <span style="color: #2C352D; font-weight: 600;">${{ number_format($cita->monto_total, 2) }}</span>
+                        <div class="meta-info-item">
+                            <span class="meta-icon-circle">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                            </span>
+                            <div>
+                                <small>Duración</small>
+                                <strong>60 minutos</strong>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- SECCIÓN DE PAGOS Y ACCIONES -->
-                    <div style="background: #FAFAFA; padding: 14px; border-radius: 10px; border: 1px solid #EFECE6; font-size: 12px; display: flex; flex-direction: column; gap: 10px;">
-                        <div>
-                            <strong style="display: block; color: #2C352D; margin-bottom: 4px; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px;">Estatus de Pago</strong> 
-                            @php
-                                $totalPagado = $cita->pagos->where('estado_pago', 'aprobado')->sum('monto_anticipado');
-                                $enRevision = $cita->pagos->where('estado_pago', 'revision')->sum('monto_anticipado');
-                            @endphp
-                            
-                            @if($totalPagado >= $cita->monto_total)
-                                <span style="color: #27ae60; font-weight: 600;">✓ ¡Pagado Completo (${{ number_format($totalPagado, 2) }})</span>
-                            @elseif($totalPagado > 0)
-                                <span style="color: #d35400; font-weight: 600;">Abonado: ${{ number_format($totalPagado, 2) }} (Resta: ${{ number_format($cita->monto_total - $totalPagado, 2) }})</span>
-                            @elseif($enRevision > 0)
-                                <span style="color: #2980b9; font-weight: 600;">⏳ En verificación (${{ number_format($enRevision, 2) }})</span>
-                            @else
-                                <span style="color: #c0392b; font-weight: 600;">⚠ Pendiente de pago</span>
-                            @endif
-                        </div>
-
-                        @if($totalPagado < $cita->monto_total && $enRevision == 0)
-                            <a href="{{ route('checkout.view', ['cita_id' => $cita->id]) }}" style="background: linear-gradient(135deg, #5A6B5D, #2C352D); color: #FFF; padding: 10px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 12px; text-align: center; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(44, 53, 45, 0.15);">
-                                Completar Pago
-                            </a>
+                <!-- Pago -->
+                <aside class="cita-pago-sidebar">
+                    <div>
+                        <span class="pago-total-label">{{ $estaPagado ? 'Total Pagado' : 'Total Pendiente' }}</span>
+                        <p class="pago-total-monto">${{ number_format($estaPagado ? $totalPagado : $montoRestante, 2) }}</p>
+                        
+                        @if(!$estaPagado && $enRevision == 0)
+                            <div class="pago-alerta">
+                                <span class="pago-alerta-icon">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                                </span>
+                                <div class="pago-alerta-text">
+                                    <strong>Completa el pago para confirmar</strong>
+                                    <span>Pago seguro y confirmación inmediata.</span>
+                                </div>
+                            </div>
                         @endif
                     </div>
-                </div>
+
+                    @if(!$estaPagado && $enRevision == 0)
+                        <a href="{{ route('checkout.view', ['cita_id' => $proximaCita->id]) }}" class="btn-completar-pago">
+                            Completar pago <span>→</span>
+                        </a>
+                    @endif
+                </aside>
+            </article>
+        @else
+            <p class="empty-state">No tienes citas próximas agendadas.</p>
+        @endif
+    </section>
+
+    <!-- HISTORIAL -->
+    <section class="historial-section">
+        <header class="section-header">
+            <div class="section-title">
+                <span>Tu historial</span>
+                <h2>Rituales que ya disfrutaste</h2>
+            </div>
+            <span class="historial-count">{{ $visitasRealizadas }} visitas completadas</span>
+        </header>
+
+        <div class="historial-grid">
+            @forelse($historialCitas as $cita)
+                @php $fechaHist = \Carbon\Carbon::parse($cita->fecha); @endphp
+                <article class="historial-card">
+                    <time class="historial-fecha" datetime="{{ $fechaHist->format('Y-m-d') }}">
+                        <span class="dia">{{ $fechaHist->format('d') }}</span>
+                        <span class="mes">{{ $fechaHist->translatedFormat('M') }}</span>
+                    </time>
+                    
+                    <div class="historial-info">
+                        <span class="badge-completado">Completada</span>
+                        <h4>{{ $cita->servicio->nombre_servicio ?? 'Tratamiento' }}</h4>
+                        <p>{{ $cita->trabajador->nombre ?? 'Especialista' }} - 60 min</p>
+                    </div>
+
+                    <div class="historial-precio">
+                        <span>Total</span>
+                        <strong>${{ number_format($cita->monto_total, 0) }}</strong>
+                    </div>
+                </article>
             @empty
-                <div style="grid-column: 1 / -1; text-align: center; padding: 50px; background: #FFFFFF; border-radius: 16px; border: 1px solid #E5E2DC;">
-                    <p style="color: #5C665E; font-size: 16px; margin-bottom: 15px;">Aún no tienes citas agendadas en nuestro santuario.</p>
-                    <a href="{{ route('catalogo') }}" style="display: inline-block; background: linear-gradient(135deg, #5A6B5D, #2C352D); color: #FFF; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Explorar Catálogo Zen</a>
-                </div>
+                <p class="empty-state">Aún no tienes visitas registradas.</p>
             @endforelse
         </div>
+    </section>
 
-    </div>
-</div>
+</main>
 @endsection

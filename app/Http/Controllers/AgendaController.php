@@ -16,7 +16,7 @@ class AgendaController extends Controller
      */
     private function terapeutasDisponibles(User $user)
     {
-        if (!in_array($user->rol, ['admin', 'recepcionista'])) {
+        if (!in_array($user->rol, ['admin', 'recepcion'])) {
             return collect();
         }
 
@@ -96,7 +96,7 @@ class AgendaController extends Controller
         }
 
         // Filtro por terapeuta (solo admin/recepción).
-        if (in_array($user->rol, ['admin', 'recepcionista']) && $request->filled('terapeuta_id')) {
+        if (in_array($user->rol, ['admin', 'recepcion']) && $request->filled('terapeuta_id')) {
             $query->where('trabajador_id', $request->terapeuta_id);
         }
 
@@ -158,7 +158,7 @@ class AgendaController extends Controller
     {
         $user = auth()->user();
 
-        if (!in_array($user->rol, ['admin', 'recepcionista'])) {
+        if (!in_array($user->rol, ['admin', 'recepcion'])) {
             return response()->json([
                 'ok'      => false,
                 'mensaje' => 'No tienes permiso para cambiar el estado de esta cita.',
@@ -208,7 +208,7 @@ class AgendaController extends Controller
         $cita = Cita::findOrFail($id);
 
         $puedeCancelar =
-            in_array($user->rol, ['admin', 'recepcionista']) ||
+            in_array($user->rol, ['admin', 'recepcion']) ||
             ($user->rol === 'trabajador' && $cita->trabajador_id === $user->id);
 
         if (!$puedeCancelar) {

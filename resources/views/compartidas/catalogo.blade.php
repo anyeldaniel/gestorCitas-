@@ -126,8 +126,9 @@
                                 </svg>
                             </button>
 
-                        @elseif(auth()->user()->rol === 'recepcionista')
-                            <a href="{{ route('clientes.reserva') }}?servicio_id={{ $idSimulado }}&nombre={{ urlencode($nombreServicio) }}&precio={{ $precioSimulado }}&porcentaje={{ $porcentajeAgendadoSimulado }}" class="btn-primario" style="background-color: #4f8eff;">
+                        @elseif(auth()->user()->rol === 'recepcion')
+                            {{-- CORRECCIÓN: Se eliminó el style="background-color: #4f8eff;" para que use el color marrón de .btn-primario --}}
+                            <a href="{{ route('clientes.reserva') }}?servicio_id={{ $idSimulado }}&nombre={{ urlencode($nombreServicio) }}&precio={{ $precioSimulado }}&porcentaje={{ $porcentajeAgendadoSimulado }}" class="btn-primario">
                                 Agendar Cita
                             </a>
                         @endif
@@ -251,5 +252,6 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 @vite(['resources/js/catalogo.js'])
 @endpush

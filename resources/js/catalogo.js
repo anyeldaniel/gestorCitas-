@@ -1,16 +1,14 @@
 /**
- * MÓDULO: Catálogo Zen - Gestión Dinámica de Servicios, Modales y Alertas de Baja
+ * MÓDULO: Catálogo Zen - Gestión Dinámica de Servicios, Modales y Alertas
  */
 
-
-// Esperamos a que el DOM esté completamente cargado para inicializar la lógica del catálogo.
-document.addEventListener("DOMContentLoaded", () => {
+function initCatalogo() {
     const formServicio = document.getElementById("form-servicio");
     const confirmModal = document.getElementById("modal-confirmacion-custom");
     const inputFoto = document.getElementById("servicio_foto");
 
     // ==========================================================================
-    //     UTILIDAD: CONSTRUIR BASE URL (con o sin /public)
+    // UTILIDAD: CONSTRUIR BASE URL (con o sin /public)
     // ==========================================================================
     function obtenerBaseUrl() {
         let baseUrl = window.location.origin;
@@ -21,38 +19,55 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================================================
-    //     REUTILIZACIÓN DE ALERTA DE CONFIRMACIÓN CENTRALIZADA EN PANTALLA
+    // UTILIDAD: MOSTRAR SWEETALERT CON FALLBACK
     // ==========================================================================
+    function mostrarAlerta(tipo, titulo, texto) {
+        if (typeof Swal !== 'undefined' && Swal && typeof Swal.fire === 'function') {
+            return Swal.fire({
+                icon: tipo,
+                title: titulo,
+                text: texto,
+                confirmButtonColor: tipo === 'success' ? '#8b5e3c' : '#c53030',
+                confirmButtonText: 'Aceptar',
+                allowOutsideClick: false
+            });
+        }
+        window.alert(`${titulo}\n\n${texto}`);
+        return Promise.resolve({ isConfirmed: true });
+    }
 
-    // Función global para mostrar una alerta de confirmación personalizada.
+    // ==========================================================================
+    // ALERTA DE CONFIRMACIÓN (Solo se usa para Eliminar)
+    // ==========================================================================
     window.mostrarAlertaConfirmacion = function (titulo, mensaje, callbackAceptar) {
         if (!confirmModal) return;
+
         document.getElementById("confirm-alerta-titulo").textContent = titulo;
         document.getElementById("confirm-alerta-mensaje").textContent = mensaje;
 
         const btnAceptar = document.getElementById("btn-confirm-aceptar");
         const btnCancelar = document.getElementById("btn-confirm-cancelar");
 
-        // Clonar nodo para limpiar event listeners previos acumulados
         const clonAceptar = btnAceptar.cloneNode(true);
         btnAceptar.parentNode.replaceChild(clonAceptar, btnAceptar);
 
         clonAceptar.addEventListener("click", () => {
-            callbackAceptar();
+            if (callbackAceptar) callbackAceptar();
             confirmModal.close();
         });
 
-        btnCancelar.onclick = () => confirmModal.close();
+        if (btnCancelar) btnCancelar.onclick = () => confirmModal.close();
+
         confirmModal.showModal();
     };
 
     // ==========================================================================
-    //       PREVISUALIZACIÓN DINÁMICA DE LA FOTO EN EL AVATAR CIRUCLAR
+    // PREVISUALIZACIÓN DINÁMICA DE LA FOTO
     // ==========================================================================
-
-    // Función global para ser llamada desde el onchange del input file.
     window.previsualizarImagenServicio = function (input) {
         const preview = document.getElementById("previsualizacion-avatar-servicio");
+        if (!preview) return;
+
         if (input.files && input.files[0]) {
             const reader = new FileReader();
             reader.onload = function (e) {
@@ -73,145 +88,178 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================================================
-    //       LOGICA CONTROLADORA: MODALES (REGISTRO / EDICIÓN / CIERRE)
+    // MODALES (REGISTRO / EDICIÓN)
     // ==========================================================================
-
-    // Variable global para saber si estamos editando (null = creación)
     let servicioEditandoId = null;
 
-    // Función para abrir el modal de registro con estado limpio y configuración para creación.
     window.abrirModalAgregarServicio = function() {
         const modal = document.getElementById("modal-servicio");
         if (!modal || !formServicio) return;
 
-        servicioEditandoId = null; // Modo creación
-
+        servicioEditandoId = null;
         document.getElementById("modal-servicio-titulo").textContent = "Registrar Nuevo Servicio";
         formServicio.reset();
-        document.getElementById("previsualizacion-avatar-servicio").innerHTML = "SZ";
-        document.getElementById("previsualizacion-avatar-servicio").style.borderStyle = 'dashed';
+
+        const preview = document.getElementById("previsualizacion-avatar-servicio");
+        if (preview) {
+            preview.innerHTML = "SZ";
+            preview.style.borderStyle = 'dashed';
+        }
 
         const checkboxes = formServicio.querySelectorAll('input[name="especialistas[]"]');
         checkboxes.forEach(cb => cb.checked = true);
 
-        // Quitamos el _method PUT si veníamos de editar
         const metodoOculto = document.getElementById('metodo-put-servicio');
         if (metodoOculto) metodoOculto.remove();
 
         modal.showModal();
     };
 
-    // Función para cerrar cualquier modal de servicio (registro o edición).
     window.cerrarModalServicio = function () {
         const modal = document.getElementById("modal-servicio");
-        if (modal) modal.close();
+        if (modal && modal.open) modal.close();
     };
 
-    // Función para abrir el modal de edición con datos precargados del servicio seleccionado.
     window.editarServicio = function(id) {
         const modal = document.getElementById("modal-servicio");
         if (!modal || !formServicio) return;
 
-        servicioEditandoId = id; // Modo edición
-
+        servicioEditandoId = id;
         document.getElementById("modal-servicio-titulo").textContent = "Editar Servicio del Catálogo";
         formServicio.reset();
 
         const tarjeta = document.querySelector(`.tarjeta-servicio-item[data-id="${id}"]`);
         if (!tarjeta) return;
 
-        // Rellenar controles del formulario con los data-attributes de la tarjeta.
         document.getElementById("input_nombre").value = tarjeta.dataset.nombre || '';
         document.getElementById("input_precio").value = tarjeta.dataset.precio || '';
         document.getElementById("input_porcentaje").value = tarjeta.dataset.porcentaje || '';
         document.getElementById("input_tiempo").value = tarjeta.dataset.tiempo || '60 min - 90 min';
         document.getElementById("input_descripcion").value = tarjeta.dataset.descripcion || '';
 
-        // Gestión de Checkboxes de especialistas asignados.
         const especialistasIds = JSON.parse(tarjeta.dataset.especialistasIds || '[]');
         const checkboxes = formServicio.querySelectorAll('input[name="especialistas[]"]');
         checkboxes.forEach(cb => {
             cb.checked = especialistasIds.includes(parseInt(cb.value)) || especialistasIds.includes(cb.value);
         });
 
-        // Replicar foto miniatura en el avatar redondo del modal.
         const fotoSrc = tarjeta.querySelector('.foto-servicio-portada')?.src;
         const preview = document.getElementById("previsualizacion-avatar-servicio");
-        if (fotoSrc && !fotoSrc.includes('default.jpg')) {
-            preview.innerHTML = `<img src="${fotoSrc}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
-            preview.style.borderStyle = 'solid';
-        } else {
-            preview.innerHTML = "SZ";
-            preview.style.borderStyle = 'dashed';
+        if (preview) {
+            if (fotoSrc && !fotoSrc.includes('default.jpg')) {
+                preview.innerHTML = `<img src="${fotoSrc}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+                preview.style.borderStyle = 'solid';
+            } else {
+                preview.innerHTML = "SZ";
+                preview.style.borderStyle = 'dashed';
+            }
         }
 
         modal.showModal();
     };
 
     // ==========================================================================
-    //   SUBMIT DEL FORMULARIO — DECIDE ENTRE POST (crear) y PUT (editar)
+    // SUBMIT DEL FORMULARIO (CREAR / EDITAR)
     // ==========================================================================
     if (formServicio) {
         formServicio.addEventListener("submit", function(e) {
             e.preventDefault();
+
+            // 1) Validación HTML5 explícita
+            if (typeof formServicio.checkValidity === 'function' && !formServicio.checkValidity()) {
+                formServicio.reportValidity();
+                return;
+            }
+
+            // 2) Verificar CSRF
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            const csrfToken = csrfMeta ? csrfMeta.content : '';
+            if (!csrfToken) {
+                console.error('[catalogo] Falta <meta name="csrf-token"> en el layout.');
+                mostrarAlerta('error', 'Error de configuración', 'No se encontró el token CSRF. Revisa el layout.');
+                return;
+            }
 
             const formData = new FormData(formServicio);
             const baseUrl = obtenerBaseUrl();
 
             let url;
             if (servicioEditandoId) {
-                // Editar → POST + _method=PUT
                 url = `${baseUrl}/admin/servicios/${servicioEditandoId}/actualizar`;
                 formData.append('_method', 'PUT');
             } else {
-                // Crear → POST directo
                 url = `${baseUrl}/admin/servicios/guardar`;
             }
 
+            console.log('[catalogo] POST →', url);
+
             fetch(url, {
-                method: 'POST', // Siempre POST, Laravel lee _method
+                method: 'POST',
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                    'X-CSRF-TOKEN': csrfToken,
                     'Accept': 'application/json',
                 },
                 body: formData,
             })
             .then(response => {
+                console.log('[catalogo] status:', response.status);
                 if (!response.ok) {
-                    return response.json().then(err => Promise.reject(err));
+                    return response.json()
+                        .catch(() => ({ message: `HTTP ${response.status}` }))
+                        .then(err => Promise.reject(err));
                 }
                 return response.json().catch(() => ({}));
             })
-            .then(() => {
-                // Recargar el catálogo para ver los cambios
-                window.location.reload();
+            .then((data) => {
+                console.log('[catalogo] Éxito:', data);
+
+                // ✅ CIERRA EL MODAL INMEDIATAMENTE
+                window.cerrarModalServicio();
+
+                // ✅ MUESTRA EL SWEETALERT VERDE
+                mostrarAlerta(
+                    'success',
+                    '¡Excelente!',
+                    'Tu servicio se guardó correctamente en el catálogo.'
+                ).then(() => {
+                    window.location.reload();
+                });
             })
             .catch(err => {
-                console.error('Error al guardar servicio:', err);
-                alert('No se pudo guardar el servicio. Revisa la consola y el log de Laravel.');
+                console.error('[catalogo] Error al guardar:', err);
+                const mensaje = (err && (err.message || err.error)) || 'No se pudo guardar el servicio. Revisa la consola.';
+                mostrarAlerta('error', 'Error', mensaje);
             });
         });
     }
 
     // ==========================================================================
-    //       CONSULTA DETALLADA: CONSTRUCCIÓN DINÁMICA DE LA FICHA TÉCNICA
+    // CONSULTA DETALLADA: FICHA TÉCNICA
     // ==========================================================================
-
-    // Función para mostrar el modal de consulta detallada con información extraída de los data-attributes de la tarjeta.
     window.verServicioDetalle = function (id) {
         const tarjeta = document.querySelector(`.tarjeta-servicio-item[data-id="${id}"]`);
-        if (tarjeta) {
-            document.getElementById("view-servicio-nombre").textContent = tarjeta.dataset.nombre;
-            document.getElementById("view-servicio-precio").textContent = `$${tarjeta.dataset.precio}`;
-            document.getElementById("view-servicio-porcentaje").textContent = tarjeta.dataset.porcentaje;
-            document.getElementById("view-servicio-tiempo").textContent = tarjeta.dataset.tiempo;
-            document.getElementById("view-servicio-descripcion").textContent = tarjeta.dataset.descripcion;
-            document.getElementById("view-servicio-foto").src = tarjeta.querySelector('.foto-servicio-portada').src;
+        if (!tarjeta) return;
 
-            const contenedorTags = document.getElementById("view-servicio-especialistas");
+        const actualizarTexto = (elementId, texto) => {
+            const el = document.getElementById(elementId);
+            if (el) el.textContent = texto;
+        };
+
+        actualizarTexto("view-servicio-nombre", tarjeta.dataset.nombre);
+        actualizarTexto("view-servicio-precio", `$${tarjeta.dataset.precio}`);
+        actualizarTexto("view-servicio-porcentaje", tarjeta.dataset.porcentaje);
+        actualizarTexto("view-servicio-tiempo", tarjeta.dataset.tiempo);
+        actualizarTexto("view-servicio-descripcion", tarjeta.dataset.descripcion);
+
+        const img = document.getElementById("view-servicio-foto");
+        const imgSrc = tarjeta.querySelector('.foto-servicio-portada')?.src;
+        if (img && imgSrc) img.src = imgSrc;
+
+        const contenedorTags = document.getElementById("view-servicio-especialistas");
+        if (contenedorTags) {
             contenedorTags.innerHTML = '';
-
             const especialistas = JSON.parse(tarjeta.dataset.especialistasNombres || '[]');
+
             if (especialistas.length > 0) {
                 especialistas.forEach(esp => {
                     const tag = document.createElement('span');
@@ -223,16 +271,15 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 contenedorTags.innerHTML = '<span class="ayuda-input">Sin especialistas asignados</span>';
             }
-
-            document.getElementById("modal-ver-servicio").showModal();
         }
+
+        const modalVer = document.getElementById("modal-ver-servicio");
+        if (modalVer) modalVer.showModal();
     };
 
     // ==========================================================================
-    //       ADVERTENCIA DE BAJA BAJO VENTANA CRÍTICA DIÁLOGO (ELIMINAR)
+    // ADVERTENCIA DE ELIMINACIÓN
     // ==========================================================================
-
-    // Función para mostrar una alerta de confirmación antes de eliminar un servicio, con información contextualizada del servicio a eliminar.
     window.eliminarServicio = function (id) {
         const tarjeta = document.querySelector(`.tarjeta-servicio-item[data-id="${id}"]`);
         const nombreServicio = tarjeta ? tarjeta.dataset.nombre : "este servicio";
@@ -241,14 +288,13 @@ document.addEventListener("DOMContentLoaded", () => {
             "¿Remover tratamiento del catálogo?",
             `¿Estás seguro de eliminar permanentemente "${nombreServicio.toUpperCase()}"?`,
             () => {
-                // Formulario fantasma para enviar DELETE
                 const baseUrl = obtenerBaseUrl();
-
+                const csrfMeta = document.querySelector('meta[name="csrf-token"]');
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = `${baseUrl}/admin/servicios/${id}/eliminar`;
                 form.innerHTML = `
-                    <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]')?.content || ''}">
+                    <input type="hidden" name="_token" value="${csrfMeta ? csrfMeta.content : ''}">
                     <input type="hidden" name="_method" value="DELETE">
                 `;
                 document.body.appendChild(form);
@@ -258,10 +304,8 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // ==========================================================================
-    //         MÁSCARA OSCURA: CIERRE CON CLICK EN BACKDROP OUTSIDE
+    // MÁSCARA OSCURA Y ONBOARDING
     // ==========================================================================
-
-    // Agregamos un listener global para cerrar cualquier modal al hacer click fuera del contenido (en el backdrop).
     document.querySelectorAll('dialog').forEach(modal => {
         modal.addEventListener('click', function (e) {
             const rect = modal.getBoundingClientRect();
@@ -269,9 +313,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 rect.left <= e.clientX && e.clientX <= rect.left + rect.width);
             if (!isInDialog) {
                 modal.close();
-
-                // Si se cierra el onboarding haciendo clic fuera,
-                // guardamos en localStorage para que no vuelva a aparecer.
                 if (modal.id === "onboardingBienvenida") {
                     localStorage.setItem("onboardingClienteVista_v1", "true");
                 }
@@ -279,10 +320,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // ==========================================================================
-    // 8. ONBOARDING DE BIENVENIDA — 3 PASOS (NUEVO)
-    // Solo se ejecuta si el cliente tiene el modal en el DOM
-    // ==========================================================================
     const onboardingModal = document.getElementById("onboardingBienvenida");
     if (onboardingModal) {
         const btnCerrar     = document.getElementById("onboardingCerrar");
@@ -298,14 +335,12 @@ document.addEventListener("DOMContentLoaded", () => {
         let pasoActual = 1;
         const TOTAL_PASOS = 3;
 
-        // Iconos SVG por paso
         const iconosSVG = {
             1: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3m0 12v3m9-9h-3M6 12H3m15.364-6.364l-2.121 2.121M8.757 15.243l-2.121 2.121m12.728 0l-2.121-2.121M8.757 8.757L6.636 6.636"/><circle cx="12" cy="12" r="3"/></svg>`,
             2: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2"/></svg>`,
             3: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>`
         };
 
-        // Mostrar solo si no lo ha visto antes
         if (!localStorage.getItem(CLAVE_ONBOARDING)) {
             setTimeout(() => {
                 if (typeof onboardingModal.showModal === "function") {
@@ -316,28 +351,20 @@ document.addEventListener("DOMContentLoaded", () => {
             }, 600);
         }
 
-        // Función para actualizar el paso
         function mostrarPaso(n) {
             pasoActual = n;
-
             numero.textContent = String(n).padStart(2, "0");
             icono.innerHTML = iconosSVG[n];
-
             lineas.forEach((linea, i) => {
                 linea.classList.toggle("activa", i < n);
             });
-
             pasos.forEach((p) => {
                 p.classList.toggle("activo", parseInt(p.dataset.paso) === n);
             });
-
             pasoTexto.textContent = `Paso ${n} de ${TOTAL_PASOS}`;
-
-            // En el último paso el botón dice "Explorar catálogo"
             btnTexto.textContent = (n === TOTAL_PASOS) ? "Explorar catálogo" : "Continuar";
         }
 
-        // Cerrar
         const cerrarOnboarding = () => {
             localStorage.setItem(CLAVE_ONBOARDING, "true");
             if (typeof onboardingModal.close === "function") {
@@ -347,23 +374,30 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         };
 
-        // Botón continuar
         btnContinuar.addEventListener("click", () => {
             if (pasoActual < TOTAL_PASOS) {
                 mostrarPaso(pasoActual + 1);
             } else {
-                // En el último paso, SOLO cierra el onboarding.
                 cerrarOnboarding();
             }
         });
 
-        // Botón cerrar (X)
         btnCerrar.addEventListener("click", cerrarOnboarding);
 
-        // Cerrar con Escape (evita el cierre automático sin guardar)
         onboardingModal.addEventListener("cancel", (e) => {
             e.preventDefault();
             cerrarOnboarding();
         });
     }
-});
+}
+
+// ==========================================================================
+// ARRANQUE SEGURO (compatible con Vite/type="module")
+// Si el DOM ya cargó (caso típico con @vite + módulos ES), ejecuta ya.
+// Si todavía está cargando, espera DOMContentLoaded.
+// ==========================================================================
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCatalogo);
+} else {
+    initCatalogo();
+}
