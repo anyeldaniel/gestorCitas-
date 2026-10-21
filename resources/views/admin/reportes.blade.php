@@ -8,7 +8,7 @@
 
 @section('content')
 <main class="modulo-vista reportes-admin">
-    
+
     {{-- Encabezado del Módulo --}}
     <header class="encabezado-modulo">
         <h1>Reportes y Estadísticas de Ocupación</h1>
@@ -16,7 +16,7 @@
     </header>
 
     <section class="distribucion-recepcion">
-        
+
         {{-- PANEL DE FILTROS (IZQUIERDA) --}}
         <aside class="bloque-registro">
             <header class="encabezado-registro">
@@ -44,9 +44,9 @@
             </form>
         </aside>
 
-        {{-- PANEL DE GRÁFICAS (DERECHA) - DOS TARJETAS LADO A LADO --}}
+        {{-- PANEL DE GRÁFICAS (DERECHA) --}}
         <section class="panel-graficas">
-            
+
             {{-- Gráfica 1: Flujo Mensual --}}
             <article class="contenedor-grafica">
                 <header class="info-cliente">
@@ -74,5 +74,6 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta name="reportes-url" content="{{ route('admin.reportes.datos') }}">
 @vite('resources/js/reportes.js')
 @endsection

@@ -129,4 +129,12 @@ class Cita extends Model
             return null;
         }
     }
+
+        /**
+     * Relación: Una cita puede tener muchos servicios (Muchos a Muchos).
+     */
+    public function servicios()
+    {
+        return $this->belongsToMany(Servicio::class, 'cita_servicio');
+    }
 }

@@ -16,8 +16,6 @@ class ServicioController extends Controller
     {
         $servicios = Servicio::orderBy('id', 'desc')->get();
 
-        // Tolerante a varios nombres de rol por si en tu BD usás "especialista",
-        // "terapeuta" o "trabajador".
         $especialistas = User::whereIn('rol', ['trabajador', 'especialista', 'terapeuta'])
             ->orderBy('nombre')
             ->get();
@@ -30,7 +28,6 @@ class ServicioController extends Controller
      */
     public function create()
     {
-        // ⚠️ La vista correcta es admin.servicios (no admin.servicios_crear, que no existe)
         $servicios = Servicio::orderBy('id', 'desc')->get();
         $especialistas = User::whereIn('rol', ['trabajador', 'especialista', 'terapeuta'])
             ->orderBy('nombre')
@@ -44,7 +41,7 @@ class ServicioController extends Controller
      */
     public function store(Request $request)
     {
-        // ✅ Validación ampliada: webp, hasta 4 MB y campos que envía el modal.
+        // ✅ CORREGIDO: Cambiado 'users' por 'usuarios'
         $datos = $request->validate([
             'nombre_servicio'     => 'required|string|min:3|max:255',
             'descripcion'         => 'nullable|string',
@@ -52,7 +49,7 @@ class ServicioController extends Controller
             'duracion_minutos'    => 'required|integer|min:1',
             'imagen'              => 'nullable|image|mimes:jpeg,png,jpg,webp|max:4096',
             'especialistas'       => 'nullable|array',
-            'especialistas.*'     => 'exists:users,id',
+            'especialistas.*'     => 'exists:usuarios,id', // ⚠️ AQUÍ ESTABA EL ERROR
             'porcentaje_agendado' => 'nullable|integer|min:0|max:100',
         ]);
 
@@ -61,9 +58,14 @@ class ServicioController extends Controller
             $datos['imagen'] = $request->file('imagen')->store('servicios', 'public');
         }
 
+        // ⚠️ IMPORTANTE: Quitamos 'especialistas' del array para que no intente guardarlo en la tabla servicios
+        unset($datos['especialistas']);
+
         // Crear el servicio con todos los campos validados
         Servicio::create($datos);
 
+        // Si estás usando AJAX, esta redirección podría necesitar ser un response()->json()
+        // Pero como el error era 500, esta redirección funcionará si el form es tradicional.
         return redirect()
             ->back()
             ->with('success', '¡Tratamiento registrado exitosamente en The Beauty Room!');
@@ -76,6 +78,7 @@ class ServicioController extends Controller
     {
         $servicio = Servicio::findOrFail($id);
 
+        // ✅ CORREGIDO: Cambiado 'users' por 'usuarios'
         $datos = $request->validate([
             'nombre_servicio'     => 'required|string|min:3|max:255',
             'descripcion'         => 'nullable|string',
@@ -83,7 +86,7 @@ class ServicioController extends Controller
             'duracion_minutos'    => 'required|integer|min:1',
             'imagen'              => 'nullable|image|mimes:jpeg,png,jpg,webp|max:4096',
             'especialistas'       => 'nullable|array',
-            'especialistas.*'     => 'exists:users,id',
+            'especialistas.*'     => 'exists:usuarios,id', // ⚠️ AQUÍ TAMBIÉN
             'porcentaje_agendado' => 'nullable|integer|min:0|max:100',
         ]);
 
@@ -94,6 +97,9 @@ class ServicioController extends Controller
             }
             $datos['imagen'] = $request->file('imagen')->store('servicios', 'public');
         }
+
+        // ⚠️ IMPORTANTE: Quitamos 'especialistas' para que no de error de SQL
+        unset($datos['especialistas']);
 
         $servicio->update($datos);
 

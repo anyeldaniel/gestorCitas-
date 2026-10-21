@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -11,24 +10,26 @@ use App\Models\Cita;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    /**
+     * El nombre de la tabla asociada al modelo.
+     * Esto soluciona el error de que Laravel buscaba la tabla 'users'.
+     */
+    protected $table = 'usuarios';
 
     /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
-
-    // ⚠️ SE ELIMINÓ: protected $table = 'usuarios';
-    // Ahora Laravel usará la tabla 'users' por defecto (el plural del modelo).
-
     protected $fillable = [
         'nombre',
         'correo',
         'telefono',
         'contraseña',
         'rol',
+        'foto', 
         'descripcion',
     ];
 
@@ -55,28 +56,44 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * Obtener la contraseña para la autenticación.
+     */
     public function getAuthPassword()
     {
         return $this->contraseña;
     }
 
     /**
-     * Get the e-mail address where password reset links are sent.
+     * Obtener el correo electrónico para el restablecimiento de contraseña.
      */
     public function getEmailForPasswordReset()
     {
         return $this->correo;
     }
 
+    /**
+     * Ruta de notificación por correo.
+     */
     public function routeNotificationForMail($notification)
     {
         return $this->correo;
     }
-        /**
+
+    /**
      * Relación: citas donde este usuario es el trabajador asignado.
      */
     public function citasComoTrabajador()
     {
         return $this->hasMany(Cita::class, 'trabajador_id');
+    }
+
+    /**
+     * Relación: servicios asignados a este especialista.
+     * (Útil para la tabla intermedia que estamos creando)
+     */
+    public function serviciosAsignados()
+    {
+        return $this->belongsToMany(Servicio::class, 'servicio_usuario', 'usuario_id', 'servicio_id');
     }
 }

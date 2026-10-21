@@ -19,4 +19,14 @@ class Servicio extends Model
         'duracion_minutos',
         'especialidad_id'
     ];
+    
+    public function especialidad()
+    {
+        return $this->belongsTo(Especialidad::class, 'especialidad_id');
+    
+    }
+    public function citas()
+{
+    return $this->hasMany(Cita::class, 'servicio_id');
+}
 }

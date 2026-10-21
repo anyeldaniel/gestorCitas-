@@ -53,22 +53,16 @@ Route::middleware(['auth'])->group(function () {
     //   RUTAS COMPARTIDAS (Multirrol)
     // ==========================================
 
-    // ----------------------------------------------------------
-    //   AGENDA COMPARTIDA (admin, recepcionista y trabajador)
-    // ----------------------------------------------------------
+    // Agenda compartida (admin, recepcionista y trabajador)
     Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda');
 
-    // Cambiar estado de una cita (solo admin/recepción)
     Route::patch('/agenda/cita/{id}/estado', [AgendaController::class, 'updateStatus'])
         ->name('agenda.cita.estado');
 
-    // Cancelar una cita con motivo (admin, recepción y trabajador asignado)
     Route::post('/agenda/cita/{id}/cancelar', [AgendaController::class, 'cancelar'])
         ->name('agenda.cita.cancelar');
 
     // ----------------------------------------------------------
-
-
 
     Route::get('/catalogo', [ServicioController::class, 'index'])->name('catalogo');
     Route::get('/terapeutas', [TerapeutaController::class, 'index'])->name('terapeutas.index');
@@ -96,7 +90,11 @@ Route::middleware(['auth'])->group(function () {
 
         // --- Dashboard y Vistas Principales ---
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-        Route::view('/reportes', 'admin.reportes')->name('admin.reportes');
+
+        // Reportes (vista + endpoint AJAX con datos)
+        Route::get('/reportes', [AdminController::class, 'reportes'])->name('admin.reportes');
+        Route::get('/reportes/datos', [AdminController::class, 'reportesDatos'])->name('admin.reportes.datos');
+
         Route::get('/servicios', [AdminController::class, 'servicios'])->name('admin.servicios');
 
         // --- CRUD de Trabajadores (Especialistas y Recepcionistas) ---
@@ -118,7 +116,6 @@ Route::middleware(['auth'])->group(function () {
     });
 
 
-   
     // ==========================================
     //   VERIFICAR PAGOS
     // ==========================================

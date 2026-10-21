@@ -32,6 +32,7 @@ class RegisterUserRequest extends FormRequest
                 'min:8',
                 'max:20',
                 'regex:/[a-zA-Z]/',
+                'regex:/[0-9]/',
                 'regex:/[!@#$%^&*(),.?":{}|<>]/',
             ],
 

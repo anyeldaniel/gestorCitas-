@@ -1,30 +1,74 @@
 document.addEventListener("DOMContentLoaded", () => {
     const canvasFlujo = document.getElementById('graficaFlujo');
     const canvasServicios = document.getElementById('graficaServicios');
+    const form = document.getElementById('form-filtros-reporte');
+    const metaUrl = document.querySelector('meta[name="reportes-url"]');
+    const urlDatos = metaUrl ? metaUrl.content : '/admin/reportes/datos';
+
+    let chartFlujo = null;
+    let chartServicios = null;
 
     // Paleta de colores corporativa
     const colores = {
-        principal: '#8b5e3c',      // Marrón Spa
-        secundario: '#4f8eff',     // Azul
-        acento1: '#36e8a0',        // Verde menta
-        acento2: '#a259ff',        // Púrpura
-        acento3: '#ff5a7d',        // Rosa
+        principal: '#8b5e3c',
+        secundario: '#4f8eff',
+        acento1: '#36e8a0',
+        acento2: '#a259ff',
+        acento3: '#ff5a7d',
         texto: '#2d2a26',
         gris: '#7a6f68'
     };
+
+    // Paleta dinámica para los servicios (se repite si hay más de 15)
+    const paletaServicios = [
+        '#4f8eff', '#36e8a0', '#a259ff', '#ff5a7d', '#f59e0b',
+        '#06b6d4', '#ec4899', '#84cc16', '#f97316', '#8b5cf6',
+        '#ef4444', '#10b981', '#3b82f6', '#eab308', '#14b8a6'
+    ];
 
     // Configuración global de Chart.js
     Chart.defaults.font.family = "'Instrument Sans', sans-serif";
     Chart.defaults.color = colores.gris;
 
-    if (canvasFlujo) {
-        new Chart(canvasFlujo.getContext('2d'), {
+    /**
+     * Pide los datos al backend con el rango de fechas.
+     */
+    async function obtenerDatos(fechaInicio, fechaFin) {
+        const params = new URLSearchParams({
+            fecha_inicio: fechaInicio,
+            fecha_fin: fechaFin
+        });
+
+        const res = await fetch(`${urlDatos}?${params.toString()}`, {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
+        });
+
+        if (!res.ok) {
+            throw new Error('Error al obtener datos del servidor');
+        }
+
+        return await res.json();
+    }
+
+    /**
+     * Gráfica de línea: flujo semanal de pacientes.
+     */
+    function renderFlujo(datos) {
+        if (chartFlujo) {
+            chartFlujo.destroy();
+        }
+
+        chartFlujo = new Chart(canvasFlujo.getContext('2d'), {
             type: 'line',
             data: {
-                labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
+                labels: datos.labels,
                 datasets: [{
                     label: 'Pacientes Atendidos',
-                    data: [140, 210, 185, 260],
+                    data: datos.data,
                     borderColor: colores.secundario,
                     backgroundColor: 'rgba(79, 142, 255, 0.08)',
                     borderWidth: 3,
@@ -66,19 +110,25 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    if (canvasServicios) {
-        new Chart(canvasServicios.getContext('2d'), {
+    /**
+     * Gráfica de dona: todos los servicios con su conteo de citas.
+     */
+    function renderServicios(datos) {
+        if (chartServicios) {
+            chartServicios.destroy();
+        }
+
+        const backgroundColors = datos.labels.map(
+            (_, i) => paletaServicios[i % paletaServicios.length]
+        );
+
+        chartServicios = new Chart(canvasServicios.getContext('2d'), {
             type: 'doughnut',
             data: {
-                labels: ['Masajes', 'Limpieza Facial', 'Hidratación', 'Sauna'],
+                labels: datos.labels,
                 datasets: [{
-                    data: [40, 25, 20, 15],
-                    backgroundColor: [
-                        colores.secundario,
-                        colores.acento1,
-                        colores.acento2,
-                        colores.acento3
-                    ],
+                    data: datos.data,
+                    backgroundColor: backgroundColors,
                     borderWidth: 3,
                     borderColor: '#ffffff',
                     hoverOffset: 6
@@ -87,7 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                cutout: '70%', // Hace el agujero central más grande (estilo premium)
+                cutout: '70%',
                 plugins: {
                     legend: {
                         position: 'bottom',
@@ -105,13 +155,44 @@ document.addEventListener("DOMContentLoaded", () => {
                         padding: 12,
                         cornerRadius: 8,
                         callbacks: {
-                            label: function(context) {
-                                return ` ${context.label}: ${context.parsed}%`;
+                            label: function (context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const valor = context.parsed;
+                                const pct = total > 0 ? ((valor / total) * 100).toFixed(1) : 0;
+                                return ` ${context.label}: ${valor} citas (${pct}%)`;
                             }
                         }
                     }
                 }
             }
+        });
+    }
+
+    /**
+     * Carga ambas gráficas con el rango indicado.
+     */
+    async function cargarTodo(fechaInicio, fechaFin) {
+        try {
+            const datos = await obtenerDatos(fechaInicio, fechaFin);
+            if (canvasFlujo) renderFlujo(datos.flujo);
+            if (canvasServicios) renderServicios(datos.servicios);
+        } catch (err) {
+            console.error('Error cargando reportes:', err);
+        }
+    }
+
+    // Carga inicial con las fechas del formulario
+    const fechaInicio = document.getElementById('fecha_inicio').value;
+    const fechaFin = document.getElementById('fecha_fin').value;
+    cargarTodo(fechaInicio, fechaFin);
+
+    // Recargar al enviar el formulario (botón "Actualizar Gráficas")
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fi = document.getElementById('fecha_inicio').value;
+            const ff = document.getElementById('fecha_fin').value;
+            await cargarTodo(fi, ff);
         });
     }
 });

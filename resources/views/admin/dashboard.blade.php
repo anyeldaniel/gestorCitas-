@@ -42,7 +42,7 @@
             </div>
             <div class="dash-kpi-content">
                 <h3>Citas Activas</h3>
-                <div class="valor">{{ $totalCitas ?? 9 }}</div>
+                <div class="valor">{{ $totalCitas ?? 0 }}</div>
                 <small>0 programadas para hoy</small>
             </div>
         </article>
@@ -146,7 +146,12 @@
                                     <span class="dash-tag">{{ trim($esp) }}</span>
                                 @endforeach
                             @endif
-                            <span class="dash-tag dash-tag--role">9 citas este mes</span>
+                            
+                            <!-- ETIQUETA DINÁMICA DE CITAS -->
+                            <span class="dash-tag dash-tag--role">
+                                {{ $trab->citas_mes }} {{ $trab->citas_mes == 1 ? 'cita este mes' : 'citas este mes' }}
+                            </span>
+                            
                         </div>
                     </div>
                     <div class="dash-actions">

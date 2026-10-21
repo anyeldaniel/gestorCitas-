@@ -908,3 +908,40 @@ h1, h2, h3, h4, h5, h6 {
     .columna-header h3 { font-size: 1.2rem; }
     .columna-numero { font-size: 1.35rem; }
 }
+
+/* ==========================================================================
+   NUEVAS MEJORAS: CATEGORÍAS Y SCROLL
+   ========================================================================== */
+.categoria-servicios {
+    margin-bottom: 1.5rem;
+}
+
+.categoria-servicios:last-child {
+    margin-bottom: 0;
+}
+
+.categoria-titulo {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--primary-brown);
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px dashed var(--border-light);
+}
+
+/* Hacemos que la lista de servicios tenga un scroll elegante si hay muchos */
+.lista-servicios {
+    max-height: 520px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.lista-servicios::-webkit-scrollbar { width: 6px; }
+.lista-servicios::-webkit-scrollbar-track { background: transparent; }
+.lista-servicios::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}

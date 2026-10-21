@@ -27,23 +27,28 @@ class ReservaController extends Controller
             'duracion' => $servicio->duracion_minutos ?? 60,
         ];
 
+        // --- NUEVO: Obtener servicios agrupados por especialidad ---
+        $serviciosAgrupados = Servicio::with('especialidad')
+            ->get()
+            ->groupBy(function($item) {
+                return $item->especialidad ? $item->especialidad->nombre_especialidad : 'Otros Servicios';
+            });
+
         // Solo ofrecer usuarios registrados con el rol de trabajador.
         $terapeutas = User::where('id', '!=', auth()->id())
             ->where('rol', 'trabajador')
             ->orderBy('nombre')
             ->get();
 
-        return view('clientes.reserva', compact('servicioData', 'terapeutas'));
+        return view('clientes.reserva', compact('servicioData', 'terapeutas', 'serviciosAgrupados'));
     }
 
-    /**
-     * Guarda la reserva y redirige al checkout de pago.
-     */
-    public function store(Request $request)
+        public function store(Request $request)
     {
-        // 1. Validación
+        // 1. Validación (servicios ahora es un array)
         $request->validate([
-            'servicio_id'   => 'required|integer|exists:servicios,id',
+            'servicios'     => 'required|array|min:1',
+            'servicios.*'   => 'exists:servicios,id',
             'trabajador_id' => [
                 'required',
                 'integer',
@@ -53,24 +58,28 @@ class ReservaController extends Controller
             'hora'          => 'required',
         ]);
 
-        // 2. Obtener el servicio
-        $servicio = Servicio::findOrFail($request->servicio_id);
+        // 2. Obtener los servicios seleccionados y calcular el total
+        $servicios = Servicio::whereIn('id', $request->servicios)->get();
+        $montoTotal = $servicios->sum('precio');
 
-        // 3. Crear la cita
+        // 3. Crear la cita principal
         $cita = Cita::create([
             'cliente_id'    => auth()->id(),
             'trabajador_id' => $request->trabajador_id,
-            'servicio_id'   => $servicio->id,
+            'servicio_id'   => $servicios->first()->id, // Guardamos el primero por compatibilidad con tu tabla
             'cabina_id'     => null,
-            'monto_total'   => $servicio->precio,
+            'monto_total'   => $montoTotal, // El precio total de todos los servicios
             'fecha'         => $request->fecha,
             'hora'          => $request->hora,
             'estado'        => 'pendiente',
         ]);
 
-        // 4. Redirigir al CHECKOUT DE PAGO
+        // 4. Guardar TODOS los servicios en la nueva tabla intermedia
+        $cita->servicios()->attach($request->servicios);
+
+        // 5. Redirigir al CHECKOUT DE PAGO
         return redirect()
             ->route('pago.checkout', ['cita' => $cita->id])
-            ->with('success', 'Cita apartada. Reporta tu pago para confirmarla.');
+            ->with('success', 'Cita apartada con múltiples servicios. Reporta tu pago para confirmarla.');
     }
 }
