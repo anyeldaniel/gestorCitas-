@@ -3,70 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recuperar contraseña - The Beauty Room</title>
+    <title>Recuperar Contraseña - The Beauty Room</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+    
     @vite(['resources/css/auth.css'])
+    
+    <!-- Mantenemos el script de reCAPTCHA -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    
+    <style>
+        body {
+            background: linear-gradient(rgba(30, 35, 32, 0.75), rgba(30, 35, 32, 0.75)), 
+                        url("{{ asset('asset/img/parts/fondodepantalla.jpg') }}") center/cover no-repeat fixed !important;
+        }
+        .tarjeta-unica {
+            background-color: #FFFFFF;
+            border-radius: 20px;
+            padding: 50px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .tarjeta-unica form { width: 100%; }
+        .tarjeta-unica h2 { font-size: 28px; margin-bottom: 10px; }
+        .tarjeta-unica p { text-align: center; font-size: 13px; color: #727A74; margin-bottom: 25px; line-height: 1.6; }
+        .mensaje-exito { color: #588157; font-weight: 600; font-size: 13px; margin-bottom: 15px; text-align: center; }
+        .error-texto { color: #d9534f; font-size: 11px; margin-top: 5px; font-weight: 600; display: block; }
+    </style>
 </head>
-<script src="https://unpkg.com/lucide@latest"></script>
-<body class="login-container">
+<body>
 
-<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <div class="tarjeta-unica">
+        <div class="logo-header">
+            <span class="estrellitas">✨</span>
+            <small>RECUPERACIÓN</small>
+        </div>
+        <h2>¿Olvidaste tu contraseña?</h2>
+        <p>Ingresa tu correo electrónico y te enviaremos los pasos para crear una nueva.</p>
 
-    <main class="split-layout">
-        <section class="image-side">
-            <div class="overlay">
-                <h1>Recupera tu acceso.</h1>
-                <p>THE BEAUTY ROOM</p>
-            </div>
-        </section>
+        <!-- Mensaje de éxito de sesión -->
+        @if (session('status'))
+            <div class="mensaje-exito">{{ session('status') }}</div>
+        @endif
 
-        <section class="form-side">
-            <div class="form-inner">
-                <header>
-                    <i data-lucide="key-round" style="width: 16px; height: 16px; color: #8b5e3c; margin-right: 5px; display: inline-block; vertical-align: middle;"></i>
-                    <small>RECUPERACIÓN</small>
-                    <h1>¿Olvidaste tu contraseña?</h1>
-                    <p style="margin-bottom: 20px;">Ingresa tu correo electrónico y te enviaremos los pasos para crear una nueva.</p>
-                </header>
+        <form id="forgot-password-form" method="POST" action="{{ route('password.email') }}">
+            @csrf
+            
+            <label for="email">Correo electrónico</label>
+            <!-- Usamos name="email" o "correo" dependiendo de lo que espere tu PasswordController -->
+            <input type="email" id="email" name="email" placeholder="tu@correo.com" required style="margin-bottom: 15px;">
+            @error('email') <span class="error-texto">{{ $message }}</span> @enderror
 
-                <form id="forgot-password-form" method="POST" action="{{ route('password.email') }}">
-                    @csrf
-                    
-                    <div class="form-row">
-                        <label for="email">CORREO ELECTRÓNICO</label>
-                        <input id="email" name="email" type="email" placeholder="tu@correo.com" required>
-                          @error('email')
-                            <div style="color: red; font-size: 0.9em; margin-top: 5px;">
-                             {{ $message }}
-                                </div>
-                               @enderror
-                               
-                               @if (session('status'))
-                           <div style="color: green; font-weight: bold; margin-bottom: 15px;">
-                             {{ session('status') }}
-                            </div>
-                            @endif
-                    </div>
+            <!-- Contenedor del reCAPTCHA -->
+            <div class="g-recaptcha" data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}" style="margin-bottom: 15px; display: flex; justify-content: center;"></div>
+            @error('captcha') <span class="error-texto" style="text-align: center;">{{ $message }}</span> @enderror
 
-                    <div class="g-recaptcha mb-3" data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}"></div>
+            <button type="submit" class="button-aceptar" style="margin-top: 10px;">ENVIAR ENLACE</button>
+        </form>
 
-                     @error('captcha')
-                       <div class="text-danger mt-1">{{ $message }}</div>
-                     @enderror
+        <div style="margin-top: 25px;">
+            <a href="{{ route('login.view') }}" class="link-olvido" style="font-size: 13px;">← Volver al inicio de sesión</a>
+        </div>
+    </div>
 
-
-
-                    <button type="submit" class="btn-primary">ENVIAR ENLACE</button>
-                    
-                    <p class="register-link">
-                        <a href="{{ route('login.view') }}">Volver al inicio de sesión</a>
-                    </p>
-                </form>
-            </div>
-        </section>
-    </main>
-
-    <script>
-        lucide.createIcons();
-    </script>
 </body>
 </html>

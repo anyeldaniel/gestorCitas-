@@ -43,43 +43,43 @@ function getBaseUrl() {
 
 window.verTerapeutaDetalle = function(id) {
     let tarjeta = document.querySelector(`.tarjeta-terapeuta[data-id="${id}"]`);
-    
+
     if (!tarjeta) {
         const elemento = document.querySelector(`[data-id="${id}"]`);
         if (elemento) {
             tarjeta = elemento.closest('.tarjeta-terapeuta');
         }
     }
-    
+
     if (!tarjeta) {
         alert('Terapeuta no encontrado');
         return;
     }
-    
+
     const nombre = tarjeta.querySelector('.terapeuta-nombre')?.textContent.trim() || 'Sin nombre';
     const especialidades = tarjeta.querySelector('.contenedor-tags-especialidades .tag-especialidad')?.textContent.trim() || 'Sin especialidad';
     const foto = tarjeta.querySelector('img')?.src || null;
     const telefono = tarjeta.querySelector('.terapeuta-telefono')?.textContent.trim() || 'No disponible';
     const email = tarjeta.querySelector('.terapeuta-email')?.textContent.trim() || 'No disponible';
     const descripcion = tarjeta.querySelector('.terapeuta-descripcion')?.textContent.trim() || 'Sin descripción';
-    
+
     const modal = document.getElementById('modal-ver-terapeuta');
     if (modal) {
         document.getElementById('view-terapeuta-nombre').textContent = nombre;
         document.getElementById('view-terapeuta-telefono').textContent = telefono;
         document.getElementById('view-terapeuta-email').textContent = email;
         document.getElementById('view-terapeuta-descripcion').textContent = descripcion;
-        
+
         const espContainer = document.getElementById('view-terapeuta-especialidades');
         if (especialidades && especialidades !== 'Sin especialidad') {
             const espArray = especialidades.split(',').map(e => e.trim());
-            espContainer.innerHTML = espArray.map(esp => 
+            espContainer.innerHTML = espArray.map(esp =>
                 `<span class="badge">${esp}</span>`
             ).join('');
         } else {
             espContainer.innerHTML = '<span style="color: var(--gris-texto); font-size: 0.85rem;">Sin especialidades registradas</span>';
         }
-        
+
         const fotoContainer = document.getElementById('view-terapeuta-foto');
         if (foto) {
             fotoContainer.innerHTML = `<img src="${foto}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
@@ -95,7 +95,16 @@ window.verTerapeutaDetalle = function(id) {
             fotoContainer.style.fontWeight = '600';
             fotoContainer.style.color = 'var(--color-marron-oscuro)';
         }
-        
+
+        // Botones de admin dentro del modal Ver Perfil (aportado por josebackend)
+        const accionesAdmin = document.getElementById('view-acciones-admin');
+        if (accionesAdmin) {
+            accionesAdmin.innerHTML = `
+                <button type="button" class="btn-zen" style="background:white; border:1px solid #cbd5e1; color:#475569;" onclick="document.getElementById('modal-ver-terapeuta').close(); editarTerapeuta(${id});">Editar</button>
+                <button type="button" class="btn-zen btn-baja" onclick="document.getElementById('modal-ver-terapeuta').close(); eliminarTerapeuta(${id});">Dar de Baja</button>
+            `;
+        }
+
         modal.showModal();
     } else {
         alert(`Perfil de: ${nombre}\nEspecialidad: ${especialidades}\nTeléfono: ${telefono}\nEmail: ${email}\nDescripción: ${descripcion}`);
@@ -110,27 +119,27 @@ window.abrirModalAgregar = function() {
     console.log('✅ abrirModalAgregar ejecutado');
     const modal = document.getElementById('modal-terapeuta');
     const form = document.getElementById('form-terapeuta');
-    
+
     if (!modal || !form) {
         console.error('❌ No se encontró el modal de terapeuta');
         return;
     }
-    
+
     form.reset();
-    
+
     // ✅ RUTA DINÁMICA
     form.action = `${getBaseUrl()}/admin/crear-trabajador`;
-    
+
     const methodInput = document.getElementById('terapeuta_method');
     if (methodInput) {
         methodInput.value = 'POST';
     }
-    
+
     const metodoPut = document.getElementById('metodo-put-laravel');
     if (metodoPut) metodoPut.remove();
-    
+
     document.getElementById('modal-titulo').textContent = 'Registrar Nuevo Especialista';
-    
+
     const avatar = document.getElementById('previsualizacion-avatar-terapeuta');
     if (avatar) {
         avatar.innerHTML = 'TF';
@@ -142,7 +151,7 @@ window.abrirModalAgregar = function() {
         avatar.style.fontWeight = '600';
         avatar.style.color = 'var(--color-marron-oscuro)';
     }
-    
+
     const wrapper = document.getElementById('wrapper-especialidades-lista');
     if (wrapper) {
         wrapper.innerHTML = `
@@ -152,10 +161,10 @@ window.abrirModalAgregar = function() {
             </div>
         `;
     }
-    
+
     const campoPassword = document.getElementById('campo-password');
     if (campoPassword) campoPassword.style.display = 'block';
-    
+
     const passwordInput = document.getElementById('password');
     const confirmInput = document.getElementById('password_confirmation');
     if (passwordInput) {
@@ -168,7 +177,7 @@ window.abrirModalAgregar = function() {
         confirmInput.placeholder = 'Repita la contraseña';
         confirmInput.value = '';
     }
-    
+
     modal.showModal();
 };
 
@@ -180,7 +189,7 @@ window.editarTerapeuta = function(id) {
     console.log('✅ editarTerapeuta ejecutado para ID:', id);
     const modal = document.getElementById('modal-terapeuta');
     const form = document.getElementById('form-terapeuta');
-    
+
     if (!modal || !form) {
         console.error('❌ Modal o formulario no encontrados');
         return;
@@ -193,17 +202,17 @@ window.editarTerapeuta = function(id) {
 
     // ✅ RUTA DINÁMICA
     form.action = `${getBaseUrl()}/admin/trabajador/${id}`;
-    
+
     const methodInput = document.getElementById('terapeuta_method');
     if (methodInput) {
         methodInput.value = 'PUT';
     }
-    
+
     document.getElementById('modal-titulo').textContent = 'Editar Información del Especialista';
-    
+
     const campoPassword = document.getElementById('campo-password');
     if (campoPassword) campoPassword.style.display = 'none';
-    
+
     const passwordInput = document.getElementById('password');
     const confirmInput = document.getElementById('password_confirmation');
     if (passwordInput) {
@@ -216,7 +225,7 @@ window.editarTerapeuta = function(id) {
         confirmInput.placeholder = 'Dejar vacío para mantener';
         confirmInput.value = '';
     }
-    
+
     let nombre = '';
     let email = '';
     let telefono = '';
@@ -229,7 +238,7 @@ window.editarTerapeuta = function(id) {
         telefono = tarjeta.querySelector('.terapeuta-telefono')?.textContent.replace('Teléfono:', '').trim() || '';
         descripcion = tarjeta.querySelector('.terapeuta-descripcion')?.textContent.trim() || '';
         especialidades = tarjeta.dataset.especialidades || '';
-        
+
         if (!nombre) {
             const infoUsuario = tarjeta.querySelector('.info-usuario');
             if (infoUsuario) {
@@ -255,7 +264,7 @@ window.editarTerapeuta = function(id) {
     if (wrapper) {
         wrapper.innerHTML = '';
         const espData = especialidades ? especialidades.split(',') : [];
-        
+
         if (espData.length === 0 || (espData.length === 1 && espData[0] === '')) {
             wrapper.innerHTML = `
                 <div class="fila-especialidad">
@@ -292,7 +301,7 @@ window.editarTerapeuta = function(id) {
  */
 window.eliminarTerapeuta = function(id) {
     const modal = document.getElementById('modal-confirmacion-custom');
-    
+
     if (!modal) {
         if (confirm('¿Estás seguro de eliminar este especialista?')) {
             const token = document.querySelector('input[name="_token"]')?.value || '';
@@ -312,15 +321,15 @@ window.eliminarTerapeuta = function(id) {
     let nombreTerapeuta = '';
     const tarjeta = document.querySelector(`.tarjeta-terapeuta[data-id="${id}"], .tarjeta-fila[data-id="${id}"]`);
     if (tarjeta) {
-        nombreTerapeuta = tarjeta.querySelector('.terapeuta-nombre')?.textContent.trim() || 
+        nombreTerapeuta = tarjeta.querySelector('.terapeuta-nombre')?.textContent.trim() ||
                           tarjeta.querySelector('.info-usuario h4')?.textContent.trim() || '';
     }
-    
+
     const nombreTexto = nombreTerapeuta ? `"${nombreTerapeuta.toUpperCase()}"` : 'este especialista';
-    
+
     document.getElementById('confirm-alerta-titulo').textContent = '¿Remover especialista del equipo?';
     document.getElementById('confirm-alerta-mensaje').textContent = `¿Estás seguro de eliminar permanentemente a ${nombreTexto} del sistema? Esta operación no se puede deshacer.`;
-    
+
     modal.showModal();
 
     const btnAceptar = document.getElementById('btn-confirm-aceptar');
@@ -353,10 +362,10 @@ window.eliminarTerapeuta = function(id) {
 window.agregarCampoEspecialidad = function(valor = '') {
     const wrapper = document.getElementById('wrapper-especialidades-lista');
     if (!wrapper) return;
-    
+
     const filas = wrapper.querySelectorAll('.fila-especialidad');
     const ultimaFila = filas[filas.length - 1];
-    
+
     if (ultimaFila) {
         const input = ultimaFila.querySelector('input');
         if (input && input.value.trim() === '') {
@@ -364,7 +373,7 @@ window.agregarCampoEspecialidad = function(valor = '') {
             return;
         }
     }
-    
+
     const div = document.createElement('div');
     div.className = 'fila-especialidad';
     div.innerHTML = `
@@ -388,33 +397,33 @@ window.sincronizarEspecialidades = function() {
 window.validarContrasenas = function() {
     const pass = document.getElementById('password');
     const confirm = document.getElementById('password_confirmation');
-    
+
     if (!pass || !confirm) return true;
-    
+
     if (pass.value === '' && confirm.value === '') return true;
-    
+
     if (pass.value !== confirm.value) {
         alert('❌ Las contraseñas no coinciden.');
         pass.focus();
         return false;
     }
-    
+
     if (pass.value.length > 0 && pass.value.length < 8) {
         alert('❌ La contraseña debe tener al menos 8 caracteres.');
         pass.focus();
         return false;
     }
-    
+
     return true;
 };
 
 window.alternarVisibilidad = function(inputId, btn) {
     const input = document.getElementById(inputId);
     if (!input) return;
-    
+
     const svg = btn.querySelector('.svg-ojo');
     if (!svg) return;
-    
+
     if (input.type === 'password') {
         input.type = 'text';
         svg.innerHTML = `
@@ -432,7 +441,7 @@ window.alternarVisibilidad = function(inputId, btn) {
 window.previsualizarImagen = function(input, previewId) {
     const preview = document.getElementById(previewId);
     if (!preview || !input.files || !input.files[0]) return;
-    
+
     const reader = new FileReader();
     reader.onload = function(e) {
         preview.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;

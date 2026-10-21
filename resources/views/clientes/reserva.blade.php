@@ -33,7 +33,6 @@
     <form class="reserva-panel" action="{{ route('clientes.reserva.store') }}" method="POST" id="form-reserva">
         @csrf
 
-        {{-- Ya no hay input-servicio, ahora se envía un array desde los checkboxes --}}
         <input type="hidden" name="fecha" id="input-fecha" value="{{ old('fecha') }}">
         <input type="hidden" name="hora" id="input-hora" value="{{ old('hora') }}">
 
@@ -53,7 +52,6 @@
                             @foreach($servicios as $s)
                             <label class="servicio-item {{ in_array($s->id, old('servicios', [])) ? 'activo' : '' }}"
                                    data-servicio-id="{{ $s->id }}" data-precio="{{ $s->precio }}" data-duracion="{{ $s->duracion_minutos }}">
-                                <!-- CHECKBOX PARA SELECCIONAR VARIOS -->
                                 <input type="checkbox" name="servicios[]" value="{{ $s->id }}" {{ in_array($s->id, old('servicios', [])) ? 'checked' : '' }}>
                                 <div class="servicio-info">
                                     <strong>{{ $s->nombre_servicio }}</strong>
@@ -98,7 +96,7 @@
         <footer class="panel-footer">
             <div class="paso-footer"><span class="numero-footer">04</span><div><strong>Tus datos</strong><small>Para enviarte la confirmación</small></div></div>
             <div class="campos-cliente">
-                <label><small>Nombre completo</small><input type="text" name="nombre" placeholder="Ej. María González" required></label>
+                <label><small>Nombre completo</small><input type="text" name="nombre" placeholder="Ej.María González" required></label>
                 <label><small>Correo electrónico</small><input type="email" name="email" placeholder="nombre@correo.com" required></label>
                 <label class="label-especialista">
                     <small>Especialista</small>
@@ -124,3 +122,19 @@
 @endsection
 
 @vite(['resources/js/reserva.js'])
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+@if(session('success'))
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        Swal.fire({
+            icon: 'success',
+            title: '¡Operación Exitosa!',
+            text: @json(session('success')),
+            confirmButtonColor: '#5A6B5D',
+            timer: 4500,
+            showConfirmButton: true,
+        });
+    });
+</script>
+@endif

@@ -9,24 +9,28 @@ class Servicio extends Model
 {
     use HasFactory;
 
-    // El array $fillable actúa como un escudo. 
-    // Solo las columnas que estén aquí podrán ser llenadas desde un formulario.
     protected $fillable = [
         'nombre_servicio',
         'descripcion',
         'imagen',
         'precio',
         'duracion_minutos',
-        'especialidad_id'
+        'especialidad_id',
+        'porcentaje_abono',
     ];
-    
-    public function especialidad()
+        public function especialidad()
     {
         return $this->belongsTo(Especialidad::class, 'especialidad_id');
-    
     }
+
     public function citas()
-{
-    return $this->hasMany(Cita::class, 'servicio_id');
-}
+    {
+        return $this->hasMany(Cita::class, 'servicio_id');
+    }
+
+    // Relación Muchos a Muchos con Usuarios (Especialistas).
+    public function especialistas()
+    {
+        return $this->belongsToMany(User::class, 'servicio_user', 'servicio_id', 'user_id');
+    }
 }

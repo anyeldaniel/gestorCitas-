@@ -3,7 +3,7 @@ import laravel from 'laravel-vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-    base: './',   // ✅ NUEVO: hace que las rutas del CSS sean relativas
+    base: './',   // ✅ hace que las rutas del CSS sean relativas
     plugins: [
         laravel({
             input: [

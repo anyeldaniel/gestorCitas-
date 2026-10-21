@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================================================
 
     // Función global para mostrar una alerta de confirmación personalizada.
-    window.mostrarAlertaConfirmacion = function(titulo, mensaje, callbackAceptar) {
+    window.mostrarAlertaConfirmacion = function (titulo, mensaje, callbackAceptar) {
         if (!confirmModal) return;
         document.getElementById("confirm-alerta-titulo").textContent = titulo;
         document.getElementById("confirm-alerta-mensaje").textContent = mensaje;
@@ -51,11 +51,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================================================
 
     // Función global para ser llamada desde el onchange del input file.
-    window.previsualizarImagenServicio = function(input) {
+    window.previsualizarImagenServicio = function (input) {
         const preview = document.getElementById("previsualizacion-avatar-servicio");
         if (input.files && input.files[0]) {
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 preview.innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
                 preview.style.borderStyle = 'solid';
             }
@@ -67,7 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     if (inputFoto) {
-        inputFoto.addEventListener("change", function() {
+        inputFoto.addEventListener("change", function () {
             window.previsualizarImagenServicio(this);
         });
     }
@@ -102,7 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // Función para cerrar cualquier modal de servicio (registro o edición).
-    window.cerrarModalServicio = function() {
+    window.cerrarModalServicio = function () {
         const modal = document.getElementById("modal-servicio");
         if (modal) modal.close();
     };
@@ -198,7 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================================================
 
     // Función para mostrar el modal de consulta detallada con información extraída de los data-attributes de la tarjeta.
-    window.verServicioDetalle = function(id) {
+    window.verServicioDetalle = function (id) {
         const tarjeta = document.querySelector(`.tarjeta-servicio-item[data-id="${id}"]`);
         if (tarjeta) {
             document.getElementById("view-servicio-nombre").textContent = tarjeta.dataset.nombre;
@@ -233,7 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================================================
 
     // Función para mostrar una alerta de confirmación antes de eliminar un servicio, con información contextualizada del servicio a eliminar.
-    window.eliminarServicio = function(id) {
+    window.eliminarServicio = function (id) {
         const tarjeta = document.querySelector(`.tarjeta-servicio-item[data-id="${id}"]`);
         const nombreServicio = tarjeta ? tarjeta.dataset.nombre : "este servicio";
 
@@ -263,10 +263,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Agregamos un listener global para cerrar cualquier modal al hacer click fuera del contenido (en el backdrop).
     document.querySelectorAll('dialog').forEach(modal => {
-        modal.addEventListener('click', function(e) {
+        modal.addEventListener('click', function (e) {
             const rect = modal.getBoundingClientRect();
             const isInDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&
-                                rect.left <= e.clientX && e.clientX <= rect.left + rect.width);
+                rect.left <= e.clientX && e.clientX <= rect.left + rect.width);
             if (!isInDialog) {
                 modal.close();
 

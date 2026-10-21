@@ -15,7 +15,8 @@
             <h1>Nuestros Terapeutas</h1>
             <p>Conoce al equipo profesional detrás de las experiencias exclusivas de The Beauty Room.</p>
         </div>
-        @if(isset($userRole) && $userRole === 'admin')
+        {{-- Solo admin puede registrar especialistas --}}
+        @if(auth()->check() && auth()->user()->rol === 'admin')
         <button type="button" class="btn-terapeuta-agregar" onclick="abrirModalAgregar()">
             <span class="icono-mas">+</span> Registrar Especialista
         </button>
@@ -85,10 +86,10 @@
                     <span class="flecha">→</span>
                 </button>
 
-                @if(isset($userRole) && $userRole === 'admin')
-                <div class="admin-controls">
-                    <button type="button" class="btn-terapeuta-editar" onclick="editarTerapeuta({{ $terapeuta->id }})">Editar</button>
-                    <button type="button" class="btn-terapeuta-eliminar" onclick="eliminarTerapeuta({{ $terapeuta->id }})">Eliminar</button>
+                @if(auth()->check() && auth()->user()->rol === 'admin')
+                <div style="display:flex; gap:0.25rem; width:100%;">
+                    <button type="button" class="btn-terapeuta-editar" style="flex:1;" onclick="editarTerapeuta({{ $terapeuta->id }})">Editar Info</button>
+                    <button type="button" class="btn-terapeuta-eliminar" style="flex:1;" onclick="eliminarTerapeuta({{ $terapeuta->id }})">Dar de Baja</button>
                 </div>
                 @endif
             </footer>

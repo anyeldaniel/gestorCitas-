@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="csrf-token" content="{{ csrf_token() }}"> 
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<< HEAD
     <title>@yield('title', 'The Beauty Room')</title>
     
     {{-- Estilos globales --}}
@@ -11,7 +13,19 @@
     
     {{-- Stack para que tus vistas hijas inyecten sus estilos --}}
     @stack('styles')
+=======
+    <title>@yield('title', 'Syncrostyle SPA') — The Beauty Room</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    @stack('styles')<!--Acá añado estilos específicos de cada vista, att: Andrés -->
+>>>>>>> origin/josebackend
 </head>
+
 <body>
     @auth
         @php 
@@ -23,6 +37,7 @@
         @endphp
     @endauth
 
+<<<<<<< HEAD
     <header id="main-header">
         <div class="max-w-7xl mx-auto flex justify-between items-center px-8">
             <a href="{{ route('agenda') }}" class="flex items-center gap-2 text-white mr-auto">
@@ -86,6 +101,49 @@
                     <button onclick="document.getElementById('logout-form').submit();" class="mt-4 bg-white text-[#8b5e3c] py-3 rounded font-bold uppercase tracking-wider text-sm">Cerrar Sesión</button>
                 @endauth
             </div>
+=======
+    <header class="header-spa">
+        <picture class="logo-contenedor">
+            <img src="{{ asset('logo/logo-the-beauty-room.PNG') }}" alt="Logotipo Oficial de The Beauty Room Spa" class="logo-spa">
+        </picture>
+        <!--Aquì estoy añadiendo el nav para que se muestre en todas las vistas, y se adapte segun el rol del usuario logueado, mostrando solo las opciones correspondientes a su rol.-->
+        <nav class="nav-roles" aria-label="Navegación de Roles Operativos">
+            @auth
+            @if(auth()->user()->rol === 'admin' || auth()->user()->rol === 'recepcion' || auth()->user()->rol === 'trabajador')
+            <a href="{{ route('agenda') }}" class="{{ Request::is('agenda*') ? 'active' : '' }}">Agenda</a>
+            @endif
+
+            @if(auth()->user()->rol === 'admin' || auth()->user()->rol === 'recepcion' || auth()->user()->rol === 'cliente')
+            <a href="{{ url('/terapeutas') }}" class="{{ Request::is('terapeutas*') ? 'active' : '' }}">Terapeutas</a>
+            @endif
+
+            @if(auth()->user()->rol === 'admin')
+            <a href="{{ url('/admin/dashboard') }}" class="{{ Request::is('admin/dashboard*') ? 'active' : '' }}">Administración</a>
+            @endif
+
+            @if(auth()->user()->rol === 'admin')
+            <a href="{{ route('admin.reportes') }}" class="{{ Request::is('admin/reportes*') ? 'active' : '' }}">Reportes</a>
+            @endif
+
+            @if(auth()->user()->rol === 'recepcion' || auth()->user()->rol === 'admin')
+            <a href="{{ route('pago.verificar') }}">Verificar Pagos</a>
+            @endif
+
+            @if(auth()->user()->rol === 'cliente')
+            <a href="{{ route('clientes.mis.reservas') }}" class="{{ Request::is('mis-reservas*') ? 'active' : '' }}">Mis Reservas</a>
+            @endif
+
+            <a href="{{ route('catalogo') }}" class="{{ Request::is('catalogo*') ? 'active' : '' }}">Catálogo Zen</a>
+
+            <a href="#" class="btn-logout" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                Cerrar Sesión
+            </a>
+
+            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                @csrf
+            </form>
+            @endauth
+>>>>>>> origin/josebackend
         </nav>
     </header>
 
@@ -135,4 +193,5 @@
     {{-- Stack para scripts específicos de cada vista --}}
     @stack('scripts')
 </body>
+
 </html>

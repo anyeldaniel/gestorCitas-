@@ -43,11 +43,25 @@
                 $nombreServicio = $servicio->nombre_servicio;
                 $idSimulado = $servicio->id;
                 $precioSimulado = $servicio->precio;
-                $porcentajeAgendadoSimulado = 10;
-                $tiempoEstimadoSimulado = $servicio->duracion_minutos . " min";
                 $descripcionSimulada = $servicio->descripcion ?? '';
-                $especialistasSimulados = [];
-                $especialistasIdsSimulados = [];
+
+                // Duración con rango legible
+                $duracion = (int) $servicio->duracion_minutos;
+                $tiempoEstimadoSimulado = match($duracion) {
+                    45  => "30 min - 50 min",
+                    75  => "60 min - 90 min",
+                    105 => "90 min - 120 min",
+                    150 => "120 min - 180 min",
+                    default => $duracion . " min"
+                };
+
+                // Porcentaje de abono real si existe, sino 10 por defecto
+                $porcentajeAgendadoSimulado = $servicio->porcentaje_abono ?? 10;
+
+                // Especialistas reales del servicio (relación belongsToMany)
+                $especialistasColeccion    = $servicio->especialistas ?? collect();
+                $especialistasSimulados    = $especialistasColeccion->pluck('nombre')->toArray();
+                $especialistasIdsSimulados = $especialistasColeccion->pluck('id')->toArray();
             @endphp
 
             {{-- Tarjeta de Servicio --}}

@@ -41,6 +41,7 @@ Route::get('/reset-password', function () {
     return redirect()->route('passwordRequest.view');
 });
 
+// Procesar el cambio de contraseña real
 Route::post('/reset-password', [PasswordController::class, 'resetPassword'])->name('password.update');
 
 
@@ -67,6 +68,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/catalogo', [ServicioController::class, 'index'])->name('catalogo');
     Route::get('/terapeutas', [TerapeutaController::class, 'index'])->name('terapeutas.index');
 
+    // Ruta para actualizar el catálogo
+    Route::put('/catalogo/actualizar/{id}', [ServicioController::class, 'update'])->name('catalogo.update');
+
 
     // ==========================================
     //   RUTAS DEL CLIENTE
@@ -75,12 +79,20 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reservas', [ReservaController::class, 'index'])->name('clientes.reserva');
     Route::post('/reservas', [ReservaController::class, 'store'])->name('clientes.reserva.store');
 
-    // Pasarela de pago (cliente)
-    Route::get('/pago/checkout/{cita}',  [PagoController::class, 'checkout'])->name('pago.checkout');
+    // Pasarela de pago (cliente) — flujo principal (josebackend)
+    Route::get('/checkout/{cita_id}', [PagoController::class, 'checkout'])->name('checkout.view');
+    Route::post('/checkout/procesar', [PagoController::class, 'procesarPago'])->name('checkout.procesar');
+
+    // Alias legacy de pago (por si quedan enlaces viejos)
+    Route::get('/pago/checkout/{cita}', [PagoController::class, 'checkout'])->name('pago.checkout');
     Route::post('/pago/procesar/{cita}', [PagoController::class, 'procesar'])->name('pago.procesar');
 
-    // Conectar especialistas con servicios
+    // Obtener especialistas por servicio (fetch desde JS)
+    Route::get('/get-especialistas/{id}', [ReservaController::class, 'getEspecialistas']);
     Route::get('/especialistas-por-servicio/{id}', [ReservaController::class, 'getEspecialistas']);
+
+    // Historial de citas del cliente
+    Route::get('/mis-reservas', [ReservaController::class, 'misReservas'])->name('clientes.mis.reservas');
 
 
     // ==========================================
@@ -117,9 +129,19 @@ Route::middleware(['auth'])->group(function () {
 
 
     // ==========================================
-    //   VERIFICAR PAGOS
+    //   VERIFICAR PAGOS (pantalla de recepción/admin)
     // ==========================================
     Route::get('/verificar-pagos', [PagoController::class, 'index'])->name('pago.verificar');
+
+
+    // ==========================================
+    //   MÓDULO RECEPCIÓN (Prefijo 'recepcion')
+    // ==========================================
+    Route::prefix('recepcion')->group(function () {
+        Route::get('/agenda', [RecepcionController::class, 'agenda'])->name('recepcion.agenda');
+        Route::post('/cita/{id}/actualizar', [AgendaController::class, 'updateStatus'])->name('cita.update');
+        Route::post('/aprobar-pago/{id}', [PagoController::class, 'aprobarPago'])->name('recepcion.aprobar.pago');
+    });
 
 
     // ==========================================

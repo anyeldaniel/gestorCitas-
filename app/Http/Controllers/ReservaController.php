@@ -27,14 +27,14 @@ class ReservaController extends Controller
             'duracion' => $servicio->duracion_minutos ?? 60,
         ];
 
-        // --- NUEVO: Obtener servicios agrupados por especialidad ---
+        // Servicios agrupados por especialidad
         $serviciosAgrupados = Servicio::with('especialidad')
             ->get()
-            ->groupBy(function($item) {
+            ->groupBy(function ($item) {
                 return $item->especialidad ? $item->especialidad->nombre_especialidad : 'Otros Servicios';
             });
 
-        // Solo ofrecer usuarios registrados con el rol de trabajador.
+        // Solo ofrecer usuarios registrados con el rol de trabajador
         $terapeutas = User::where('id', '!=', auth()->id())
             ->where('rol', 'trabajador')
             ->orderBy('nombre')
@@ -43,9 +43,20 @@ class ReservaController extends Controller
         return view('clientes.reserva', compact('servicioData', 'terapeutas', 'serviciosAgrupados'));
     }
 
-        public function store(Request $request)
+    /**
+     * Crear una nueva cita (multi-servicio).
+     */
+    public function store(Request $request)
     {
-        // 1. Validación (servicios ahora es un array)
+        // Si el usuario eligió "aleatorio", resolver antes de validar
+        if ($request->trabajador_id === 'aleatorio') {
+            $trabajadorAleatorio = User::where('rol', 'trabajador')->inRandomOrder()->first();
+            if ($trabajadorAleatorio) {
+                $request->merge(['trabajador_id' => $trabajadorAleatorio->id]);
+            }
+        }
+
+        // Validación
         $request->validate([
             'servicios'     => 'required|array|min:1',
             'servicios.*'   => 'exists:servicios,id',
@@ -58,28 +69,53 @@ class ReservaController extends Controller
             'hora'          => 'required',
         ]);
 
-        // 2. Obtener los servicios seleccionados y calcular el total
+        // Servicios seleccionados y monto total
         $servicios = Servicio::whereIn('id', $request->servicios)->get();
         $montoTotal = $servicios->sum('precio');
 
-        // 3. Crear la cita principal
+        // Crear la cita principal
         $cita = Cita::create([
             'cliente_id'    => auth()->id(),
             'trabajador_id' => $request->trabajador_id,
-            'servicio_id'   => $servicios->first()->id, // Guardamos el primero por compatibilidad con tu tabla
+            'servicio_id'   => $servicios->first()->id,
             'cabina_id'     => null,
-            'monto_total'   => $montoTotal, // El precio total de todos los servicios
+            'monto_total'   => $montoTotal,
             'fecha'         => $request->fecha,
             'hora'          => $request->hora,
             'estado'        => 'pendiente',
         ]);
 
-        // 4. Guardar TODOS los servicios en la nueva tabla intermedia
+        // Guardar TODOS los servicios en la tabla intermedia
         $cita->servicios()->attach($request->servicios);
 
-        // 5. Redirigir al CHECKOUT DE PAGO
+        // Redirigir al checkout de pago
         return redirect()
-            ->route('pago.checkout', ['cita' => $cita->id])
+            ->route('checkout.view', ['cita_id' => $cita->id])
             ->with('success', 'Cita apartada con múltiples servicios. Reporta tu pago para confirmarla.');
+    }
+
+    /**
+     * Mostrar las reservas y pagos del cliente autenticado.
+     */
+    public function misReservas()
+    {
+        $citas = Cita::with(['servicio', 'trabajador', 'pagos'])
+                    ->where('cliente_id', auth()->id())
+                    ->orderBy('fecha', 'DESC')
+                    ->get();
+
+        return view('clientes.mis-reservas', compact('citas'));
+    }
+
+    /**
+     * Obtener especialistas disponibles para un servicio.
+     */
+    public function getEspecialistas($id)
+    {
+        $servicio = Servicio::find($id);
+        if (!$servicio) {
+            return response()->json([]);
+        }
+        return response()->json($servicio->especialistas);
     }
 }

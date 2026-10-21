@@ -88,12 +88,17 @@ class User extends Authenticatable
         return $this->hasMany(Cita::class, 'trabajador_id');
     }
 
+    // Relación Muchos a Muchos con Servicios.
+    public function servicios()
+    {
+        return $this->belongsToMany(Servicio::class, 'servicio_user', 'user_id', 'servicio_id');
+    }
+
     /**
-     * Relación: servicios asignados a este especialista.
-     * (Útil para la tabla intermedia que estamos creando)
+     * Alias de compatibilidad: código previo que llamaba serviciosAsignados().
      */
     public function serviciosAsignados()
     {
-        return $this->belongsToMany(Servicio::class, 'servicio_usuario', 'usuario_id', 'servicio_id');
+        return $this->servicios();
     }
 }

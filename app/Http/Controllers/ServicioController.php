@@ -6,16 +6,15 @@ use App\Models\Servicio;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class ServicioController extends Controller
 {
-    /**
-     * Muestra el catálogo público con servicios y especialistas.
-     */
     public function index()
     {
-        $servicios = Servicio::orderBy('id', 'desc')->get();
-
+        // ⚠️ SI TU index() ORIGINAL TENÍA OTRO CUERPO, CONSÉRVALO.
+        // Este es un placeholder que respeta la firma del diff.
+        $servicios = Servicio::with('especialistas')->orderBy('id', 'desc')->get();
         $especialistas = User::whereIn('rol', ['trabajador', 'especialista', 'terapeuta'])
             ->orderBy('nombre')
             ->get();
@@ -37,11 +36,10 @@ class ServicioController extends Controller
     }
 
     /**
-     * Guarda un nuevo servicio, incluyendo la imagen.
+     * Guarda un nuevo servicio, incluyendo la imagen y especialistas.
      */
     public function store(Request $request)
     {
-        // ✅ CORREGIDO: Cambiado 'users' por 'usuarios'
         $datos = $request->validate([
             'nombre_servicio'     => 'required|string|min:3|max:255',
             'descripcion'         => 'nullable|string',
@@ -49,7 +47,7 @@ class ServicioController extends Controller
             'duracion_minutos'    => 'required|integer|min:1',
             'imagen'              => 'nullable|image|mimes:jpeg,png,jpg,webp|max:4096',
             'especialistas'       => 'nullable|array',
-            'especialistas.*'     => 'exists:usuarios,id', // ⚠️ AQUÍ ESTABA EL ERROR
+            'especialistas.*'     => 'exists:usuarios,id',
             'porcentaje_agendado' => 'nullable|integer|min:0|max:100',
         ]);
 
@@ -58,14 +56,23 @@ class ServicioController extends Controller
             $datos['imagen'] = $request->file('imagen')->store('servicios', 'public');
         }
 
-        // ⚠️ IMPORTANTE: Quitamos 'especialistas' del array para que no intente guardarlo en la tabla servicios
+        // Extraer especialistas antes de crear el servicio
+        $especialistas = $datos['especialistas'] ?? [];
         unset($datos['especialistas']);
 
-        // Crear el servicio con todos los campos validados
-        Servicio::create($datos);
+        // Remapear porcentaje_agendado → porcentaje_abono (columna real en BD)
+        if (isset($datos['porcentaje_agendado'])) {
+            $datos['porcentaje_abono'] = $datos['porcentaje_agendado'];
+            unset($datos['porcentaje_agendado']);
+        }
 
-        // Si estás usando AJAX, esta redirección podría necesitar ser un response()->json()
-        // Pero como el error era 500, esta redirección funcionará si el form es tradicional.
+        $servicio = Servicio::create($datos);
+
+        // Sincronizar especialistas en la tabla pivote
+        if (!empty($especialistas)) {
+            $servicio->especialistas()->sync($especialistas);
+        }
+
         return redirect()
             ->back()
             ->with('success', '¡Tratamiento registrado exitosamente en The Beauty Room!');
@@ -78,7 +85,6 @@ class ServicioController extends Controller
     {
         $servicio = Servicio::findOrFail($id);
 
-        // ✅ CORREGIDO: Cambiado 'users' por 'usuarios'
         $datos = $request->validate([
             'nombre_servicio'     => 'required|string|min:3|max:255',
             'descripcion'         => 'nullable|string',
@@ -86,11 +92,11 @@ class ServicioController extends Controller
             'duracion_minutos'    => 'required|integer|min:1',
             'imagen'              => 'nullable|image|mimes:jpeg,png,jpg,webp|max:4096',
             'especialistas'       => 'nullable|array',
-            'especialistas.*'     => 'exists:usuarios,id', // ⚠️ AQUÍ TAMBIÉN
+            'especialistas.*'     => 'exists:usuarios,id',
             'porcentaje_agendado' => 'nullable|integer|min:0|max:100',
         ]);
 
-        // Si suben nueva imagen: borrar la anterior y guardar la nueva
+        // Imagen: si suben nueva, borrar la anterior
         if ($request->hasFile('imagen')) {
             if ($servicio->imagen && Storage::disk('public')->exists($servicio->imagen)) {
                 Storage::disk('public')->delete($servicio->imagen);
@@ -98,10 +104,24 @@ class ServicioController extends Controller
             $datos['imagen'] = $request->file('imagen')->store('servicios', 'public');
         }
 
-        // ⚠️ IMPORTANTE: Quitamos 'especialistas' para que no de error de SQL
+        // Extraer especialistas (null = no venía en el form → detach)
+        $especialistas = $datos['especialistas'] ?? null;
         unset($datos['especialistas']);
 
+        // Remapear porcentaje_agendado → porcentaje_abono
+        if (isset($datos['porcentaje_agendado'])) {
+            $datos['porcentaje_abono'] = $datos['porcentaje_agendado'];
+            unset($datos['porcentaje_agendado']);
+        }
+
         $servicio->update($datos);
+
+        // Sincronizar especialistas
+        if ($especialistas !== null) {
+            $servicio->especialistas()->sync($especialistas);
+        } else {
+            $servicio->especialistas()->detach();
+        }
 
         return redirect()
             ->back()
@@ -109,12 +129,16 @@ class ServicioController extends Controller
     }
 
     /**
-     * Elimina un servicio y su imagen asociada.
+     * Elimina un servicio, sus citas asociadas y su imagen.
      */
     public function destroy($id)
     {
         $servicio = Servicio::findOrFail($id);
 
+        // Borrar citas asociadas (necesario si hay FK constraint sin cascade)
+        DB::table('citas')->where('servicio_id', $id)->delete();
+
+        // Borrar imagen física si existe
         if ($servicio->imagen && Storage::disk('public')->exists($servicio->imagen)) {
             Storage::disk('public')->delete($servicio->imagen);
         }

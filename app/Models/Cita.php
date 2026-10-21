@@ -11,6 +11,7 @@ class Cita extends Model
 
     protected $table = 'citas';
 
+    // Definimos los campos que se pueden asignar masivamente.
     protected $fillable = [
         'cliente_id',
         'trabajador_id',
@@ -37,16 +38,19 @@ class Cita extends Model
        RELACIONES
        ========================================================== */
 
+    // Relación con el cliente (Tabla 'usuarios')
     public function cliente()
     {
         return $this->belongsTo(User::class, 'cliente_id');
     }
 
+    // Relación con el trabajador/especialista (Tabla 'usuarios')
     public function trabajador()
     {
         return $this->belongsTo(User::class, 'trabajador_id');
     }
 
+    // Relación con el servicio (Tabla 'servicios')
     public function servicio()
     {
         return $this->belongsTo(Servicio::class, 'servicio_id');
@@ -60,6 +64,20 @@ class Cita extends Model
     public function canceladaPor()
     {
         return $this->belongsTo(User::class, 'cancelada_por');
+    }
+
+    // Relación con los pagos de la cita
+    public function pagos()
+    {
+        return $this->hasMany(Pago::class, 'cita_id');
+    }
+
+    /**
+     * Relación: Una cita puede tener muchos servicios (Muchos a Muchos).
+     */
+    public function servicios()
+    {
+        return $this->belongsToMany(Servicio::class, 'cita_servicio');
     }
 
     /* ==========================================================
@@ -128,13 +146,5 @@ class Cita extends Model
         } catch (\Throwable $e) {
             return null;
         }
-    }
-
-        /**
-     * Relación: Una cita puede tener muchos servicios (Muchos a Muchos).
-     */
-    public function servicios()
-    {
-        return $this->belongsToMany(Servicio::class, 'cita_servicio');
     }
 }
