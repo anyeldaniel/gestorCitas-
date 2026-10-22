@@ -452,6 +452,16 @@ body {
     color: var(--spa-gold);
     font-size: 0.95rem;
     letter-spacing: 0.05rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.05rem;
+}
+
+/* 🆕 NUEVO: estrellas individuales (llenas, medias y vacías) */
+.contenedor-estrellas .estrellas span {
+    display: inline-block;
+    line-height: 1;
+    transition: color 0.2s ease, opacity 0.2s ease;
 }
 
 .contenedor-estrellas .rating-valor {

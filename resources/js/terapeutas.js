@@ -24,6 +24,9 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
     });
+
+    // ✅ NUEVO: Asegurar que las estrellas se rendericen correctamente
+    renderizarEstrellas();
 });
 
 // ============================================
@@ -35,6 +38,60 @@ function getBaseUrl() {
         baseUrl += window.location.pathname.substring(0, window.location.pathname.indexOf('/public') + 7);
     }
     return baseUrl;
+}
+
+// ============================================
+// 🆕 NUEVO: RENDERIZAR ESTRELLAS DINÁMICAS
+// ============================================
+/**
+ * Asegura que las estrellas se pinten correctamente según
+ * el promedio que viene desde el backend (data-promedio).
+ * Esta función es un "fallback" visual por si el Blade no lo aplicó.
+ */
+function renderizarEstrellas() {
+    document.querySelectorAll('.contenedor-estrellas').forEach(contenedor => {
+        const promedio = parseFloat(contenedor.dataset.promedio || 0);
+        const total = parseInt(contenedor.dataset.total || 0);
+
+        // Si el Blade ya pintó las estrellas, no hacemos nada
+        const estrellasExistentes = contenedor.querySelectorAll('.estrellas span, .estrellas');
+        if (estrellasExistentes.length > 0) return;
+
+        const estrellasLlenas = Math.floor(promedio);
+        const tieneMedia = (promedio - estrellasLlenas) >= 0.5;
+
+        const spanEstrellas = document.createElement('span');
+        spanEstrellas.className = 'estrellas';
+
+        for (let i = 1; i <= 5; i++) {
+            const star = document.createElement('span');
+            if (i <= estrellasLlenas) {
+                star.textContent = '★';
+                star.style.color = 'var(--spa-gold)';
+            } else if (i === estrellasLlenas + 1 && tieneMedia) {
+                star.textContent = '★';
+                star.style.color = 'var(--spa-gold)';
+                star.style.opacity = '0.55';
+            } else {
+                star.textContent = '★';
+                star.style.color = '#d1c7bd';
+            }
+            spanEstrellas.appendChild(star);
+        }
+
+        contenedor.innerHTML = '';
+        contenedor.appendChild(spanEstrellas);
+
+        const valor = document.createElement('span');
+        valor.className = 'rating-valor';
+        valor.textContent = promedio.toFixed(1);
+        contenedor.appendChild(valor);
+
+        const cantidad = document.createElement('span');
+        cantidad.className = 'rating-cantidad';
+        cantidad.textContent = `(${total})`;
+        contenedor.appendChild(cantidad);
+    });
 }
 
 // ============================================

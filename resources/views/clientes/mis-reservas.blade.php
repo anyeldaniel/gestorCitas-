@@ -22,11 +22,8 @@
     // LÓGICA DINÁMICA DE TIPS Y DESCRIPCIÓN
     // ==========================================
     $nombreServicio = strtolower($proximaCita->servicio->nombre_servicio ?? '');
-    
-    // 1. Descripción: Tomamos el texto exacto de la columna 'descripcion' de tu BD
     $descripcionServicio = $proximaCita->servicio->descripcion ?? 'Un ritual exclusivo diseñado para renovar tu energía y devolverte el equilibrio.';
     
-    // 2. Tips: Asignamos recomendaciones específicas según el nombre
     $tipBienestar = '“Respira profundo. Antes de tu sesión, llega unos minutos antes para disfrutar de nuestra infusión de hierbas.”';
     $tipsPreparacion = [
         'Llega 10 minutos antes para recibir con calma.',
@@ -140,10 +137,8 @@
                     </article>
                 </aside>
 
-                <!-- COLUMNA CENTRO: TARJETA TICKET (CON IMAGEN DE FONDO) -->
+                <!-- COLUMNA CENTRO: TARJETA TICKET -->
                 <article class="cita-ticket">
-                    
-                    <!-- Bloque Izquierdo Oscuro (Fecha) -->
                     <div class="ticket-fecha">
                         <span class="mes">{{ $fechaCarbon->translatedFormat('M') }}</span>
                         <span class="dia">{{ $fechaCarbon->format('d') }}</span>
@@ -154,13 +149,9 @@
                         </div>
                     </div>
 
-                    <!-- Bloque Derecho Blanco (Detalles) -->
                     <div class="ticket-detalles">
-                        
-                        <!-- NUEVA IMAGEN DE FONDO SUTIL -->
                         @if($proximaCita->servicio->imagen)
                             <div class="ticket-imagen-fondo">
-                                {{-- Ajusta 'storage/' si tus imágenes están en otra ruta (ej. solo asset(...)) --}}
                                 <img src="{{ asset('storage/' . $proximaCita->servicio->imagen) }}" alt="{{ $proximaCita->servicio->nombre_servicio }}">
                             </div>
                         @endif
@@ -173,8 +164,6 @@
                         </div>
 
                         <h3 class="ticket-titulo">{{ $proximaCita->servicio->nombre_servicio ?? 'Tratamiento' }}</h3>
-                        
-                        <!-- DESCRIPCIÓN REAL DESDE LA BASE DE DATOS -->
                         <p class="ticket-desc">{{ $descripcionServicio }}</p>
 
                         <div class="ticket-meta">
@@ -255,7 +244,12 @@
 
         <div class="historial-grid">
             @forelse($historialCitas as $cita)
-                @php $fechaHist = \Carbon\Carbon::parse($cita->fecha); @endphp
+                @php 
+                    $fechaHist = \Carbon\Carbon::parse($cita->fecha); 
+                    // Verificamos si ya calificó esta cita
+                    $yaCalifico = \App\Models\Resena::where('user_id', auth()->id())->where('cita_id', $cita->id)->exists();
+                @endphp
+                
                 <article class="historial-card">
                     <time class="historial-fecha" datetime="{{ $fechaHist->format('Y-m-d') }}">
                         <span class="dia">{{ $fechaHist->format('d') }}</span>
@@ -266,6 +260,16 @@
                         <span class="badge-completado">Completada</span>
                         <h4>{{ $cita->servicio->nombre_servicio ?? 'Tratamiento' }}</h4>
                         <p>{{ $cita->trabajador->nombre ?? 'Especialista' }} - {{ $cita->servicio->duracion_minutos ?? 60 }} min</p>
+                        
+                        <!-- 🆕 BOTÓN PARA CALIFICAR (Solo si no lo ha hecho) -->
+                        @if(!$yaCalifico)
+                            <button type="button" class="btn-calificar" 
+                                    onclick="abrirModalResena({{ $cita->id }}, '{{ $cita->trabajador->nombre ?? 'Especialista' }}')">
+                                ⭐ Calificar atención
+                            </button>
+                        @else
+                            <span class="badge-calificado">✓ Ya calificaste esta cita</span>
+                        @endif
                     </div>
 
                     <div class="historial-precio">
@@ -281,6 +285,49 @@
 
 </main>
 
+<!-- ============================================
+     MODAL DE RESEÑA 
+     ============================================ -->
+
+<div id="modal-resena-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 99999; align-items: center; justify-content: center;">
+    
+    <form id="form-resena" method="POST" action="{{ route('resenas.store') }}" style="background: #fff; padding: 2rem; border-radius: 16px; width: 90%; max-width: 400px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+        @csrf
+        <input type="hidden" name="cita_id" id="resena-cita-id">
+        <input type="hidden" name="puntuacion" id="resena-puntuacion" value="0">
+
+        <!-- Botón cerrar -->
+        <button type="button" onclick="cerrarModalResena()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #888; line-height: 1;">×</button>
+
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+            <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; margin: 0 0 0.5rem 0; color: #1f1d1a;">Califica tu experiencia</h2>
+            <p style="font-size: 0.85rem; color: #888; margin: 0;">¿Cómo fue tu atención con <strong id="resena-nombre-terapeuta" style="color: #8b5e3c; font-size: 1rem;"></strong>?</p>
+        </div>
+
+        <!-- Estrellas -->
+        <div style="display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <span class="estrella-clic" data-valor="1" style="font-size: 2.5rem; color: #d1c7bd; cursor: pointer; user-select: none;">★</span>
+            <span class="estrella-clic" data-valor="2" style="font-size: 2.5rem; color: #d1c7bd; cursor: pointer; user-select: none;">★</span>
+            <span class="estrella-clic" data-valor="3" style="font-size: 2.5rem; color: #d1c7bd; cursor: pointer; user-select: none;">★</span>
+            <span class="estrella-clic" data-valor="4" style="font-size: 2.5rem; color: #d1c7bd; cursor: pointer; user-select: none;">★</span>
+            <span class="estrella-clic" data-valor="5" style="font-size: 2.5rem; color: #d1c7bd; cursor: pointer; user-select: none;">★</span>
+        </div>
+        
+        <p id="texto-puntuacion" style="text-align: center; font-size: 0.85rem; color: #888; margin-bottom: 1.5rem; min-height: 1.2rem;">Selecciona una puntuación</p>
+
+        <!-- Comentario -->
+        <label for="comentario-resena" style="display: block; font-size: 0.7rem; font-weight: 700; color: #888; text-transform: uppercase; margin-bottom: 0.5rem;">Comentario (opcional)</label>
+        <textarea id="comentario-resena" name="comentario" placeholder="Cuéntanos tu experiencia..." rows="3" style="width: 100%; box-sizing: border-box; padding: 0.8rem; border: 1px solid #e8e2dd; border-radius: 8px; font-family: inherit; resize: vertical; margin-bottom: 1.5rem;"></textarea>
+
+        <!-- Botones -->
+        <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+            <button type="button" onclick="cerrarModalResena()" style="padding: 0.6rem 1.5rem; border-radius: 24px; border: 1px solid #e8e2dd; background: transparent; color: #4a4640; font-weight: 600; font-size: 0.75rem; cursor: pointer;">Cancelar</button>
+            <button type="submit" id="btn-enviar-resena" disabled style="padding: 0.6rem 1.5rem; border-radius: 24px; border: none; background: #1f1d1a; color: #fff; font-weight: 600; font-size: 0.75rem; cursor: pointer; opacity: 0.5;">Enviar Calificación</button>
+        </div>
+    </form>
+</div>
+
 @push('scripts')
     @vite(['resources/js/mis-reservas.js'])
 @endpush
+@endsection

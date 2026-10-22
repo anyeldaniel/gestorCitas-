@@ -67,10 +67,30 @@
 
                 <h2 class="terapeuta-nombre">{{ $terapeuta->nombre }}</h2>
 
-                <div class="contenedor-estrellas">
-                    <span class="estrellas">★★★★★</span>
-                    <span class="rating-valor">5.0</span>
-                    <span class="rating-cantidad">(0)</span>
+                {{-- ============================================
+                     ESTRELLAS DINÁMICAS (promedio real de reseñas)
+                     ============================================ --}}
+                @php
+                    $promedio = $terapeuta->promedio ?? 0;
+                    $totalResenas = $terapeuta->total_resenas ?? 0;
+                    $estrellasLlenas = floor($promedio);
+                    $tieneMedia = ($promedio - $estrellasLlenas) >= 0.5;
+                @endphp
+
+                <div class="contenedor-estrellas" aria-label="{{ number_format($promedio, 1) }} de 5 estrellas basado en {{ $totalResenas }} reseñas">
+                    <span class="estrellas">
+                        @for($i = 1; $i <= 5; $i++)
+                            @if($i <= $estrellasLlenas)
+                                ★
+                            @elseif($i == $estrellasLlenas + 1 && $tieneMedia)
+                                <span style="color: var(--spa-gold); opacity: 0.55;">★</span>
+                            @else
+                                <span style="color: #d1c7bd;">★</span>
+                            @endif
+                        @endfor
+                    </span>
+                    <span class="rating-valor">{{ number_format($promedio, 1) }}</span>
+                    <span class="rating-cantidad">({{ $totalResenas }})</span>
                 </div>
 
                 <!-- DATOS OCULTOS PARA JS -->

@@ -12,6 +12,7 @@ use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\TerapeutaController;
 use App\Http\Controllers\SalaEsperaController;
 use App\Http\Controllers\PagoController;
+use App\Http\Controllers\ResenaController;
 
 // ==========================================
 //   ACCESO PÚBLICO Y AUTENTICACIÓN
@@ -93,6 +94,11 @@ Route::middleware(['auth'])->group(function () {
 
     // Historial de citas del cliente
     Route::get('/mis-reservas', [ReservaController::class, 'misReservas'])->name('clientes.mis.reservas');
+
+    // Reseñas del cliente
+    Route::post('/mis-reservas/{cita}/resena', [ResenaController::class, 'store'])->name('resenas.store');
+    Route::put('/mis-reservas/resena/{resena}', [ResenaController::class, 'update'])->name('resenas.update');
+    Route::delete('/mis-reservas/resena/{resena}', [ResenaController::class, 'destroy'])->name('resenas.destroy');
 
 
     // ==========================================

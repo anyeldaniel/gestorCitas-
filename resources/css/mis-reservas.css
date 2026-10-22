@@ -273,4 +273,192 @@ h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; font-weight: 700; 
     .historial-card { flex-direction: column; align-items: flex-start; gap: 1rem; }
     .historial-fecha { width: 100%; flex-direction: row; justify-content: flex-start; gap: 0.5rem; align-items: center; }
     .historial-precio { border-left: none; border-top: 1px solid var(--border-light); padding-left: 0; padding-top: 1rem; width: 100%; text-align: left; display: flex; justify-content: space-between; align-items: center; }
+
+    /* ============================================
+   MODAL DE RESEÑA
+   ============================================ */
+.modal-resena-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(45, 42, 38, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal-resena-overlay.activo {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-resena-contenido {
+    background: #ffffff;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 450px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-resena-overlay.activo .modal-resena-contenido {
+    transform: translateY(0);
+}
+
+.modal-resena-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 1.5rem 0;
+}
+
+.modal-resena-header h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    margin: 0;
+    color: #1f1d1a;
+}
+
+.btn-cerrar-resena {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #8a8580;
+    transition: color 0.2s;
+    line-height: 1;
+}
+
+.btn-cerrar-resena:hover {
+    color: #1f1d1a;
+}
+
+.modal-resena-body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.resena-info-terapeuta {
+    text-align: center;
+}
+
+.resena-info-terapeuta p {
+    font-size: 0.85rem;
+    color: #8a8580;
+    margin: 0 0 0.3rem 0;
+}
+
+.resena-info-terapeuta strong {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    color: #6d4a2f;
+}
+
+.selector-estrellas {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.estrella-clic {
+    font-size: 2.5rem;
+    color: #d1c7bd;
+    cursor: pointer;
+    transition: color 0.2s;
+    line-height: 1;
+    user-select: none;
+}
+
+.texto-puntuacion {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #8a8580;
+    margin: 0;
+    min-height: 1.2rem;
+}
+
+.texto-puntuacion strong {
+    color: #1f1d1a;
+}
+
+.campo-resena label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #8a8580;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 0.3rem;
+}
+
+.campo-resena textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.8rem;
+    border: 1px solid #e8e2dd;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    resize: vertical;
+}
+
+.campo-resena textarea:focus {
+    outline: none;
+    border-color: #8b5e3c;
+}
+
+.modal-resena-acciones {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+}
+
+.btn-resena-cancelar,
+.btn-resena-enviar {
+    padding: 0.6rem 1.5rem;
+    border-radius: 24px;
+    font-family: 'Instrument Sans', sans-serif;
+    font-weight: 600;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-resena-cancelar {
+    border: 1px solid #e8e2dd;
+    background: transparent;
+    color: #4a4640;
+}
+
+.btn-resena-cancelar:hover {
+    background: #f5efe8;
+}
+
+.btn-resena-enviar {
+    border: none;
+    background: #1f1d1a;
+    color: #ffffff;
+}
+
+.btn-resena-enviar:hover {
+    background: #3d2c1e;
+}
+
+.btn-resena-enviar:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
 }
