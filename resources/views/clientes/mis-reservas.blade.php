@@ -6,6 +6,10 @@
     @vite(['resources/css/mis-reservas.css'])
 @endpush
 
+@push('scripts')
+    @vite(['resources/js/mis-reservas.js'])
+@endpush
+
 @section('content')
 @php
     $proximaCita = $citas->whereIn('estado', ['pendiente', 'confirmada'])->sortBy('fecha')->first();
@@ -13,6 +17,52 @@
     
     $totalPendiente = $citas->whereIn('estado', ['pendiente', 'confirmada'])->sum('monto_total'); 
     $visitasRealizadas = $historialCitas->count();
+
+    // ==========================================
+    // LÓGICA DINÁMICA DE TIPS Y DESCRIPCIÓN
+    // ==========================================
+    $nombreServicio = strtolower($proximaCita->servicio->nombre_servicio ?? '');
+    
+    // 1. Descripción: Tomamos el texto exacto de la columna 'descripcion' de tu BD
+    $descripcionServicio = $proximaCita->servicio->descripcion ?? 'Un ritual exclusivo diseñado para renovar tu energía y devolverte el equilibrio.';
+    
+    // 2. Tips: Asignamos recomendaciones específicas según el nombre
+    $tipBienestar = '“Respira profundo. Antes de tu sesión, llega unos minutos antes para disfrutar de nuestra infusión de hierbas.”';
+    $tipsPreparacion = [
+        'Llega 10 minutos antes para recibir con calma.',
+        'Evita usar perfumes fuertes el día de tu sesión.',
+        'Hidrátate bien antes de tu ritual.'
+    ];
+
+    if (str_contains($nombreServicio, 'manicura') || str_contains($nombreServicio, 'uñas')) {
+        $tipBienestar = '“El detalle está en tus manos. Nos encanta recibirte con las uñas limpias y sin crema para que tu esmalte dure mucho más.”';
+        $tipsPreparacion = [
+            'Ven sin crema en las manos para mejor adherencia.',
+            'Avísanos si tienes algún corte o uña encarnada.',
+            'Trae tu color favorito si lo tienes en casa.'
+        ];
+    } elseif (str_contains($nombreServicio, 'peeling') || str_contains($nombreServicio, 'quimico')) {
+        $tipBienestar = '“Tu piel respira mejor cuando está libre de impurezas. Evita exfoliarte o usar ácidos 24 horas antes de tu cita.”';
+        $tipsPreparacion = [
+            'Evita exfoliarte el rostro 24 horas antes.',
+            'Ven sin maquillaje para optimizar el tiempo.',
+            'Informa sobre cualquier alergia o sensibilidad.'
+        ];
+    } elseif (str_contains($nombreServicio, 'masaje') || str_contains($nombreServicio, 'descontracturante')) {
+        $tipBienestar = '“El silencio es parte del ritual. Te invitamos a desconectar tu teléfono al ingresar a la cabina.”';
+        $tipsPreparacion = [
+            'No ingieras comidas pesadas 1 hora antes.',
+            'Llega con tiempo para ducharte si lo deseas.',
+            'Comunica al especialista tu nivel de presión preferido.'
+        ];
+    } elseif (str_contains($nombreServicio, 'anticelulitico') || str_contains($nombreServicio, 'anticelulítica')) {
+        $tipBienestar = '“La constancia es clave. Hidratarse abundantemente después del tratamiento ayuda a eliminar toxinas.”';
+        $tipsPreparacion = [
+            'Ven con ropa cómoda que permita el acceso a la zona.',
+            'Evita cremas corporales el día de la sesión.',
+            'Bebe agua antes y después del tratamiento.'
+        ];
+    }
 @endphp
 
 <main class="dashboard-wrapper">
@@ -21,7 +71,7 @@
     <header class="hero-section">
         <section class="hero-text">
             <span class="hero-subtitle">Tu espacio personal</span>
-            <h1>Tus momentos de bienestar,<br>en un solo lugar</h1>
+            <h1>Tus momentos de bienestar,<br>en un solo lugar.</h1>
             <p>Consulta tus próximas citas, completa pagos pendientes y vuelve a reservar tus rituales favoritos.</p>
         </section>
         
@@ -62,63 +112,109 @@
                 $estaPagado = $totalPagado >= $proximaCita->monto_total;
             @endphp
 
-            <article class="proxima-cita-card">
-                <!-- Fecha -->
-                <time class="cita-fecha-sidebar" datetime="{{ $fechaCarbon->format('Y-m-d') }}">
-                    <span class="mes">{{ $fechaCarbon->translatedFormat('M') }}</span>
-                    <span class="dia">{{ $fechaCarbon->format('d') }}</span>
-                    <span class="dia-semana">{{ $fechaCarbon->translatedFormat('l') }}</span>
-                </time>
+            <div class="cita-layout-grid">
+                
+                <!-- COLUMNA IZQUIERDA: TIPS DINÁMICOS -->
+                <aside class="tips-column">
+                    <article class="card-tip-bienestar">
+                        <span class="tip-label">PARA TI:</span>
+                        <h3 class="tip-title">Tip de bienestar</h3>
+                        <p class="tip-text">{{ $tipBienestar }}</p>
+                        <span class="tip-author">— Equipo The Beauty Room</span>
+                    </article>
 
-                <!-- Detalles -->
-                <div class="cita-detalles-main">
-                    <header class="cita-header-info">
-                        <div>
-                            <span class="cita-ref">Reserva #BR-{{ $proximaCita->id }}-{{ $fechaCarbon->format('Ymd') }}</span>
-                            <h3 class="cita-titulo">{{ $proximaCita->servicio->nombre_servicio ?? 'Tratamiento Spa' }}</h3>
+                    <article class="card-prepara-visita">
+                        <header class="prepara-header">
+                            <h4>Antes de venir</h4>
+                            <span>PREPARA TU VISITA</span>
+                        </header>
+                        <p class="prepara-desc">Pequeños detalles para que tu experiencia sea perfecta.</p>
+                        <div class="checklist">
+                            @foreach($tipsPreparacion as $index => $tip)
+                                <div class="check-item">
+                                    <input type="checkbox" id="prep-{{ $index }}" class="prep-checkbox">
+                                    <label for="prep-{{ $index }}">{{ $tip }}</label>
+                                </div>
+                            @endforeach
                         </div>
-                        <span class="badge {{ $estaPagado ? 'badge-pagado' : 'badge-pendiente' }}">
-                            {{ $estaPagado ? '✓ Pagado' : '● Pendiente de pago' }}
-                        </span>
-                    </header>
+                    </article>
+                </aside>
 
-                    <div class="cita-meta-grid">
-                        <div class="meta-info-item">
-                            <span class="meta-icon-circle">
-                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                            </span>
-                            <div>
-                                <small>Hora</small>
-                                <strong>{{ \Carbon\Carbon::parse($proximaCita->hora)->format('h:i A') }}</strong>
-                            </div>
+                <!-- COLUMNA CENTRO: TARJETA TICKET (CON IMAGEN DE FONDO) -->
+                <article class="cita-ticket">
+                    
+                    <!-- Bloque Izquierdo Oscuro (Fecha) -->
+                    <div class="ticket-fecha">
+                        <span class="mes">{{ $fechaCarbon->translatedFormat('M') }}</span>
+                        <span class="dia">{{ $fechaCarbon->format('d') }}</span>
+                        <span class="dia-semana">{{ $fechaCarbon->translatedFormat('l') }}</span>
+                        <div class="ticket-anio">
+                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>
+                            {{ $fechaCarbon->format('Y') }}
                         </div>
+                    </div>
+
+                    <!-- Bloque Derecho Blanco (Detalles) -->
+                    <div class="ticket-detalles">
                         
-                        <div class="meta-info-item">
-                            <span class="meta-icon-circle">
-                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2"/></svg>
-                            </span>
-                            <div>
-                                <small>Especialista</small>
-                                <strong>{{ $proximaCita->trabajador->nombre ?? 'Por asignar' }}</strong>
+                        <!-- NUEVA IMAGEN DE FONDO SUTIL -->
+                        @if($proximaCita->servicio->imagen)
+                            <div class="ticket-imagen-fondo">
+                                {{-- Ajusta 'storage/' si tus imágenes están en otra ruta (ej. solo asset(...)) --}}
+                                <img src="{{ asset('storage/' . $proximaCita->servicio->imagen) }}" alt="{{ $proximaCita->servicio->nombre_servicio }}">
                             </div>
+                        @endif
+
+                        <div class="ticket-top">
+                            <span class="ticket-ref">RESERVA #BR-{{ $fechaCarbon->format('Ymd') }}{{ $proximaCita->id }}</span>
+                            <span class="badge {{ $estaPagado ? 'badge-pagado' : 'badge-pendiente' }}">
+                                {{ $estaPagado ? '✓ PAGADO' : '● PENDIENTE DE PAGO' }}
+                            </span>
                         </div>
 
-                        <div class="meta-info-item">
-                            <span class="meta-icon-circle">
-                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                            </span>
-                            <div>
-                                <small>Duración</small>
-                                <strong>60 minutos</strong>
+                        <h3 class="ticket-titulo">{{ $proximaCita->servicio->nombre_servicio ?? 'Tratamiento' }}</h3>
+                        
+                        <!-- DESCRIPCIÓN REAL DESDE LA BASE DE DATOS -->
+                        <p class="ticket-desc">{{ $descripcionServicio }}</p>
+
+                        <div class="ticket-meta">
+                            <div class="meta-item">
+                                <span class="meta-icon">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                                </span>
+                                <div>
+                                    <small>HORA</small>
+                                    <strong>{{ \Carbon\Carbon::parse($proximaCita->hora)->format('h:i A') }}</strong>
+                                </div>
+                            </div>
+                            
+                            <div class="meta-item">
+                                <span class="meta-icon">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2"/></svg>
+                                </span>
+                                <div>
+                                    <small>ESPECIALISTA</small>
+                                    <strong>{{ $proximaCita->trabajador->nombre ?? 'Por asignar' }}</strong>
+                                </div>
+                            </div>
+
+                            <div class="meta-item">
+                                <span class="meta-icon">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                                </span>
+                                <div>
+                                    <small>DURACIÓN</small>
+                                    <strong>{{ $proximaCita->servicio->duracion_minutos ?? 60 }} minutos</strong>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                </article>
 
-                <!-- Pago -->
+                <!-- COLUMNA DERECHA: PAGO -->
                 <aside class="cita-pago-sidebar">
                     <div>
-                        <span class="pago-total-label">{{ $estaPagado ? 'Total Pagado' : 'Total Pendiente' }}</span>
+                        <span class="pago-total-label">{{ $estaPagado ? 'TOTAL PAGADO' : 'TOTAL PENDIENTE' }}</span>
                         <p class="pago-total-monto">${{ number_format($estaPagado ? $totalPagado : $montoRestante, 2) }}</p>
                         
                         @if(!$estaPagado && $enRevision == 0)
@@ -136,11 +232,12 @@
 
                     @if(!$estaPagado && $enRevision == 0)
                         <a href="{{ route('checkout.view', ['cita_id' => $proximaCita->id]) }}" class="btn-completar-pago">
-                            Completar pago <span>→</span>
+                            COMPLETAR PAGO <span>→</span>
                         </a>
                     @endif
                 </aside>
-            </article>
+
+            </div>
         @else
             <p class="empty-state">No tienes citas próximas agendadas.</p>
         @endif
@@ -168,7 +265,7 @@
                     <div class="historial-info">
                         <span class="badge-completado">Completada</span>
                         <h4>{{ $cita->servicio->nombre_servicio ?? 'Tratamiento' }}</h4>
-                        <p>{{ $cita->trabajador->nombre ?? 'Especialista' }} - 60 min</p>
+                        <p>{{ $cita->trabajador->nombre ?? 'Especialista' }} - {{ $cita->servicio->duracion_minutos ?? 60 }} min</p>
                     </div>
 
                     <div class="historial-precio">
@@ -183,4 +280,7 @@
     </section>
 
 </main>
-@endsection
+
+@push('scripts')
+    @vite(['resources/js/mis-reservas.js'])
+@endpush

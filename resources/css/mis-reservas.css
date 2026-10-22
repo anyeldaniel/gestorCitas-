@@ -1,726 +1,276 @@
 /* ==========================================================================
-   MIS RESERVAS - DASHBOARD PREMIUM (RESPONSIVE TOTAL)
+   MIS RESERVAS - DASHBOARD PREMIUM (V9 - CON IMAGEN DE FONDO)
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Inter:wght@300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-    /* Paleta de colores unificada */
     --bg-page: #fbf9f5;
     --bg-card: #ffffff;
-    --bg-dark: #4a3b32; 
-    --bg-dark-hover: #3d2f28;
+    --bg-dark: #4a3728; 
     --primary-brown: #8b5e3c;
-    --text-main: #3d2b1f;
-    --text-muted: #8c7a6b;
+    --text-main: #2d2a26;
+    --text-soft: #4a4640;
+    --text-muted: #8a8580;
     --border-color: #e8e2dd;
+    --border-light: #efe9e1;
     --spa-cream-2: #f5efe8;
-    --success-bg: #e2ece9;
-    --success-text: #3a463b;
-    --warning-bg: #fcf3e3;
-    --warning-text: #8a6d3b;
     
-    /* Tipografía */
-    --font-display: 'Playfair Display', serif; 
-    --font-sans: 'Inter', sans-serif;          
+    --font-display: 'Cormorant Garamond', serif;
+    --font-body: 'Inter', sans-serif;
+    --font-ui: 'Instrument Sans', sans-serif;
 }
 
 body {
     background-color: var(--bg-page);
-    font-family: var(--font-sans);
+    font-family: var(--font-body);
     color: var(--text-main);
     margin: 0;
     -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4 { 
-    font-family: var(--font-display); 
-    margin: 0; 
-    font-weight: 600; 
-    color: var(--bg-dark);
-}
+h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; font-weight: 700; color: var(--text-main); }
+
+/* LAYOUT GENERAL */
+.dashboard-wrapper { max-width: 1280px; margin: 0 auto; padding: 3rem 2rem 5rem; box-sizing: border-box; }
+
+/* HERO */
+.hero-section { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3.5rem; gap: 2rem; flex-wrap: wrap; }
+.hero-text { flex: 1; min-width: 300px; }
+.hero-text small { display: block; font-family: var(--font-ui); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: var(--primary-brown); margin-bottom: 1rem; }
+.hero-text h1 { font-size: clamp(2.2rem, 4vw, 3.5rem); line-height: 1.05; margin-bottom: 1rem; letter-spacing: -0.02em; }
+.hero-text p { color: var(--text-soft); font-size: 1rem; max-width: 500px; line-height: 1.6; margin: 0; }
+
+.stats-box { display: flex; background: var(--bg-card); border-radius: 16px; padding: 1.5rem 2.5rem; box-shadow: 0 4px 20px -4px rgba(74, 55, 40, 0.05); border: 1px solid var(--border-light); gap: 2.5rem; align-items: center; }
+.stat-item { text-align: center; }
+.stat-item h2 { font-family: var(--font-display); font-size: 2rem; color: var(--text-main); margin-bottom: 0.3rem; line-height: 1; font-weight: 700; }
+.stat-item span { font-family: var(--font-ui); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 700; }
+.stat-divider { width: 1px; height: 45px; background: var(--border-light); border: none; margin: 0; }
+
+.section-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+.section-title span { font-family: var(--font-ui); display: block; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.15em; font-size: 0.7rem; font-weight: 700; margin-bottom: 0.5rem; }
+.section-title h2 { font-size: clamp(1.8rem, 3vw, 2.5rem); margin: 0; letter-spacing: -0.01em; }
+.btn-nueva-reserva { font-family: var(--font-ui); padding: 0.6rem 1.4rem; border: 1px solid var(--text-main); border-radius: 50px; background: transparent; color: var(--text-main); font-size: 0.8rem; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease; }
+.btn-nueva-reserva:hover { background: var(--text-main); color: #ffffff; transform: translateY(-2px); }
 
 /* ==========================================================================
-   LAYOUT PRINCIPAL
+   GRID 3 COLUMNAS
    ========================================================================== */
-.dashboard-wrapper {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 3rem 2rem 5rem;
-    box-sizing: border-box;
-}
-
-/* ==========================================================================
-   HERO SECTION & STATS
-   ========================================================================== */
-.hero-section {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: 3.5rem;
-    gap: 2rem;
-    flex-wrap: wrap;
-}
-
-.hero-text {
-    flex: 1;
-    min-width: 300px;
-}
-
-.hero-text small {
-    display: block;
-    font-family: var(--font-sans);
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--primary-brown);
-    margin-bottom: 0.8rem;
-    font-weight: 700;
-}
-
-.hero-text h1 {
-    font-size: clamp(2rem, 4vw, 3rem);
-    line-height: 1.1;
-    margin-bottom: 1rem;
-    letter-spacing: -0.5px;
-}
-
-.hero-text p {
-    color: var(--text-muted);
-    font-size: 1rem;
-    max-width: 500px;
-    line-height: 1.6;
-    margin: 0;
-}
-
-.stats-box {
-    display: flex;
-    background: var(--bg-card);
-    border-radius: 14px;
-    padding: 1.5rem 2rem;
-    box-shadow: 0 4px 20px -4px rgba(74, 55, 40, 0.05);
-    border: 1px solid var(--border-color);
-    gap: 2rem;
-    align-items: center;
-}
-
-.stat-item {
-    text-align: center;
-}
-
-.stat-item h2 {
-    font-size: 1.8rem;
-    color: var(--bg-dark);
-    margin-bottom: 0.2rem;
-    line-height: 1;
-}
-
-.stat-item span {
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--text-muted);
-    font-weight: 600;
-    font-family: var(--font-sans);
-}
-
-.stat-divider {
-    width: 1px;
-    height: 40px;
-    background: var(--border-color);
-    border: none;
-    margin: 0;
-}
-
-/* ==========================================================================
-   HEADERS DE SECCIÓN
-   ========================================================================== */
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: 1.5rem;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 1rem;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-.section-title span {
-    display: block;
-    color: var(--primary-brown);
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    font-family: var(--font-sans);
-    margin-bottom: 0.3rem;
-}
-
-.section-title h2 {
-    font-size: clamp(1.5rem, 3vw, 2rem);
-    margin: 0;
-}
-
-.btn-nueva-reserva {
-    padding: 0.6rem 1.4rem;
-    border: 1px solid var(--bg-dark);
-    border-radius: 50px;
-    background: transparent;
-    color: var(--bg-dark);
-    font-family: var(--font-sans);
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-}
-
-.btn-nueva-reserva:hover {
-    background: var(--bg-dark);
-    color: #ffffff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(74, 55, 40, 0.2);
-}
-
-/* ==========================================================================
-   TARJETA PRÓXIMA CITA (BANNER ANCHO)
-   ========================================================================== */
-.proxima-cita-card {
+.cita-layout-grid {
     display: grid;
-    grid-template-columns: 140px 1fr 360px;
+    grid-template-columns: 320px 1fr 300px; 
+    gap: 1.5rem;
+    margin-bottom: 5rem;
+    align-items: stretch; 
+}
+
+/* --- COLUMNA IZQUIERDA: TIPS --- */
+.tips-column { display: flex; flex-direction: column; gap: 1.5rem; }
+
+.card-tip-bienestar {
+    background: var(--spa-cream-2); border-radius: 16px; padding: 2.5rem 2rem; position: relative; overflow: hidden; flex: 1;
+    display: flex; flex-direction: column; justify-content: center;
+}
+.card-tip-bienestar::before {
+    content: '“'; font-family: var(--font-display); font-size: 10rem; color: rgba(139, 94, 60, 0.08); position: absolute; top: -30px; right: 10px; line-height: 1; pointer-events: none;
+}
+.tip-label { font-family: var(--font-ui); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-soft); font-weight: 700; display: block; margin-bottom: 0.2rem; }
+.tip-title { font-family: var(--font-ui); font-size: 0.9rem; font-weight: 700; color: var(--text-main); margin-bottom: 1.5rem; }
+.tip-text { font-family: var(--font-display); font-size: 1.25rem; font-style: italic; line-height: 1.5; color: var(--text-main); margin-bottom: 1.5rem; position: relative; z-index: 1; }
+.tip-author { font-family: var(--font-ui); font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+
+.card-prepara-visita { background: var(--bg-card); border-radius: 16px; padding: 1.75rem; border: 1px solid var(--border-light); box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+.prepara-header { margin-bottom: 0.5rem; }
+.prepara-header h4 { font-family: var(--font-body); font-size: 1rem; font-weight: 600; margin-bottom: 0.1rem; }
+.prepara-header span { font-family: var(--font-ui); font-size: 0.65rem; text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em; color: var(--text-muted); }
+.prepara-desc { font-family: var(--font-body); font-size: 0.8rem; color: var(--text-soft); margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-light); }
+.checklist { display: flex; flex-direction: column; gap: 1rem; }
+.check-item { display: flex; align-items: flex-start; gap: 0.8rem; cursor: pointer; }
+.prep-checkbox { appearance: none; width: 16px; height: 16px; border: 1.5px solid var(--border-color); border-radius: 4px; margin-top: 2px; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+.prep-checkbox:checked { background: var(--text-main); border-color: var(--text-main); }
+.prep-checkbox:checked::after { content: '✓'; color: white; display: block; text-align: center; font-size: 11px; line-height: 14px; }
+.check-item label { font-family: var(--font-body); font-size: 0.85rem; color: var(--text-soft); line-height: 1.4; cursor: pointer; transition: all 0.3s; }
+
+/* ==========================================================================
+   COLUMNA CENTRO: TICKET CON IMAGEN DE FONDO
+   ========================================================================== */
+.cita-ticket {
+    display: flex; 
     background: var(--bg-card);
     border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(45, 42, 38, 0.06);
-    margin-bottom: 4rem;
-    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px rgba(45, 42, 38, 0.04);
+    border: 1px solid var(--border-light);
+    height: 100%;
 }
 
-.cita-fecha-sidebar {
+/* Bloque Izquierdo Oscuro (Fecha) */
+.ticket-fecha {
     background: var(--bg-dark);
     color: #ffffff;
+    width: 120px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
-    padding: 2rem 1rem;
-    text-align: center;
+    padding: 2.5rem 1rem 1.5rem;
+    flex-shrink: 0;
+    z-index: 2; /* Para que quede por encima si la imagen se asoma */
+}
+.ticket-fecha .mes { font-family: var(--font-ui); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.15em; opacity: 0.8; font-weight: 600; margin-bottom: 0.2rem; }
+.ticket-fecha .dia { font-family: var(--font-display); font-size: 4rem; line-height: 1; font-weight: 700; margin-bottom: 0.2rem; }
+.ticket-fecha .dia-semana { font-family: var(--font-ui); text-transform: uppercase; font-size: 0.7rem; opacity: 0.8; letter-spacing: 0.1em; font-weight: 600; }
+.ticket-anio { 
+    display: flex; align-items: center; gap: 0.4rem; font-family: var(--font-ui); 
+    font-size: 0.7rem; opacity: 0.6; font-weight: 600; 
+    border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; width: 100%; justify-content: center; 
+    margin-top: auto; 
 }
 
-.cita-fecha-sidebar .mes {
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    font-size: 0.8rem;
-    opacity: 0.8;
-    margin-bottom: 0.3rem;
-    font-weight: 600;
-}
-
-.cita-fecha-sidebar .dia {
-    font-family: var(--font-display);
-    font-size: 4rem;
-    line-height: 1;
-    margin-bottom: 0.3rem;
-    font-weight: 600;
-}
-
-.cita-fecha-sidebar .dia-semana {
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    font-size: 0.7rem;
-    opacity: 0.8;
-    font-weight: 600;
-}
-
-.cita-detalles-main {
+/* Bloque Derecho Blanco (Detalles) */
+.ticket-detalles {
     padding: 2.5rem;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    flex: 1;
+    position: relative; /* Clave para posicionar la imagen de fondo */
+    overflow: hidden;   /* Evita que la imagen se salga del recuadro */
 }
 
-.cita-header-info {
+/* NUEVO: Estilo de la imagen de fondo sutil */
+.ticket-imagen-fondo {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 65%; /* Ocupa el lado derecho */
+    height: 100%;
+    z-index: 0;
+    pointer-events: none; /* No bloquea clics */
+    opacity: 0.15; /* Muy sutil */
+    
+    /* Degradado para que se funda con el fondo blanco */
+    mask-image: linear-gradient(to left, black 10%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to left, black 10%, transparent 100%);
+}
+
+.ticket-imagen-fondo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center right;
+}
+
+/* Aseguramos que los textos queden por encima de la imagen */
+.ticket-top, .ticket-titulo, .ticket-desc, .ticket-meta {
+    position: relative;
+    z-index: 1;
+}
+
+.ticket-top {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 2rem;
-    gap: 1rem;
+    margin-bottom: 1rem;
 }
 
-.cita-ref {
+.ticket-ref {
+    font-family: var(--font-body);
     font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
     color: var(--text-muted);
-    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
     font-weight: 600;
-    display: block;
 }
 
-.cita-titulo {
-    font-size: clamp(1.5rem, 2.5vw, 2.2rem);
+.badge { font-family: var(--font-ui); padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display: inline-flex; align-items: center; white-space: nowrap; }
+.badge-pendiente { background: #fcf3e3; color: #8a6d3b; }
+.badge-pagado { background: #e2ece9; color: #3a463b; }
+
+.ticket-titulo {
+    font-size: 2.6rem;
     text-transform: capitalize;
     line-height: 1.1;
+    font-weight: 600;
+    margin-bottom: 0.8rem;
 }
 
-.badge {
-    padding: 0.4rem 1rem;
-    border-radius: 50px;
-    font-size: 0.65rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-family: var(--font-sans);
-    white-space: nowrap;
+.ticket-desc {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--text-soft);
+    line-height: 1.6;
+    margin-bottom: 2rem; 
+    max-width: 85%; /* Para que el texto no se superponga con lo más fuerte de la imagen */
 }
 
-.badge-pendiente {
-    background: var(--warning-bg);
-    color: var(--warning-text);
-}
-
-.badge-pagado {
-    background: var(--success-bg);
-    color: var(--success-text);
-}
-
-.cita-meta-grid {
+.ticket-meta {
     display: flex;
     gap: 2.5rem;
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid var(--border-light);
     padding-top: 1.5rem;
     flex-wrap: wrap;
 }
 
-.meta-info-item {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
+.meta-item { display: flex; align-items: center; gap: 0.7rem; }
+.meta-icon { width: 32px; height: 32px; border-radius: 50%; background: var(--spa-cream-2); display: flex; align-items: center; justify-content: center; color: var(--primary-brown); flex-shrink: 0; }
+.meta-item small { font-family: var(--font-ui); display: block; font-size: 0.6rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; margin-bottom: 0.1rem; font-weight: 700; }
+.meta-item strong { font-family: var(--font-body); font-size: 0.9rem; color: var(--text-main); font-weight: 600; }
 
-.meta-icon-circle {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    background: var(--spa-cream-2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--primary-brown);
-    flex-shrink: 0;
-}
-
-.meta-info-item small {
-    display: block;
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    letter-spacing: 0.5px;
-    margin-bottom: 0.1rem;
-    font-weight: 600;
-}
-
-.meta-info-item strong {
-    font-size: 0.9rem;
-    color: var(--text-main);
-    font-weight: 600;
-    font-family: var(--font-sans);
-}
-
+/* --- COLUMNA DERECHA: PAGO --- */
 .cita-pago-sidebar {
-    background: var(--bg-dark);
-    padding: 2.5rem;
-    color: #ffffff;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    background: var(--bg-dark); padding: 2.5rem 2rem; color: #ffffff; display: flex; flex-direction: column; justify-content: space-between;
+    border-radius: 16px; box-shadow: 0 10px 30px rgba(45, 42, 38, 0.06); height: 100%;
 }
-
-.pago-total-label {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    opacity: 0.7;
-    margin-bottom: 0.3rem;
-    display: block;
-    font-weight: 600;
-}
-
-.pago-total-monto {
-    font-family: var(--font-display);
-    font-size: clamp(2rem, 3vw, 2.8rem);
-    font-weight: 600;
-    margin: 0 0 1.5rem 0;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    padding-bottom: 1.5rem;
-    line-height: 1;
-}
-
-.pago-alerta {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    align-items: flex-start;
-}
-
-.pago-alerta-icon {
-    background: rgba(255,255,255,0.1);
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.pago-alerta-text strong {
-    display: block;
-    font-size: 0.85rem;
-    margin-bottom: 0.2rem;
-    font-family: var(--font-sans);
-}
-
-.pago-alerta-text span {
-    font-size: 0.75rem;
-    opacity: 0.7;
-    line-height: 1.4;
-    display: block;
-    font-family: var(--font-sans);
-}
-
+.pago-total-label { font-family: var(--font-ui); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.7; margin-bottom: 0.5rem; display: block; font-weight: 600; }
+.pago-total-monto { font-family: var(--font-display); font-size: 3rem; font-weight: 700; margin: 0 0 1.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1.5rem; line-height: 1; }
+.pago-alerta { display: flex; gap: 1rem; margin-bottom: 2rem; align-items: flex-start; }
+.pago-alerta-icon { background: rgba(255,255,255,0.1); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.pago-alerta-text strong { font-family: var(--font-body); display: block; font-size: 0.85rem; margin-bottom: 0.2rem; font-weight: 600; }
+.pago-alerta-text span { font-family: var(--font-body); font-size: 0.75rem; opacity: 0.7; line-height: 1.4; display: block; }
 .btn-completar-pago {
-    background: #ffffff;
-    color: var(--bg-dark);
-    text-decoration: none;
-    padding: 1rem 1.5rem;
-    border-radius: 50px;
-    font-weight: 700;
-    font-size: 0.85rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: all 0.3s ease;
-    font-family: var(--font-sans);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-family: var(--font-ui); background: #ffffff; color: var(--text-main); text-decoration: none; padding: 1rem 1.5rem; border-radius: 50px;
+    font-weight: 700; font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center;
+    transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 1rem;
+}
+.btn-completar-pago:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.2); background: var(--spa-cream-2); }
+
+/* HISTORIAL Y RESPONSIVE */
+.historial-count { font-family: var(--font-ui); font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+.historial-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+.historial-card { background: var(--bg-card); border-radius: 16px; padding: 1.5rem; display: flex; align-items: center; gap: 1.5rem; border: 1px solid var(--border-light); transition: all 0.3s ease; }
+.historial-card:hover { box-shadow: 0 10px 25px -5px rgba(74, 55, 40, 0.08); transform: translateY(-2px); }
+.historial-fecha { background: var(--spa-cream-2); border-radius: 12px; padding: 1rem; text-align: center; min-width: 75px; display: flex; flex-direction: column; justify-content: center; flex-shrink: 0; }
+.historial-fecha .dia { font-family: var(--font-display); font-size: 2rem; color: var(--text-main); line-height: 1; font-weight: 700; }
+.historial-fecha .mes { font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-top: 0.2rem; font-weight: 700; }
+.historial-info { flex: 1; min-width: 0; }
+.badge-completado { font-family: var(--font-ui); font-size: 0.65rem; color: #3a463b; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 0.3rem; display: block; }
+.historial-info h4 { font-family: var(--font-display); font-size: 1.4rem; margin-bottom: 0.3rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+.historial-info p { font-family: var(--font-body); font-size: 0.85rem; color: var(--text-soft); margin: 0; }
+.historial-precio { text-align: right; border-left: 1px solid var(--border-light); padding-left: 1.5rem; flex-shrink: 0; }
+.historial-precio span { font-family: var(--font-ui); display: block; font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.2rem; }
+.historial-precio strong { font-family: var(--font-display); font-size: 1.6rem; color: var(--text-main); font-weight: 700; }
+.empty-state { font-family: var(--font-body); text-align: center; padding: 4rem 2rem; background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-light); color: var(--text-muted); grid-column: 1 / -1; width: 100%; box-sizing: border-box; }
+
+@media (max-width: 1150px) {
+    .cita-layout-grid { grid-template-columns: 1fr 1fr; }
+    .tips-column { grid-column: 1 / -1; flex-direction: row; }
+    .cita-pago-sidebar { grid-column: 1 / -1; }
 }
 
-.btn-completar-pago:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0,0,0,0.2);
-    background: var(--spa-cream-2);
-}
-
-/* ==========================================================================
-   HISTORIAL DE CITAS
-   ========================================================================== */
-.historial-count {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    font-family: var(--font-sans);
-    font-weight: 600;
-}
-
-.historial-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-}
-
-.historial-card {
-    background: var(--bg-card);
-    border-radius: 14px;
-    padding: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    border: 1px solid var(--border-color);
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-}
-
-.historial-card:hover {
-    box-shadow: 0 10px 25px -5px rgba(74, 55, 40, 0.1);
-    transform: translateY(-2px);
-    border-color: #d9cfc4;
-}
-
-.historial-fecha {
-    background: var(--spa-cream-2);
-    border-radius: 12px;
-    padding: 1rem;
-    text-align: center;
-    min-width: 75px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.historial-fecha .dia {
-    font-family: var(--font-display);
-    font-size: 2rem;
-    color: var(--bg-dark);
-    line-height: 1;
-    font-weight: 600;
-}
-
-.historial-fecha .mes {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-top: 0.2rem;
-    font-weight: 700;
-    font-family: var(--font-sans);
-}
-
-.historial-info {
-    flex: 1;
-    min-width: 0;
-}
-
-.badge-completado {
-    font-size: 0.65rem;
-    color: var(--success-text);
-    text-transform: uppercase;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    margin-bottom: 0.3rem;
-    display: block;
-    font-family: var(--font-sans);
-}
-
-.historial-info h4 {
-    font-size: clamp(1.1rem, 2vw, 1.3rem);
-    margin-bottom: 0.3rem;
-    color: var(--bg-dark);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.historial-info p {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    margin: 0;
-    font-family: var(--font-sans);
-}
-
-.historial-precio {
-    text-align: right;
-    border-left: 1px solid var(--border-color);
-    padding-left: 1.5rem;
-    flex-shrink: 0;
-}
-
-.historial-precio span {
-    display: block;
-    font-size: 0.65rem;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    font-weight: 600;
-    margin-bottom: 0.2rem;
-    font-family: var(--font-sans);
-}
-
-.historial-precio strong {
-    font-family: var(--font-display);
-    font-size: 1.5rem;
-    color: var(--bg-dark);
-    font-weight: 600;
-}
-
-.empty-state {
-    text-align: center;
-    padding: 4rem 2rem;
-    background: var(--bg-card);
-    border-radius: 16px;
-    border: 1px solid var(--border-color);
-    color: var(--text-muted);
-    margin-bottom: 3rem;
-    grid-column: 1 / -1;
-    font-family: var(--font-sans);
-    font-size: 1rem;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-
-/* ==========================================================================
-   RESPONSIVE DESIGN EXTREMO (TABLETS Y MÓVILES)
-   ========================================================================== */
-
-/* Tablets (iPad, pantallas medianas) */
-@media (max-width: 1024px) {
-    .proxima-cita-card { 
-        grid-template-columns: 110px 1fr; 
-    }
-    .cita-pago-sidebar { 
-        grid-column: 1 / -1; 
-        border-radius: 0 0 16px 16px;
-    }
-    .historial-grid { 
-        grid-template-columns: 1fr; 
-    }
-}
-
-/* Móviles Grandes y Tablets Pequeñas */
 @media (max-width: 768px) {
-    .dashboard-wrapper {
-        padding: 2rem 1rem 4rem;
-    }
-    
-    /* Hero y estadísticas */
-    .hero-section { 
-        flex-direction: column; 
-        align-items: stretch; 
-        gap: 2rem;
-        margin-bottom: 2.5rem;
-    }
-    
-    .stats-box {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1rem;
-        padding: 1.2rem 1rem;
-        width: 100%;
-        box-sizing: border-box;
-    }
-
+    .dashboard-wrapper { padding: 2rem 1rem 4rem; }
+    .hero-section { flex-direction: column; align-items: stretch; gap: 2rem; }
+    .stats-box { display: grid; grid-template-columns: repeat(3, 1fr); padding: 1.2rem; gap: 1rem; }
     .stat-item h2 { font-size: 1.5rem; }
-    .stat-item span { font-size: 0.6rem; }
-    .stat-divider { display: none; } /* Ocultamos las líneas divisorias en móvil */
-
-    /* Próxima Cita */
-    .proxima-cita-card { 
-        grid-template-columns: 1fr; 
-        border-radius: 16px;
-        margin-bottom: 3rem;
-    }
-
-    .cita-fecha-sidebar { 
-        flex-direction: row; 
-        gap: 0.8rem; 
-        padding: 1.2rem; 
-        justify-content: center;
-        border-radius: 16px 16px 0 0;
-    }
-    
-    .cita-fecha-sidebar .dia { 
-        font-size: 2rem; 
-        margin-bottom: 0;
-    }
-    
-    .cita-fecha-sidebar .mes,
-    .cita-fecha-sidebar .dia-semana {
-        margin-bottom: 0;
-        line-height: 1;
-    }
-
-    .cita-detalles-main {
-        padding: 1.5rem;
-    }
-
-    .cita-header-info {
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .cita-meta-grid { 
-        flex-direction: column; 
-        gap: 1rem; 
-        padding-top: 1.2rem;
-    }
-
-    .cita-pago-sidebar {
-        padding: 1.5rem;
-        border-radius: 0 0 16px 16px;
-    }
-
-    /* Headers de sección */
-    .section-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-    }
-
-    .btn-nueva-reserva {
-        width: 100%;
-        justify-content: center;
-        padding: 0.8rem;
-    }
-
-    /* Historial */
-    .historial-card {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-        padding: 1.2rem;
-    }
-
-    .historial-fecha {
-        width: 100%;
-        flex-direction: row;
-        justify-content: flex-start;
-        gap: 0.5rem;
-        padding: 0.6rem 1rem;
-        align-items: center;
-    }
-
-    .historial-fecha .dia { font-size: 1.5rem; }
-    .historial-fecha .mes { margin-top: 0; }
-
-    .historial-info h4 {
-        white-space: normal; /* Permite que el título baje de línea */
-    }
-
-    .historial-precio {
-        border-left: none;
-        border-top: 1px solid var(--border-color);
-        padding-left: 0;
-        padding-top: 1rem;
-        width: 100%;
-        text-align: left;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .historial-precio span {
-        margin-bottom: 0;
-    }
-}
-
-/* Móviles muy pequeños (iPhone SE, etc) */
-@media (max-width: 380px) {
-    .stats-box {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-    }
-    
-    .hero-text h1 {
-        font-size: 1.8rem;
-    }
-
-    .cita-pago-sidebar {
-        padding: 1.2rem;
-    }
-
-    .pago-total-monto {
-        font-size: 2rem;
-    }
-
-    .btn-completar-pago {
-        padding: 0.8rem 1.2rem;
-        font-size: 0.75rem;
-    }
+    .stat-divider { display: none; }
+    .tips-column { flex-direction: column; }
+    .cita-layout-grid { grid-template-columns: 1fr; }
+    .cita-ticket { flex-direction: column; }
+    .ticket-fecha { width: 100%; flex-direction: row; justify-content: space-between; padding: 1.5rem; }
+    .ticket-anio { margin-top: 0; border-top: none; width: auto; }
+    .ticket-detalles { padding: 1.5rem; }
+    .ticket-meta { flex-direction: column; gap: 1rem; }
+    .historial-grid { grid-template-columns: 1fr; }
+    .historial-card { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    .historial-fecha { width: 100%; flex-direction: row; justify-content: flex-start; gap: 0.5rem; align-items: center; }
+    .historial-precio { border-left: none; border-top: 1px solid var(--border-light); padding-left: 0; padding-top: 1rem; width: 100%; text-align: left; display: flex; justify-content: space-between; align-items: center; }
 }
