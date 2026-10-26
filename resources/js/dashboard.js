@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
         formRecepcionista.addEventListener("submit", (e) => {
             const pass = document.getElementById('recep_password');
             const passConf = document.getElementById('recep_password_confirmation');
-            
+
             if (pass && pass.value) {
                 if (pass.value !== passConf.value) {
                     alert("🚨 Las contraseñas no coinciden.");
@@ -61,12 +61,102 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
         console.warn('⚠️ Syncro no está definido o no tiene init');
     }
-    
+
     // Inicializar vistas
     if (typeof actualizarPaginadoresTotales === 'function') {
         actualizarPaginadoresTotales();
     }
+
+    // 🆕 NUEVO: Inicializar paginadores del dashboard
+    initPaginadoresDashboard();
 });
+
+// ============================================
+// 🆕 NUEVO: PAGINADOR PROFESIONAL DEL DASHBOARD
+// ============================================
+/**
+ * Inicializa los paginadores de las listas de recepcionistas y especialistas.
+ * - 4 items por página por defecto (configurable).
+ * - Oculta filas que no pertenecen a la página actual.
+ * - Actualiza el texto "Página X de Y".
+ * - Deshabilita los botones en los extremos.
+ */
+function initPaginadoresDashboard() {
+    const ITEMS_POR_PAGINA = 4;
+
+    /**
+     * Configura un paginador individual.
+     * @param {string} idContenedor  ID del div que contiene las filas
+     * @param {string} idPaginador   ID del footer del paginador
+     */
+    function configurarPaginador(idContenedor, idPaginador) {
+        const contenedor = document.getElementById(idContenedor);
+        const paginador  = document.getElementById(idPaginador);
+        if (!contenedor || !paginador) return;
+
+        const filas = Array.from(contenedor.querySelectorAll('.dash-user-row'));
+        const total = filas.length;
+
+        // Actualiza el atributo data-total (para ocultar el paginador si no hay filas)
+        paginador.dataset.total = total;
+
+        if (total === 0) return;
+
+        const totalPaginas = Math.ceil(total / ITEMS_POR_PAGINA);
+        const btnPrev  = paginador.querySelector('[data-pagina="prev"]');
+        const btnNext  = paginador.querySelector('[data-pagina="next"]');
+        const info     = paginador.querySelector('.dash-paginador-info');
+
+        let paginaActual = 1;
+
+        function renderizar() {
+            // Mostrar/ocultar filas
+            filas.forEach((fila, index) => {
+                const inicio = (paginaActual - 1) * ITEMS_POR_PAGINA;
+                const fin    = inicio + ITEMS_POR_PAGINA;
+                fila.style.display = (index >= inicio && index < fin) ? 'flex' : 'none';
+            });
+
+            // Actualizar texto
+            if (info) {
+                info.textContent = `Página ${paginaActual} de ${totalPaginas}`;
+            }
+
+            // Estado de botones
+            if (btnPrev) btnPrev.disabled = (paginaActual <= 1);
+            if (btnNext) btnNext.disabled = (paginaActual >= totalPaginas);
+        }
+
+        // Listeners (clonamos para evitar duplicados si la función se llama varias veces)
+        if (btnPrev) {
+            const nuevoPrev = btnPrev.cloneNode(true);
+            btnPrev.parentNode.replaceChild(nuevoPrev, btnPrev);
+            nuevoPrev.addEventListener('click', () => {
+                if (paginaActual > 1) {
+                    paginaActual--;
+                    renderizar();
+                }
+            });
+        }
+
+        if (btnNext) {
+            const nuevoNext = btnNext.cloneNode(true);
+            btnNext.parentNode.replaceChild(nuevoNext, btnNext);
+            nuevoNext.addEventListener('click', () => {
+                if (paginaActual < totalPaginas) {
+                    paginaActual++;
+                    renderizar();
+                }
+            });
+        }
+
+        // Render inicial
+        renderizar();
+    }
+
+    configurarPaginador('lista-recepcionistas', 'paginador-recepcionistas');
+    configurarPaginador('lista-especialistas',  'paginador-especialistas');
+}
 
 // ============================================
 // FUNCIONES GLOBALES - RECEPCIONISTAS
@@ -79,26 +169,26 @@ document.addEventListener("DOMContentLoaded", () => {
 window.abrirModalRecepcionista = function() {
     const modal = document.getElementById('modal-recepcionista');
     const form = document.getElementById('form-recepcionista');
-    
+
     if (!modal || !form) return;
-    
+
     document.getElementById('modal-recepcionista-titulo').textContent = 'Agregar Nuevo Recepcionista';
     form.reset();
-    
+
     // ✅ RUTA DINÁMICA
     form.action = `${getBaseUrl()}/admin/crear-recepcionista`;
     delete form.dataset.idEditando;
-    
+
     const methodInput = document.getElementById('recep_method');
     if (methodInput) {
         methodInput.value = 'POST';
     }
-    
+
     const campoPass = document.getElementById('recep-campo-password');
     if (campoPass) {
         campoPass.style.display = 'grid';
     }
-    
+
     const passInput = document.getElementById('recep_password');
     const passConfInput = document.getElementById('recep_password_confirmation');
     if (passInput) {
@@ -111,10 +201,10 @@ window.abrirModalRecepcionista = function() {
         passConfInput.placeholder = 'Repita la contraseña';
         passConfInput.value = '';
     }
-    
+
     const avatar = document.getElementById('previsualizacion-avatar-recepcionista');
     if (avatar) avatar.textContent = 'RE';
-    
+
     modal.showModal();
 };
 
@@ -125,29 +215,29 @@ window.abrirModalRecepcionista = function() {
 window.editarRecepcionista = function(id, nombre, email, telefono) {
     const modal = document.getElementById('modal-recepcionista');
     const form = document.getElementById('form-recepcionista');
-    
+
     if (!modal || !form) return;
-    
+
     document.getElementById('modal-recepcionista-titulo').textContent = 'Editar Recepcionista';
-    
+
     // ✅ RUTA DINÁMICA
     form.action = `${getBaseUrl()}/admin/recepcionista/${id}/actualizar`;
     form.dataset.idEditando = id;
-    
+
     const methodInput = document.getElementById('recep_method');
     if (methodInput) {
         methodInput.value = 'PUT';
     }
-    
+
     document.getElementById('recep_name').value = nombre || '';
     document.getElementById('recep_email').value = email || '';
     document.getElementById('recep_phone').value = telefono || '';
-    
+
     const campoPass = document.getElementById('recep-campo-password');
     if (campoPass) {
         campoPass.style.display = 'none';
     }
-    
+
     const passInput = document.getElementById('recep_password');
     const passConfInput = document.getElementById('recep_password_confirmation');
     if (passInput) {
@@ -160,7 +250,7 @@ window.editarRecepcionista = function(id, nombre, email, telefono) {
         passConfInput.placeholder = 'Dejar vacío para mantener';
         passConfInput.value = '';
     }
-    
+
     modal.showModal();
 };
 
@@ -193,9 +283,9 @@ window.eliminarRecepcionista = function(id) {
     if (tarjeta) {
         nombreRecepcionista = tarjeta.querySelector('.info-usuario h4')?.textContent.trim() || '';
     }
-    
+
     const nombreTexto = nombreRecepcionista ? `"${nombreRecepcionista.toUpperCase()}"` : 'este recepcionista';
-    
+
     document.getElementById('confirm-alerta-titulo').textContent = '¿Remover recepcionista del equipo?';
     document.getElementById('confirm-alerta-mensaje').textContent = `¿Estás seguro de eliminar permanentemente a ${nombreTexto} del sistema? Esta operación no se puede deshacer.`;
 
@@ -228,21 +318,21 @@ window.eliminarRecepcionista = function(id) {
 };
 
 // ============================================
-// PAGINACIÓN
+// PAGINACIÓN (COMPATIBILIDAD LEGACY)
 // ============================================
 
 window.paginarBloque = function(contenedorId, numPagina, btnPrevId, btnNextId, infoId) {
     const contenedor = document.getElementById(contenedorId);
     if (!contenedor) return;
-    
+
     const items = contenedor.querySelectorAll('.tarjeta-fila');
     const totalItems = items.length;
     const itemsPorPagina = 2;
     const totalPaginas = Math.ceil(totalItems / itemsPorPagina);
-    
+
     if (numPagina < 1) numPagina = 1;
     if (numPagina > totalPaginas) numPagina = totalPaginas;
-    
+
     items.forEach((item, index) => {
         const start = (numPagina - 1) * itemsPorPagina;
         const end = start + itemsPorPagina;
@@ -252,15 +342,15 @@ window.paginarBloque = function(contenedorId, numPagina, btnPrevId, btnNextId, i
             item.style.display = 'none';
         }
     });
-    
+
     const btnPrev = document.getElementById(btnPrevId);
     const btnNext = document.getElementById(btnNextId);
     const info = document.getElementById(infoId);
-    
+
     if (btnPrev) btnPrev.disabled = numPagina <= 1;
     if (btnNext) btnNext.disabled = numPagina >= totalPaginas;
     if (info) info.textContent = `Página ${numPagina} de ${totalPaginas || 1}`;
-    
+
     return numPagina;
 };
 
@@ -273,7 +363,7 @@ window.Syncro = {
         console.log('✅ Syncro.init ejecutado');
         const btnAddRecep = document.getElementById('btn-add-recep');
         const btnAddEsp = document.getElementById('btn-add-esp');
-        
+
         if (btnAddRecep) {
             const newBtn = btnAddRecep.cloneNode(true);
             btnAddRecep.parentNode.replaceChild(newBtn, btnAddRecep);
@@ -285,7 +375,7 @@ window.Syncro = {
             newBtn.addEventListener('click', this.openEsp);
         }
     },
-    
+
     openRecep: function() {
         if (typeof window.abrirModalRecepcionista === 'function') {
             window.abrirModalRecepcionista();
@@ -334,6 +424,17 @@ window.Syncro = {
             console.warn('eliminarTerapeuta no está definida');
         }
     }
+};
+
+// ============================================
+// 🆕 RE-INICIALIZAR PAGINADOR TRAS CAMBIOS DINÁMICOS
+// ============================================
+/**
+ * Expone la función globalmente para que otros módulos
+ * (ej. terapeutas.js tras eliminar) puedan refrescar el paginador.
+ */
+window.refrescarPaginadoresDashboard = function() {
+    initPaginadoresDashboard();
 };
 
 console.log('✅ Dashboard.js cargado completamente');

@@ -77,7 +77,8 @@ class Cita extends Model
      */
     public function servicios()
     {
-        return $this->belongsToMany(Servicio::class, 'cita_servicio');
+        return $this->belongsToMany(Servicio::class, 'cita_servicio')
+                    ->withPivot('trabajador_id');
     }
 
     /* ==========================================================

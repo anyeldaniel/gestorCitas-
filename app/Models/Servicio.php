@@ -18,7 +18,8 @@ class Servicio extends Model
         'especialidad_id',
         'porcentaje_abono',
     ];
-        public function especialidad()
+
+    public function especialidad()
     {
         return $this->belongsTo(Especialidad::class, 'especialidad_id');
     }
@@ -29,8 +30,10 @@ class Servicio extends Model
     }
 
     // Relación Muchos a Muchos con Usuarios (Especialistas).
+    // Filtramos solo a los usuarios con rol 'trabajador'
     public function especialistas()
     {
-        return $this->belongsToMany(User::class, 'servicio_user', 'servicio_id', 'user_id');
+        return $this->belongsToMany(User::class, 'servicio_user', 'servicio_id', 'user_id')
+                    ->where('rol', 'trabajador');
     }
 }

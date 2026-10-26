@@ -116,6 +116,21 @@
                 <p style="padding: 2rem; text-align: center; color: var(--dash-text-muted);">No hay recepcionistas registrados.</p>
                 @endforelse
             </div>
+
+            {{-- 🆕 PAGINADOR RECEPCIONISTAS --}}
+            <footer class="dash-paginador" id="paginador-recepcionistas" data-total="{{ $recepcionistas->count() ?? 0 }}">
+                <button type="button" class="dash-paginador-btn" data-pagina="prev" aria-label="Página anterior">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                    </svg>
+                </button>
+                <span class="dash-paginador-info">Página 1 de 1</span>
+                <button type="button" class="dash-paginador-btn" data-pagina="next" aria-label="Página siguiente">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                    </svg>
+                </button>
+            </footer>
         </section>
 
         <!-- COLUMNA 2: ESPECIALISTAS -->
@@ -146,12 +161,12 @@
                                     <span class="dash-tag">{{ trim($esp) }}</span>
                                 @endforeach
                             @endif
-                            
+
                             <!-- ETIQUETA DINÁMICA DE CITAS -->
                             <span class="dash-tag dash-tag--role">
                                 {{ $trab->citas_mes }} {{ $trab->citas_mes == 1 ? 'cita este mes' : 'citas este mes' }}
                             </span>
-                            
+
                         </div>
                     </div>
                     <div class="dash-actions">
@@ -163,6 +178,21 @@
                 <p style="padding: 2rem; text-align: center; color: var(--dash-text-muted);">No hay especialistas registrados.</p>
                 @endforelse
             </div>
+
+            {{-- 🆕 PAGINADOR ESPECIALISTAS --}}
+            <footer class="dash-paginador" id="paginador-especialistas" data-total="{{ $trabajadores->count() ?? 0 }}">
+                <button type="button" class="dash-paginador-btn" data-pagina="prev" aria-label="Página anterior">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                    </svg>
+                </button>
+                <span class="dash-paginador-info">Página 1 de 1</span>
+                <button type="button" class="dash-paginador-btn" data-pagina="next" aria-label="Página siguiente">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                    </svg>
+                </button>
+            </footer>
         </section>
     </div>
 
@@ -241,7 +271,7 @@
             <figure class="icono-alerta-advertencia">⚠️</figure>
             <h3 id="confirm-alerta-titulo" class="titulo-alerta-critica">¿Confirmar acción?</h3>
             <p id="confirm-alerta-mensaje" class="mensaje-alerta-descripcion"></p>
-            
+
             <footer class="pie-alerta-botones">
                 <button type="button" id="btn-confirm-cancelar" class="btn-cancelar-alerta">Cancelar</button>
                 <button type="button" id="btn-confirm-aceptar" class="btn-aceptar-eliminar">Eliminar permanentemente</button>

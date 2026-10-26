@@ -1,9 +1,28 @@
+const Swal = window.Swal;
+
 document.addEventListener('DOMContentLoaded', () => {
     const hoy = new Date();
     let mesActual = hoy.getMonth();
     let añoActual = hoy.getFullYear();
     let fechaSeleccionada = null;
     let horaSeleccionada = null;
+
+    const moduloReserva = document.getElementById('modulo-reserva');
+    if (!moduloReserva) return;
+
+    const serviciosData = JSON.parse(moduloReserva.dataset.especialistas || '{}');
+    const successMessage = moduloReserva.dataset.success;
+
+    if (successMessage && successMessage.trim() !== '' && Swal) {
+        Swal.fire({
+            icon: 'success',
+            title: '¡Operación Exitosa!',
+            text: successMessage,
+            confirmButtonColor: '#5A6B5D',
+            timer: 4500,
+            showConfirmButton: true,
+        });
+    }
 
     const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
     const MESES_CORTOS = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
@@ -20,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const resumenServicio  = document.getElementById('resumen-servicio');
     const resumenDetalle   = document.getElementById('resumen-detalle');
     const resumenPrecio    = document.getElementById('resumen-precio');
+    const contenedorEspecialistas = document.getElementById('contenedor-especialistas');
 
     function renderCalendario() {
         if (!calendarioTitulo || !calendarioDias) return;
@@ -86,18 +106,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =====================================================================
-    // LÓGICA DE SERVICIOS MÚLTIPLES
+    // LÓGICA DE SERVICIOS MÚLTIPLES Y SELECTORES POR SERVICIO
     // =====================================================================
     const servicioItems = document.querySelectorAll('.servicio-item');
     
     servicioItems.forEach(item => {
         item.addEventListener('click', (e) => {
-            // Si el clic no fue directo en el checkbox, lo forzamos
             if (e.target.tagName !== 'INPUT') {
                 const checkbox = item.querySelector('input[type="checkbox"]');
                 checkbox.checked = !checkbox.checked;
             }
             actualizarSeleccionServicios();
+            renderSelectoresEspecialistas();
         });
     });
 
@@ -122,6 +142,63 @@ document.addEventListener('DOMContentLoaded', () => {
         if (resumenPrecio) resumenPrecio.textContent = `$${totalPrecio}`;
 
         actualizarResumenDetalle(totalDuracion);
+    }
+
+    function renderSelectoresEspecialistas() {
+        if (!contenedorEspecialistas) return;
+
+        const serviciosSeleccionados = [];
+        document.querySelectorAll('input[name="servicios[]"]:checked').forEach(cb => {
+            serviciosSeleccionados.push(parseInt(cb.value));
+        });
+
+        // Limpiar contenedor, dejando solo el título "Especialistas"
+        contenedorEspecialistas.innerHTML = '<small style="font-family: var(--font-ui); font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted);">Especialistas</small>';
+
+        if (serviciosSeleccionados.length === 0) {
+            contenedorEspecialistas.innerHTML += '<p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">Selecciona un servicio para asignar especialistas.</p>';
+            return;
+        }
+
+        // Crear un select por cada servicio
+        serviciosSeleccionados.forEach(idServicio => {
+            const servicio = serviciosData[idServicio];
+            if (!servicio) return;
+
+            const div = document.createElement('div');
+            div.style.marginTop = '8px';
+
+            const label = document.createElement('small');
+            label.style.display = 'block';
+            label.style.marginBottom = '4px';
+            label.style.fontSize = '0.75rem';
+            label.style.color = 'var(--text-soft)';
+            label.textContent = `¿Quién hará ${servicio.nombre}?`;
+            
+            const select = document.createElement('select');
+            // Enviamos un arreglo con el ID del servicio y el ID del especialista
+            select.name = `trabajadores_por_servicio[${servicio.id}]`;
+            select.className = 'select-especialista';
+            select.required = true;
+            
+            select.innerHTML = '<option value="">Elige especialista...</option>';
+            
+            if (servicio.especialistas && servicio.especialistas.length > 0) {
+                servicio.especialistas.forEach(esp => {
+                    const option = document.createElement('option');
+                    option.value = esp.id;
+                    option.textContent = esp.nombre;
+                    select.appendChild(option);
+                });
+            } else {
+                select.innerHTML = '<option value="">No hay especialistas para este servicio</option>';
+                select.disabled = true;
+            }
+
+            div.appendChild(label);
+            div.appendChild(select);
+            contenedorEspecialistas.appendChild(div);
+        });
     }
 
     function sincronizarInputs() {
@@ -154,7 +231,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderCalendario();
     renderHoras();
-    actualizarSeleccionServicios(); // Inicializar resumen
+    actualizarSeleccionServicios();
+    renderSelectoresEspecialistas();
 
     const form = document.getElementById('form-reserva');
     if (form) {
@@ -162,10 +240,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!inputFecha?.value) { e.preventDefault(); alert('⚠️ Por favor selecciona una fecha.'); return false; }
             if (!inputHora?.value) { e.preventDefault(); alert('⚠️ Por favor selecciona una hora.'); return false; }
             
-            // Validar que se haya seleccionado al menos un servicio
             const serviciosSeleccionados = document.querySelectorAll('input[name="servicios[]"]:checked');
             if (serviciosSeleccionados.length === 0) {
                 e.preventDefault(); alert('⚠️ Por favor selecciona al menos un servicio.'); return false;
+            }
+
+            // Validar que se haya elegido especialista para cada servicio
+            const selects = contenedorEspecialistas.querySelectorAll('select');
+            for (let sel of selects) {
+                if (!sel.disabled && !sel.value) {
+                    e.preventDefault(); 
+                    alert('⚠️ Por favor selecciona un especialista para cada servicio.'); 
+                    return false;
+                }
             }
         });
     }

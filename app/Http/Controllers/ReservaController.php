@@ -27,8 +27,8 @@ class ReservaController extends Controller
             'duracion' => $servicio->duracion_minutos ?? 60,
         ];
 
-        // Servicios agrupados por especialidad
-        $serviciosAgrupados = Servicio::with('especialidad')
+        // Servicios agrupados por especialidad (Agregamos la relación especialistas)
+        $serviciosAgrupados = Servicio::with(['especialidad', 'especialistas'])
             ->get()
             ->groupBy(function ($item) {
                 return $item->especialidad ? $item->especialidad->nombre_especialidad : 'Otros Servicios';
@@ -48,35 +48,28 @@ class ReservaController extends Controller
      */
     public function store(Request $request)
     {
-        // Si el usuario eligió "aleatorio", resolver antes de validar
-        if ($request->trabajador_id === 'aleatorio') {
-            $trabajadorAleatorio = User::where('rol', 'trabajador')->inRandomOrder()->first();
-            if ($trabajadorAleatorio) {
-                $request->merge(['trabajador_id' => $trabajadorAleatorio->id]);
-            }
-        }
-
         // Validación
         $request->validate([
-            'servicios'     => 'required|array|min:1',
-            'servicios.*'   => 'exists:servicios,id',
-            'trabajador_id' => [
-                'required',
-                'integer',
-                Rule::exists('usuarios', 'id')->where('rol', 'trabajador'),
-            ],
-            'fecha'         => 'required|date|after_or_equal:today',
-            'hora'          => 'required',
+            'servicios'                     => 'required|array|min:1',
+            'servicios.*'                   => 'exists:servicios,id',
+            'trabajadores_por_servicio'     => 'required|array',
+            'trabajadores_por_servicio.*'   => 'integer|exists:usuarios,id',
+            'fecha'                         => 'required|date|after_or_equal:today',
+            'hora'                          => 'required',
         ]);
 
         // Servicios seleccionados y monto total
         $servicios = Servicio::whereIn('id', $request->servicios)->get();
         $montoTotal = $servicios->sum('precio');
 
+        // Guardamos el arreglo en una variable antes de usar reset() para evitar el error de PHP
+        $trabajadoresArray = $request->trabajadores_por_servicio;
+        $primerEspecialistaId = reset($trabajadoresArray);
+
         // Crear la cita principal
         $cita = Cita::create([
             'cliente_id'    => auth()->id(),
-            'trabajador_id' => $request->trabajador_id,
+            'trabajador_id' => $primerEspecialistaId, 
             'servicio_id'   => $servicios->first()->id,
             'cabina_id'     => null,
             'monto_total'   => $montoTotal,
@@ -85,13 +78,17 @@ class ReservaController extends Controller
             'estado'        => 'pendiente',
         ]);
 
-        // Guardar TODOS los servicios en la tabla intermedia
-        $cita->servicios()->attach($request->servicios);
+        // Guardar TODOS los servicios en la tabla intermedia (cita_servicio)
+        foreach ($trabajadoresArray as $servicioId => $especialistaId) {
+            $cita->servicios()->attach($servicioId, [
+                'trabajador_id' => $especialistaId
+            ]);
+        }
 
         // Redirigir al checkout de pago
         return redirect()
             ->route('checkout.view', ['cita_id' => $cita->id])
-            ->with('success', 'Cita apartada con múltiples servicios. Reporta tu pago para confirmarla.');
+            ->with('success', 'Cita apartada. Asignamos a tus especialistas seleccionados.');
     }
 
     /**
@@ -99,7 +96,8 @@ class ReservaController extends Controller
      */
     public function misReservas()
     {
-        $citas = Cita::with(['servicio', 'trabajador', 'pagos'])
+        // Agregamos 'servicios' para poder leer los especialistas de la tabla pivote
+        $citas = Cita::with(['servicio', 'trabajador', 'pagos', 'servicios'])
                     ->where('cliente_id', auth()->id())
                     ->orderBy('fecha', 'DESC')
                     ->get();

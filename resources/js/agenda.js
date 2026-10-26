@@ -92,7 +92,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const fecha    = btn.dataset.fecha;
             const hora     = btn.dataset.hora;
 
-            formCancelar.action = `/agenda/cita/${citaId}/cancelar`;
+            // 🔥 Usa la URL generada por Laravel en el HTML
+            formCancelar.action = btn.dataset.url;
+            
             cancelCliente.textContent  = cliente;
             cancelServicio.textContent = servicio;
             cancelFecha.textContent    = fecha;
@@ -118,9 +120,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 body: new FormData(formCancelar),
             });
+            
+            // Si la respuesta no es exitosa, atrapamos el error real
+            if (!res.ok) {
+                const errorText = await res.text();
+                console.error("Error del servidor:", errorText);
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    mostrarAlerta('Error', errorJson.message || errorJson.mensaje || 'Error en el servidor', 'error');
+                } catch (e) {
+                    mostrarAlerta('Error del servidor', 'Revisa la consola (F12) para ver el error.', 'error');
+                }
+                return;
+            }
+
             const data = await res.json();
 
-            if (!res.ok || !data.ok) {
+            if (!data.ok) {
                 mostrarAlerta('No se pudo cancelar', data.mensaje || 'Revisa el motivo.', 'error');
                 return;
             }
@@ -140,21 +156,25 @@ document.addEventListener('DOMContentLoaded', () => {
        ============================================================ */
     const modalEstado = document.getElementById('modal-cambiar-estado');
     let citaEstadoId  = null;
+    let citaEstadoUrl = null;
 
     document.querySelectorAll('[data-cambiar-estado]').forEach((btn) => {
         btn.addEventListener('click', () => {
-            citaEstadoId = btn.dataset.cita;
+            citaEstadoId  = btn.dataset.cita;
+            // 🔥 Guarda la URL generada por Laravel
+            citaEstadoUrl = btn.dataset.url; 
             modalEstado.showModal();
         });
     });
 
     document.querySelectorAll('.btn-estado-opcion').forEach((btn) => {
         btn.addEventListener('click', async () => {
-            if (!citaEstadoId) return;
+            if (!citaEstadoId || !citaEstadoUrl) return;
             const nuevoEstado = btn.dataset.estado;
 
             try {
-                const res = await fetch(`/agenda/cita/${citaEstadoId}/estado`, {
+                // 🔥 Usa la URL guardada
+                const res = await fetch(citaEstadoUrl, {
                     method: 'PATCH',
                     headers: {
                         'X-CSRF-TOKEN': csrfToken,

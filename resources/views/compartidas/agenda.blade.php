@@ -51,7 +51,6 @@
     /* ============================================================
        TIP DINÁMICO SEGÚN EL CLIMA
        ============================================================ */
-    // Normalizamos la descripción del clima (minúsculas, sin tildes)
     $estadoClima = strtolower($clima['desc'] ?? 'desconocido');
     $estadoClima = str_replace(
         ['á', 'é', 'í', 'ó', 'ú', 'ñ'],
@@ -59,9 +58,7 @@
         $estadoClima
     );
 
-    // Tips adaptados a las descripciones de OpenWeatherMap en español
     $tipsClima = [
-        // Cielo claro / soleado
         'cielo claro' => [
             'titulo' => 'Día Soleado',
             'texto'  => '"Hoy el sol está fuerte. Recuerda aplicar protector solar antes de tus citas y mantener la piel hidratada."'
@@ -70,8 +67,6 @@
             'titulo' => 'Día Soleado',
             'texto'  => '"Hoy el sol está fuerte. Recuerda aplicar protector solar antes de tus citas y mantener la piel hidratada."'
         ],
-        
-        // Pocas nubes / nubes dispersas
         'pocas nubes' => [
             'titulo' => 'Día Agradable',
             'texto'  => '"El clima es perfecto para consentirte. Aprovecha para hidratar bien tu piel antes de tus tratamientos."'
@@ -80,8 +75,6 @@
             'titulo' => 'Día Agradable',
             'texto'  => '"El clima es perfecto para consentirte. Aprovecha para hidratar bien tu piel antes de tus tratamientos."'
         ],
-        
-        // Nublado / muy nuboso / cielo cubierto
         'nubes' => [
             'titulo' => 'Día Nublado',
             'texto'  => '"Aunque no veas el sol, los rayos UV siguen presentes. No olvides tu protector solar diario."'
@@ -98,8 +91,6 @@
             'titulo' => 'Día Muy Nublado',
             'texto'  => '"El cielo está cubierto. Es un buen momento para consentirte con un tratamiento facial."'
         ],
-        
-        // Lluvia / llovizna
         'lluvia' => [
             'titulo' => 'Día de Lluvia',
             'texto'  => '"La humedad ambiental puede afectar tu piel. Usa productos ligeros y no olvides tu paraguas al salir."'
@@ -108,14 +99,10 @@
             'titulo' => 'Día de Llovizna',
             'texto'  => '"La humedad ambiental puede afectar tu piel. Usa productos ligeros y no olvides tu paraguas al salir."'
         ],
-        
-        // Tormenta
         'tormenta' => [
             'titulo' => 'Día de Tormenta',
             'texto'  => '"El clima está intenso. Si puedes, quédate en casa y aprovecha para una rutina de autocuidado."'
         ],
-        
-        // Niebla / neblina
         'niebla' => [
             'titulo' => 'Día con Niebla',
             'texto'  => '"La niebla puede resecar tu piel. Asegúrate de usar una buena crema hidratante antes de salir."'
@@ -124,21 +111,16 @@
             'titulo' => 'Día con Neblina',
             'texto'  => '"La neblina puede resecar tu piel. Asegúrate de usar una buena crema hidratante antes de salir."'
         ],
-        
-        // Nieve
         'nieve' => [
             'titulo' => 'Día de Nieve',
             'texto'  => '"El frío extremo puede dañar tu piel. Usa protector solar y una crema de barrera antes de salir."'
         ],
-        
-        // Fallback
         'default' => [
             'titulo' => 'Tip del Día',
             'texto'  => '"La belleza comienza con la piel bien hidratada. Recuerda beber suficiente agua durante tu jornada."'
         ]
     ];
 
-    // Buscamos la coincidencia más específica
     $tipSeleccionado = $tipsClima['default'];
     foreach ($tipsClima as $clave => $tip) {
         if ($clave !== 'default' && str_contains($estadoClima, $clave)) {
@@ -402,14 +384,19 @@
 
                                 <div class="cita-acciones">
                                     @if($puedeGestionar && !$cita->estaCancelada())
-                                        <button type="button" class="btn-cambiar-estado" data-cambiar-estado data-cita="{{ $cita->id }}" data-estado="{{ $cita->estado }}">
+                                        <!-- 🔥 AQUÍ SE AGREGA data-url -->
+                                        <button type="button" class="btn-cambiar-estado" data-cambiar-estado data-cita="{{ $cita->id }}" 
+                                                data-url="{{ route('agenda.cita.estado', $cita->id) }}" 
+                                                data-estado="{{ $cita->estado }}">
                                             <i data-lucide="refresh-cw" aria-hidden="true"></i>
                                             <span>Estado</span>
                                         </button>
                                     @endif
 
                                     @if($puedeCancelar && !$cita->estaCancelada())
+                                        <!-- 🔥 AQUÍ SE AGREGA data-url -->
                                         <button type="button" class="btn-declinar" data-declinar data-cita="{{ $cita->id }}"
+                                                data-url="{{ route('agenda.cita.cancelar', $cita->id) }}"
                                                 data-cliente="{{ $cita->cliente->nombre ?? 'Cliente' }}"
                                                 data-servicio="{{ $cita->servicio->nombre_servicio ?? 'Servicio' }}"
                                                 data-fecha="{{ \Carbon\Carbon::parse($cita->fecha)->locale('es')->translatedFormat('d \d\e F') }}"
