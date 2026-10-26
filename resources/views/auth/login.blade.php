@@ -8,169 +8,127 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
-
-    <!-- Script de seguridad de Google reCAPTCHA -->
+    
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    
+    @vite(['resources/css/auth.css', 'resources/js/auth.js'])
 
-    @vite(['resources/css/auth.css'])
-
+    <!-- Fondo de pantalla completa (Foto 1) -->
     <style>
         body {
-            background: linear-gradient(rgba(30, 35, 32, 0.75), rgba(30, 35, 32, 0.75)),
-            url("{{ asset('asset/img/parts/fdp.jpg') }}") center/cover no-repeat fixed !important;
-        }
-
-        .fondo-panel {
-            position: absolute;
-            top: -10%;
-            left: -10%;
-            width: 120%;
-            height: 120%;
-            background-position: center;
-            background-size: cover;
-            transition: opacity 0.8s ease-in-out;
-            z-index: 1;
-        }
-
-        .fondo-login {
-            background-image: url("{{ asset('asset/img/parts/imagen-login.jpg') }}");
-            opacity: 1;
-        }
-
-        .fondo-registro {
-            background-image: url("{{ asset('asset/img/parts/manicura-tradicional.jpg') }}");
-            opacity: 0;
-        }
-
-        .contenedor-formularios.activo .fondo-login {
-            opacity: 0;
-        }
-
-        .contenedor-formularios.activo .fondo-registro {
-            opacity: 1;
-        }
-
-        .capa-verde-filtro {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(163, 184, 153, 0.5), rgba(44, 53, 45, 0.65));
-            z-index: 2;
-        }
-
-        .panel-texto-registro,
-        .panel-texto-login {
-            z-index: 3;
-        }
-
-        .error-texto {
-            color: #d9534f;
-            font-size: 11px;
-            margin-top: -10px;
-            font-weight: 600;
-            display: block;
+            background: linear-gradient(rgba(30, 25, 22, 0.75), rgba(30, 25, 22, 0.75)), 
+                        url("{{ asset('asset/img/parts/fdp.jpg') }}") center/cover no-repeat fixed !important;
         }
     </style>
 </head>
 
 <body>
-
-    <div id="alerta-personalizada" class="alerta-oculta"></div>
-
-    <div class="contenedor-formularios" id="contenedor-principal">
+    <main class="contenedor-formularios" id="contenedor-principal">
 
         <!-- ============================================== -->
-        <!-- LADO IZQUIERDO: FORMULARIO DE INICIO DE SESIÓN -->
+        <!-- FORMULARIO DE INICIO DE SESIÓN                 -->
         <!-- ============================================== -->
-        <div class="tarjeta-login">
-            <div class="logo-header"> </div>
-            <h2>Bienvenida de vuelta</h2>
+        <section class="tarjeta-login" aria-labelledby="titulo-login">
+            <header class="logo-header"></header>
+            <h2 id="titulo-login">Bienvenida de vuelta</h2>
 
             <form method="POST" action="{{ route('login.post') }}" id="form-login">
                 @csrf
+                
+                <fieldset class="grupo-campos">
+                    <label for="correo-electronico">Correo electrónico</label>
+                    <input type="email" id="correo-electronico" name="email" placeholder="tu@correo.com" value="{{ old('email') }}" required autocomplete="email">
+                    @error('email') <span class="error-texto" role="alert">{{ $message }}</span> @enderror
 
-                <label for="correo-electronico">Correo electrónico</label>
-                <input type="email" id="correo-electronico" name="email" placeholder="tu@correo.com" value="{{ old('email') }}" required>
-                @error('email') <span class="error-texto">{{ $message }}</span> @enderror
-
-                <div class="password-header">
-                    <label for="clave">Contraseña</label>
-                    <a href="{{ route('passwordRequest.view') }}" class="link-olvido">¿Olvidaste tu contraseña?</a>
-                </div>
-                <div class="caja-input-clave">
-                    <input type="password" id="clave" name="password" placeholder="••••••••" required>
-                    <span class="btn-ver-clave" onclick="togglePassword('clave', this)">👁️</span>
-                </div>
-                @error('password') <span class="error-texto">{{ $message }}</span> @enderror
+                    <div class="password-header">
+                        <label for="clave">Contraseña</label>
+                        <a href="{{ route('passwordRequest.view') }}" class="link-olvido">¿Olvidaste tu contraseña?</a>
+                    </div>
+                    
+                    <div class="caja-input-clave">
+                        <input type="password" id="clave" name="password" placeholder="••••••••" required autocomplete="current-password">
+                        <button type="button" class="btn-ver-clave" aria-label="Mostrar contraseña">👁️</button>
+                    </div>
+                    @error('password') <span class="error-texto" role="alert">{{ $message }}</span> @enderror
+                </fieldset>
 
                 <button type="submit" class="button-aceptar">INICIAR SESIÓN</button>
+                
+                <!-- Botón móvil para cambiar a registro -->
+                <button type="button" class="btn-cambio-movil" id="btn-ir-registro">
+                    ¿No tienes cuenta? Regístrate
+                </button>
 
                 <div class="separador"><span>O ingresa con</span></div>
+                
                 <button type="button" class="btn-google">
-                    <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" alt="Google" width="16"> Google
+                    <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" alt="Logo de Google" width="16" height="16"> Google
                 </button>
             </form>
-        </div>
+        </section>
 
         <!-- ============================================== -->
-        <!-- LADO DERECHO: FORMULARIO DE REGISTRO           -->
+        <!-- FORMULARIO DE REGISTRO                         -->
         <!-- ============================================== -->
-        <div class="tarjeta-registro">
-            <div class="logo-header"> </div>
-            <h2>Crea tu cuenta</h2>
+        <section class="tarjeta-registro" aria-labelledby="titulo-registro">
+            <header class="logo-header"></header>
+            <h2 id="titulo-registro">Crea tu cuenta</h2>
 
             <form method="POST" action="{{ route('registro.create') }}" id="form-registro">
                 @csrf
+                
+                <fieldset class="grupo-campos">
+                    <label for="username">Nombre completo</label>
+                    <input type="text" id="username" name="username" placeholder="Ej: Anyel Daniel" value="{{ old('username') }}" required autocomplete="name">
+                    @error('username') <span class="error-texto" role="alert">{{ $message }}</span> @enderror
 
-                <label for="username">Nombre completo</label>
-                <input type="text" id="username" name="username" placeholder="Ej: Anyel Daniel" value="{{ old('username') }}" required>
-                @error('username') <span class="error-texto">{{ $message }}</span> @enderror
+                    <label for="telefono">Teléfono</label>
+                    <input type="tel" id="telefono" name="telefono" placeholder="Ej: 04121234567" value="{{ old('telefono') }}" required autocomplete="tel">
+                    @error('telefono') <span class="error-texto" role="alert">{{ $message }}</span> @enderror
 
-                <label for="telefono">Teléfono</label>
-                <input type="tel" id="telefono" name="telefono" placeholder="Ej: 04121234567" value="{{ old('telefono') }}" required>
-                @error('telefono') <span class="error-texto">{{ $message }}</span> @enderror
+                    <label for="email_reg">Correo electrónico</label>
+                    <input type="email" id="email_reg" name="email" placeholder="correo@ejemplo.com" value="{{ old('email') }}" required autocomplete="email">
+                    @error('email') <span class="error-texto" role="alert">{{ $message }}</span> @enderror
 
-                <label for="email_reg">Correo electrónico</label>
-                <input type="email" id="email_reg" name="email" placeholder="correo@ejemplo.com" value="{{ old('email') }}" required>
-                @error('email') <span class="error-texto">{{ $message }}</span> @enderror
-
-                <div class="grid-2-columnas">
-                    <div>
-                        <label for="password_reg">Contraseña</label>
+                    <div class="grid-2-columnas">
                         <div class="caja-input-clave">
-                            <input type="password" id="password_reg" name="password" placeholder="••••••••" required>
-                            <span class="btn-ver-clave" onclick="togglePassword('password_reg', this)">👁️</span>
+                            <label for="password_reg">Contraseña</label>
+                            <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="new-password">
+                            <button type="button" class="btn-ver-clave" aria-label="Mostrar contraseña">👁️</button>
+                        </div>
+                        <div class="caja-input-clave">
+                            <label for="confirm-password">Confirmar</label>
+                            <input type="password" id="confirm-password" name="confirmPassword" placeholder="••••••••" required autocomplete="new-password">
+                            <button type="button" class="btn-ver-clave" aria-label="Mostrar contraseña">👁️</button>
                         </div>
                     </div>
-                    <div>
-                        <label for="confirm-password">Confirmar</label>
-                        <div class="caja-input-clave">
-                            <input type="password" id="confirm-password" name="confirmPassword" placeholder="••••••••" required>
-                            <span class="btn-ver-clave" onclick="togglePassword('confirm-password', this)">👁️</span>
-                        </div>
+                    @error('password') <span class="error-texto" role="alert">{{ $message }}</span> @enderror
+
+                    <div class="caja-recaptcha">
+                        <div class="g-recaptcha" data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}"></div>
                     </div>
-                </div>
-                @error('password') <span class="error-texto">{{ $message }}</span> @enderror
+                    @error('captcha') <span class="error-texto" role="alert">{{ $message }}</span> @enderror
+                </fieldset>
 
-                <div class="caja-recaptcha">
-                    <div class="g-recaptcha" data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}"></div>
-                </div>
-                @error('captcha') <span class="error-texto">{{ $message }}</span> @enderror
+                <button type="submit" class="button-aceptar">REGISTRARME</button>
 
-                <button type="submit" class="button-aceptar" style="margin-top: 5px;">REGISTRARME</button>
+                <!-- Botón móvil para volver al login -->
+                <button type="button" class="btn-cambio-movil" id="btn-ir-login">
+                    ¿Ya tienes cuenta? Inicia Sesión
+                </button>
             </form>
-        </div>
+        </section>
 
         <!-- ============================================== -->
-        <!-- PANEL SUPERPUESTO DESLIZANTE                   -->
+        <!-- PANEL DESLIZANTE CON IMÁGENES (Foto 2)         -->
         <!-- ============================================== -->
-        <div class="panel-superpuesto" id="mi-panel">
-
-            <div class="fondo-panel fondo-login"></div>
-            <div class="fondo-panel fondo-registro"></div>
-            <div class="capa-verde-filtro"></div>
+        <aside class="panel-superpuesto" id="mi-panel">
+            
+            <!-- AQUÍ INYECTAMOS LAS IMÁGENES DENTRO DEL PANEL VERDE -->
+            <div class="fondo-panel fondo-login" style="background-image: url('{{ asset('asset/img/parts/imagen-login.jpg') }}');" aria-hidden="true"></div>
+            <div class="fondo-panel fondo-registro" style="background-image: url('{{ asset('asset/img/parts/manicura-tradicional.jpg') }}');" aria-hidden="true"></div>
+            
+            <div class="capa-verde-filtro" aria-hidden="true"></div>
 
             <div class="panel-texto-registro">
                 <h2>Un momento para ti.</h2>
@@ -183,49 +141,13 @@
                 <p>Accede a tu perfil para gestionar tus reservas y descubrir nuevas experiencias de relajación.</p>
                 <button type="button" class="btn-outline" id="btn-panel-login">Iniciar Sesión</button>
             </div>
-        </div>
+        </aside>
 
-    </div>
+    </main>
 
-    <script src="{{ asset('js/login.js') }}"></script>
-
-    @if($errors->has('username') || $errors->has('telefono') || $errors->has('captcha') || old('username'))
-    <script>
-        document.getElementById('contenedor-principal').classList.add('activo');
-    </script>
-    @endif
-
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <script>
-        document.getElementById('form-registro').addEventListener('submit', function() {
-            Swal.fire({
-                title: 'Creando tu cuenta...',
-                text: 'Estamos registrando tu perfil en The Beauty Room.',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-        });
-    </script>
-
+    <!-- Alerta de éxito de Laravel -->
     @if(session('success'))
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            Swal.fire({
-                icon: 'success',
-                title: '¡Cuenta creada con éxito!',
-                text: 'Ya eres parte de The Beauty Room. Por favor, inicia sesión con tus datos para comenzar a agendar tus citas.',
-                confirmButtonText: 'Iniciar Sesión',
-                confirmButtonColor: '#5A6B5D',
-                background: '#FFFFFF',
-                color: '#2C352D'
-            });
-        });
-    </script>
+        <div id="session-success" data-message="{{ session('success') }}" style="display: none;"></div>
     @endif
-
 </body>
 </html>

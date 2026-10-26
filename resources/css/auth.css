@@ -5,47 +5,54 @@
 ========================================= */
 body {
   font-family: 'Montserrat', sans-serif !important; 
-  margin: 0; 
-  min-height: 100vh; 
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-h1, h2 {
-  font-family: 'Playfair Display', serif !important; 
-  color: #2C352D; 
-  margin-top: 0;
-  margin-bottom: 25px;
-  text-align: center;
-  font-size: 34px;
-}
-
-/* =========================================
-        BACKGROUND Y ESTRUCTURA BASE
-========================================= */
-body {
-  font-family: 'Montserrat', sans-serif; 
-  /* Imagen de fondo de Spa con filtro oscuro integrado para resaltar la tarjeta */
-  background: linear-gradient(rgba(20, 30, 25, 0.6), rgba(20, 30, 25, 0.6)), 
+  background: linear-gradient(rgba(30, 25, 22, 0.85), rgba(30, 25, 22, 0.85)), 
   url('/asset/img/parts/fdp.jpg') center/cover no-repeat fixed;
   margin: 0; 
   min-height: 100vh; 
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 20px; 
+  box-sizing: border-box;
 }
 
-/* NOTA: .image-side y .form-side eliminados (eran del layout split antiguo,
-   reemplazado por el diseño con panel deslizante) */
+h1, h2 {
+  font-family: 'Playfair Display', serif !important; 
+  color: #2C221D; 
+  margin-top: 0;
+  margin-bottom: 25px;
+  text-align: center;
+  font-size: 34px;
+}
+
+/* Ocultar bordes por defecto del fieldset */
+fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Evitar fondo azul del navegador en inputs */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active{
+    -webkit-box-shadow: 0 0 0 30px #F8F6F4 inset !important;
+    -webkit-text-fill-color: #2C221D !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
 
 .contenedor-formularios {
   display: flex; 
   flex-direction: row; 
-  background-color: #FFFFFF; 
+  background-color: #F8F6F4; 
   border-radius: 20px; 
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3); 
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4); 
   width: 1000px;
+  max-width: 100%; 
   min-height: 600px;
   position: relative; 
   overflow: hidden; 
@@ -71,12 +78,11 @@ body {
 .tarjeta-login { left: 0; opacity: 1; visibility: visible; z-index: 2; }
 .tarjeta-registro { left: 0; opacity: 0; visibility: hidden; z-index: 1; }
 
-/* Identidad visual interna */
 .logo-header {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #B59B74;
+  color: #B59B74; 
   font-weight: 600;
   font-size: 11px;
   letter-spacing: 2px;
@@ -113,29 +119,29 @@ form input {
   border-radius: 8px; 
   font-size: 14px; 
   font-family: 'Montserrat', sans-serif;
-  background-color: #FAFAFA;
+  background-color: #F8F6F4; 
   transition: all 0.3s ease; 
-  color: #2C352D;
+  color: #2C221D;
 }
 
 form input::placeholder { color: #AFAFAF; }
 
 form input:focus {
   outline: none; 
-  border-color: #839788; 
-  box-shadow: 0 0 0 3px rgba(131, 151, 136, 0.15); 
+  border-color: #B59B74; 
+  box-shadow: 0 0 0 3px rgba(181, 155, 116, 0.15); 
   background-color: #FFFFFF;
 }
 
 .link-olvido {
-  color: #839788; 
+  color: #B59B74; 
   font-size: 12px; 
   text-decoration: none; 
   font-weight: 500; 
   transition: color 0.3s ease; 
 }
 
-.link-olvido:hover { color: #B59B74; }
+.link-olvido:hover { color: #2C221D; }
 
 .grid-2-columnas {
   display: grid;
@@ -148,7 +154,7 @@ form input:focus {
 ========================================= */
 .button-aceptar {
   padding: 14px 20px; 
-  background: linear-gradient(135deg, #5A6B5D, #2C352D); 
+  background: #2C221D; 
   color: #FFFFFF; 
   border: none; 
   border-radius: 8px; 
@@ -159,12 +165,12 @@ form input:focus {
   font-size: 13px;
   transition: all 0.3s ease; 
   margin-top: 10px;
-  box-shadow: 0 4px 15px rgba(44, 53, 45, 0.2);
+  box-shadow: 0 4px 15px rgba(44, 34, 29, 0.2);
 }
 
 .button-aceptar:hover {
-  background: linear-gradient(135deg, #6D8071, #3A463B); 
-  box-shadow: 0 8px 20px rgba(44, 53, 45, 0.35); 
+  background: #4a3b34; 
+  box-shadow: 0 8px 20px rgba(44, 34, 29, 0.35); 
   transform: translateY(-1px);
 }
 
@@ -188,7 +194,7 @@ form input:focus {
 
 .btn-google {
   background: #FFFFFF; 
-  color: #2C352D; 
+  color: #2C221D; 
   border: 1px solid #E5E2DC; 
   padding: 12px 20px; 
   border-radius: 8px; 
@@ -203,12 +209,12 @@ form input:focus {
 }
 
 .btn-google:hover {
-  background: #F9F9F9; 
-  border-color: #C0C0C0;
+  background: #F8F6F4; 
+  border-color: #B59B74;
 }
 
 /* =========================================
-    EL PANEL DESLIZANTE CON DEGRADADO
+    EL PANEL DESLIZANTE Y FONDOS
 ========================================= */
 .panel-superpuesto {
   position: absolute; 
@@ -223,13 +229,37 @@ form input:focus {
   box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
 }
 
-.panel-superpuesto::before {
-  content: '';
+/* IMÁGENES DE FONDO (Capa 1) */
+.fondo-panel {
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  z-index: -1;
+  top: -10%;
+  left: -10%;
+  width: 120%;
+  height: 120%;
+  background-position: center;
+  background-size: cover;
+  transition: opacity 0.8s ease-in-out;
+  z-index: 1; 
 }
 
+.fondo-login { opacity: 1; }
+.fondo-registro { opacity: 0; }
+
+.contenedor-formularios.activo .fondo-login { opacity: 0; }
+.contenedor-formularios.activo .fondo-registro { opacity: 1; }
+
+/* FILTRO VERDE (Capa 2) */
+.capa-verde-filtro {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(163, 184, 153, 0.5), rgba(44, 53, 45, 0.65));
+  z-index: 2; 
+}
+
+/* TEXTOS (Capa 3 - Encima de todo) */
 .panel-texto-registro, .panel-texto-login {
   display: flex; 
   flex-direction: column; 
@@ -242,24 +272,14 @@ form input:focus {
   box-sizing: border-box; 
   transition: all 0.6s ease; 
   text-align: center;
+  z-index: 3; 
 }
 
 .panel-texto-registro { opacity: 1; visibility: visible; }
 .panel-texto-login { opacity: 0; visibility: hidden; transform: translateX(50px); }
 
-.panel-superpuesto h2 {
-  color: #FFFFFF; 
-  margin-bottom: 20px;
-  font-size: 36px;
-}
-
-.panel-superpuesto p {
-  color: #F0F4F1; 
-  font-size: 15px; 
-  line-height: 1.7; 
-  margin-bottom: 35px; 
-  font-weight: 300;
-}
+.panel-superpuesto h2 { color: #FFFFFF; margin-bottom: 20px; font-size: 36px; }
+.panel-superpuesto p { color: #F0F4F1; font-size: 15px; line-height: 1.7; margin-bottom: 35px; font-weight: 300; }
 
 .btn-outline {
   background-color: transparent; 
@@ -275,37 +295,16 @@ form input:focus {
   transition: all 0.3s ease; 
 }
 
-.btn-outline:hover {
-  background-color: #FFFFFF; 
-  color: #5A6B5D; 
-}
+.btn-outline:hover { background-color: #FFFFFF; color: #2C221D; }
+
+.contenedor-formularios.activo .tarjeta-login { opacity: 0; visibility: hidden; transform: translateX(100%); }
+.contenedor-formularios.activo .tarjeta-registro { opacity: 1; visibility: visible; transform: translateX(100%); z-index: 5; }
+.contenedor-formularios.activo .panel-superpuesto { transform: translateX(-100%); border-radius: 0 150px 150px 0; }
+.contenedor-formularios.activo .panel-texto-registro { opacity: 0; visibility: hidden; transform: translateX(-50px); }
+.contenedor-formularios.activo .panel-texto-login { opacity: 1; visibility: visible; transform: translateX(0); }
 
 /* =========================================
-        ANIMACIÓN JS (CLASE ACTIVA)
-========================================= */
-.contenedor-formularios.activo .tarjeta-login {
-  opacity: 0; visibility: hidden; transform: translateX(100%);
-}
-
-.contenedor-formularios.activo .tarjeta-registro {
-  opacity: 1; visibility: visible; transform: translateX(100%); z-index: 5;
-}
-
-.contenedor-formularios.activo .panel-superpuesto {
-  transform: translateX(-100%); 
-  border-radius: 0 150px 150px 0; 
-}
-
-.contenedor-formularios.activo .panel-texto-registro {
-  opacity: 0; visibility: hidden; transform: translateX(-50px);
-}
-
-.contenedor-formularios.activo .panel-texto-login {
-  opacity: 1; visibility: visible; transform: translateX(0);
-}
-
-/* =========================================
-                CONTRASEÑAS
+                CONTRASEÑAS Y RECAPTCHA
 ========================================= */
 .caja-input-clave { position: relative; width: 100%; }
 .caja-input-clave input { width: 100%; box-sizing: border-box; padding-right: 40px; }
@@ -313,84 +312,130 @@ form input:focus {
 .btn-ver-clave {
   position: absolute; right: 12px; top: 50%; transform: translateY(-50%); 
   cursor: pointer; font-size: 16px; user-select: none; transition: transform 0.2s ease;
-  filter: grayscale(100%) opacity(0.5);
+  filter: grayscale(100%) opacity(0.5); background: transparent; border: none;
 }
 
-.btn-ver-clave:hover {
-  transform: translateY(-50%) scale(1.1); filter: grayscale(0) opacity(1);
-}
+.btn-ver-clave:hover { transform: translateY(-50%) scale(1.1); filter: grayscale(0) opacity(1); }
+
+.caja-recaptcha { width: 100%; overflow: hidden; margin-top: 5px; border-radius: 8px; }
+.caja-recaptcha > div { transform: scale(1.115); transform-origin: 0 0; }
+
+.error-texto { color: #d9534f; font-size: 11px; margin-top: -5px; font-weight: 600; display: block; }
 
 /* =========================================
-   RECAPTCHA (Escalado al 100% del form)
+   ESTILOS PARA LA TARJETA DE RECUPERACIÓN
 ========================================= */
-.caja-recaptcha {
+.tarjeta-unica {
+  background-color: #F8F6F4;
+  border-radius: 20px;
+  padding: 50px;
   width: 100%;
-  overflow: hidden;
-  margin-top: 5px;
-  border-radius: 8px;
+  max-width: 450px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.caja-recaptcha > div {
-  transform: scale(1.115);
-  transform-origin: 0 0;
-}
+.tarjeta-unica form { width: 100%; }
+.tarjeta-unica h2 { font-size: 28px; margin-bottom: 10px; }
+.tarjeta-unica p { text-align: center; font-size: 13px; color: #727A74; margin-bottom: 25px; line-height: 1.6; }
+.mensaje-exito { color: #588157; font-weight: 600; font-size: 13px; margin-bottom: 15px; text-align: center; }
 
 /* =========================================
-   ESTÉTICA SPA PARA ALERTAS (SWEETALERT2)
+   NUEVO BOTÓN EXCLUSIVO PARA MÓVILES
 ========================================= */
-.swal2-popup {
-  font-family: 'Montserrat', sans-serif !important;
-  background-color: #FCFBF9 !important;
-  border-radius: 16px !important;
-  padding: 30px !important;
-  box-shadow: 0 20px 40px rgba(30, 35, 32, 0.25) !important;
-  border: 1px solid #E5E2DC !important;
+.btn-cambio-movil { display: none; }
+
+/* =========================================
+   MEDIA QUERIES (RESPONSIVE MEJORADO)
+========================================= */
+@media (max-width: 992px) {
+  .contenedor-formularios { width: 90%; min-height: 550px; }
+  .panel-superpuesto h2 { font-size: 28px; }
+  .panel-superpuesto p { font-size: 14px; }
+  .tarjeta-login, .tarjeta-registro { padding: 30px; }
 }
 
-.swal2-title {
-  font-family: 'Playfair Display', serif !important;
-  color: #2C352D !important;
-  font-size: 26px !important;
-  font-weight: 600 !important;
+@media (max-width: 768px) {
+  body {
+    /* Fondo adaptado a móvil */
+    background: linear-gradient(rgba(30, 25, 22, 0.9), rgba(30, 25, 22, 0.9)), 
+                url('/asset/img/parts/fdp.jpg') center/cover no-repeat fixed;
+    align-items: flex-start; /* Permite scroll natural */
+    padding: 20px 10px; /* Reducimos el padding exterior */
+  }
+
+  .contenedor-formularios { 
+    flex-direction: column; 
+    width: 100%; /* Aprovecha mejor el ancho */
+    min-height: auto; 
+    border-radius: 16px;
+  }
+
+  /* Ajustes para que los formularios fluyan con el scroll */
+  .tarjeta-login, .tarjeta-registro { 
+    position: relative; 
+    width: 100%; 
+    height: auto; 
+    padding: 35px 25px; /* Más espacio interno en móvil */
+    opacity: 1; 
+    visibility: visible; 
+    transform: none !important; 
+  }
+  
+  .tarjeta-registro { display: none; }
+  .contenedor-formularios.activo .tarjeta-login { display: none; }
+  .contenedor-formularios.activo .tarjeta-registro { display: flex; }
+  .panel-superpuesto { display: none; }
+
+  /* Botón para cambiar entre login y registro */
+  .btn-cambio-movil {
+    display: block;
+    width: 100%;
+    margin-top: 15px;
+    padding: 14px;
+    background: transparent;
+    color: #2C221D;
+    border: 1px solid #E5E2DC;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    box-sizing: border-box;
+  }
+  
+  .btn-cambio-movil:hover { background: #F8F6F4; border-color: #B59B74; color: #B59B74; }
+
+  /* Ajustes para los campos de contraseña en registro */
+  .grid-2-columnas {
+    grid-template-columns: 1fr; /* Pasan a estar uno debajo del otro */
+    gap: 15px; /* Mayor separación */
+  }
+
+  /* Ajustes de la tarjeta de recuperación */
+  .tarjeta-unica { 
+    padding: 35px 25px; 
+    width: 100%; 
+    max-width: 100%;
+    border-radius: 16px;
+  }
+  .tarjeta-unica h2 { font-size: 26px; }
+  .tarjeta-unica p { font-size: 13px; }
+
+  /* Ajuste de inputs para que se sientan más cómodos en pantalla táctil */
+  form input {
+    padding: 16px;
+    font-size: 15px; 
+  }
 }
 
-.swal2-html-container {
-  font-family: 'Montserrat', sans-serif !important;
-  color: #5C665E !important;
-  font-size: 14px !important;
-  line-height: 1.6 !important;
-}
-
-.swal2-loader {
-  border-color: #5A6B5D transparent #5A6B5D transparent !important;
-}
-
-.swal2-confirm {
-  background: linear-gradient(135deg, #5A6B5D, #2C352D) !important;
-  color: #FFFFFF !important;
-  border-radius: 8px !important;
-  font-family: 'Montserrat', sans-serif !important;
-  font-weight: 600 !important;
-  font-size: 13px !important;
-  letter-spacing: 1px !important;
-  text-transform: uppercase !important;
-  padding: 12px 28px !important;
-  box-shadow: 0 4px 15px rgba(44, 53, 45, 0.2) !important;
-  transition: all 0.3s ease !important;
-}
-
-.swal2-confirm:hover {
-  background: linear-gradient(135deg, #6D8071, #3A463B) !important;
-  transform: translateY(-1px) !important;
-}
-
-.swal2-icon.swal2-success {
-  border-color: #839788 !important;
-  color: #5A6B5D !important;
-}
-.swal2-icon.swal2-success [class^='swal2-success-line'] {
-  background-color: #5A6B5D !important;
-}
-.swal2-icon.swal2-success .swal2-success-ring {
-  border: 0.25em solid rgba(131, 151, 136, 0.3) !important;
+@media (max-width: 480px) {
+  h1, h2 { font-size: 26px; }
+  .button-aceptar { padding: 14px; font-size: 13px; }
+  .caja-recaptcha > div { transform: scale(0.85); transform-origin: 0 0; }
 }

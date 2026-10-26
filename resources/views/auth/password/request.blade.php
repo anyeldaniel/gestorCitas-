@@ -13,28 +13,13 @@
     
     <!-- Mantenemos el script de reCAPTCHA -->
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-    
+
+    <!-- Forzar la imagen de fondo usando el helper asset() de Laravel -->
     <style>
         body {
-            background: linear-gradient(rgba(30, 35, 32, 0.75), rgba(30, 35, 32, 0.75)), 
-                        url("{{ asset('asset/img/parts/fondodepantalla.jpg') }}") center/cover no-repeat fixed !important;
+            background: linear-gradient(rgba(30, 25, 22, 0.85), rgba(30, 25, 22, 0.85)), 
+                        url("{{ asset('asset/img/parts/fdp.jpg') }}") center/cover no-repeat fixed !important;
         }
-        .tarjeta-unica {
-            background-color: #FFFFFF;
-            border-radius: 20px;
-            padding: 50px;
-            width: 100%;
-            max-width: 450px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .tarjeta-unica form { width: 100%; }
-        .tarjeta-unica h2 { font-size: 28px; margin-bottom: 10px; }
-        .tarjeta-unica p { text-align: center; font-size: 13px; color: #727A74; margin-bottom: 25px; line-height: 1.6; }
-        .mensaje-exito { color: #588157; font-weight: 600; font-size: 13px; margin-bottom: 15px; text-align: center; }
-        .error-texto { color: #d9534f; font-size: 11px; margin-top: 5px; font-weight: 600; display: block; }
     </style>
 </head>
 <body>
@@ -56,15 +41,14 @@
             @csrf
             
             <label for="email">Correo electrónico</label>
-            <!-- Usamos name="email" o "correo" dependiendo de lo que espere tu PasswordController -->
-            <input type="email" id="email" name="email" placeholder="tu@correo.com" required style="margin-bottom: 15px;">
+            <input type="email" id="email" name="email" placeholder="tu@correo.com" required>
             @error('email') <span class="error-texto">{{ $message }}</span> @enderror
 
             <!-- Contenedor del reCAPTCHA -->
-            <div class="g-recaptcha" data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}" style="margin-bottom: 15px; display: flex; justify-content: center;"></div>
+            <div class="g-recaptcha" data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}" style="margin-top: 5px; display: flex; justify-content: center;"></div>
             @error('captcha') <span class="error-texto" style="text-align: center;">{{ $message }}</span> @enderror
 
-            <button type="submit" class="button-aceptar" style="margin-top: 10px;">ENVIAR ENLACE</button>
+            <button type="submit" class="button-aceptar">ENVIAR ENLACE</button>
         </form>
 
         <div style="margin-top: 25px;">

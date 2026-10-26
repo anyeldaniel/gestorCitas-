@@ -1,22 +1,53 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const passwordInput = document.getElementById('password');
-    const emailInput = document.getElementById('email'); // 1. Capturamos el campo del correo
-    const feedbackBox = document.getElementById('password-feedback');
-    const registerForm = document.getElementById('registerForm'); 
+    // --- 1. LÓGICA PARA CAMBIAR ENTRE LOGIN Y REGISTRO ---
+    const contenedor = document.getElementById('contenedor-principal');
+    const btnPanelRegistro = document.getElementById('btn-panel-registro');
+    const btnPanelLogin = document.getElementById('btn-panel-login');
+    const btnIrRegistro = document.getElementById('btn-ir-registro');
+    const btnIrLogin = document.getElementById('btn-ir-login');
+
+    if (btnPanelRegistro) btnPanelRegistro.addEventListener('click', () => contenedor.classList.add('activo'));
+    if (btnIrRegistro) btnIrRegistro.addEventListener('click', () => contenedor.classList.add('activo'));
     
-    const reqLength = document.getElementById('length-req');
-    const reqAlpha = document.getElementById('alpha-req');
-    const reqSpecial = document.getElementById('special-req');
-    const strengthText = document.getElementById('strength-text');
+    if (btnPanelLogin) btnPanelLogin.addEventListener('click', () => contenedor.classList.remove('activo'));
+    if (btnIrLogin) btnIrLogin.addEventListener('click', () => contenedor.classList.remove('activo'));
+
+
+    // --- 2. LÓGICA DEL OJITO PARA VER CONTRASEÑA ---
+    const botonesVerClave = document.querySelectorAll('.btn-ver-clave');
+    botonesVerClave.forEach(boton => {
+        boton.addEventListener('click', function() {
+            const input = this.previousElementSibling;
+            if (input.type === 'password') {
+                input.type = 'text';
+                this.style.filter = 'grayscale(0) opacity(1)';
+            } else {
+                input.type = 'password';
+                this.style.filter = 'grayscale(100%) opacity(0.5)';
+            }
+        });
+    });
+
+
+    // --- 3. VALIDACIÓN DE CONTRASEÑA Y CORREO (Tu código original) ---
+    const passwordInput = document.getElementById('password');
+    const emailInput = document.getElementById('correo-electronico'); // Ajustado al ID de tu login
+    const registerForm = document.getElementById('form-registro'); 
 
     let isPasswordValid = false;
 
-    // --- Validación dinámica de la contraseña ---
     if (passwordInput) {
         passwordInput.addEventListener('input', function() {
             const pwd = passwordInput.value;
             
-            feedbackBox.style.display = pwd.length > 0 ? 'block' : 'none';
+            // Si tienes los elementos de feedback en el HTML, esta parte los actualizará
+            const reqLength = document.getElementById('length-req');
+            const reqAlpha = document.getElementById('alpha-req');
+            const reqSpecial = document.getElementById('special-req');
+            const strengthText = document.getElementById('strength-text');
+            const feedbackBox = document.getElementById('password-feedback');
+
+            if(feedbackBox) feedbackBox.style.display = pwd.length > 0 ? 'block' : 'none';
 
             const hasLetters = /[a-zA-Z]/.test(pwd);
             const hasNumbers = /[0-9]/.test(pwd);
@@ -24,6 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const isLongEnough = pwd.length >= 8;
 
             const updateRequirement = (element, isValid, text) => {
+                if(!element) return;
                 element.style.color = isValid ? '#198754' : '#dc3545';
                 element.innerHTML = isValid ? `✓ ${text}` : `✗ ${text}`;
             };
@@ -34,40 +66,73 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (isLongEnough && hasLetters && hasNumbers && hasSpecial) {
                 isPasswordValid = true; 
-                strengthText.textContent = 'Estado: Contraseña Muy Segura';
-                strengthText.style.color = '#198754';
+                if(strengthText) {
+                    strengthText.textContent = 'Estado: Contraseña Muy Segura';
+                    strengthText.style.color = '#198754';
+                }
             } else {
                 isPasswordValid = false; 
-                strengthText.textContent = 'Estado: Contraseña Poco Segura';
-                strengthText.style.color = '#dc3545';
+                if(strengthText) {
+                    strengthText.textContent = 'Estado: Contraseña Poco Segura';
+                    strengthText.style.color = '#dc3545';
+                }
             }
         });
     }
 
-    // --- Muro de seguridad al intentar enviar el formulario ---
     if (registerForm) {
         registerForm.addEventListener('submit', function(event) {
-            
-            // 1. Validar el Correo Electrónico
-            const emailValue = emailInput.value.trim();
-            // Expresión regular para asegurar que tenga estructura de correo real
+            const emailValue = emailInput ? emailInput.value.trim() : '';
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; 
 
             if (emailValue === '' || !emailRegex.test(emailValue)) {
-                event.preventDefault(); // Detiene el envío al servidor
-                emailInput.style.border = '2px solid #dc3545'; // Pinta el borde rojo
-                emailInput.focus(); // Regresa el cursor al correo
-                return; // Corta la ejecución aquí para que el usuario lo arregle primero
+                event.preventDefault(); 
+                if(emailInput) {
+                    emailInput.style.border = '2px solid #dc3545';
+                    emailInput.focus();
+                }
+                return; 
             } else {
-                emailInput.style.border = ''; // Restaura el borde a su estado normal si está bien
+                if(emailInput) emailInput.style.border = ''; 
             }
 
-            // 2. Validar la Contraseña (si el correo está bien, pasa a revisar esto)
             if (!isPasswordValid) {
                 event.preventDefault(); 
-                feedbackBox.style.display = 'block';
-                passwordInput.focus();
+                if(passwordInput) passwordInput.focus();
             }
         });
+    }
+
+    // --- 4. ALERTAS DE SWEETALERT2 (Lógica movida aquí) ---
+    if (typeof Swal !== 'undefined') {
+        // Alerta de carga
+        if (registerForm) {
+            registerForm.addEventListener('submit', function() {
+                // Solo mostrar el loading si la validación previa pasó (no está prevenida)
+                setTimeout(() => {
+                    Swal.fire({
+                        title: 'Creando tu cuenta...',
+                        text: 'Estamos registrando tu perfil en The Beauty Room.',
+                        allowOutsideClick: false,
+                        showConfirmButton: false,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+                }, 10);
+            });
+        }
+
+        // Alerta de éxito
+        const successDiv = document.getElementById('session-success');
+        if (successDiv) {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Cuenta creada con éxito!',
+                text: 'Ya eres parte de The Beauty Room. Por favor, inicia sesión con tus datos para comenzar a agendar tus citas.',
+                confirmButtonText: 'Iniciar Sesión',
+                confirmButtonColor: '#5A6B5D',
+                background: '#FFFFFF',
+                color: '#2C352D'
+            });
+        }
     }
 });

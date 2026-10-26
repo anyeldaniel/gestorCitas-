@@ -100,5 +100,11 @@ class User extends Authenticatable
     public function serviciosAsignados()
     {
         return $this->servicios();
+
+    }
+    
+    public function resenasRecibidas()
+    {
+        return $this->hasMany(Resena::class, 'terapeuta_id');
     }
 }

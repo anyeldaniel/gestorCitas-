@@ -290,8 +290,11 @@
      ============================================ -->
 
 <div id="modal-resena-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 99999; align-items: center; justify-content: center;">
-    
-    <form id="form-resena" method="POST" action="{{ route('resenas.store') }}" style="background: #fff; padding: 2rem; border-radius: 16px; width: 90%; max-width: 400px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+   
+    <!-- CORRECCIÓN AQUÍ: Se usa 0 como ID temporal y se reemplaza dinámicamente al enviar -->
+    <form id="form-resena" method="POST" action="{{ route('resenas.store', 0) }}" 
+          onsubmit="this.action = this.action.replace('/0', '/' + document.getElementById('resena-cita-id').value);" 
+          style="background: #fff; padding: 2rem; border-radius: 16px; width: 90%; max-width: 400px; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
         @csrf
         <input type="hidden" name="cita_id" id="resena-cita-id">
         <input type="hidden" name="puntuacion" id="resena-puntuacion" value="0">
