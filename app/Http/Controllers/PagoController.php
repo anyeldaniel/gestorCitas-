@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cita;
 use App\Models\Pago;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -51,12 +52,10 @@ class PagoController extends Controller
 
     /**
      * Mostrar la pantalla de cobro al cliente.
-     *
-     * Todos los cálculos viven aquí, la vista solo pinta.
      */
     public function checkout(int $cita_id): View|RedirectResponse
     {
-        $cita = Cita::with(['servicio', 'trabajador'])->findOrFail($cita_id);
+        $cita = Cita::with(['servicios', 'trabajador', 'servicio'])->findOrFail($cita_id);
 
         // Seguridad: solo el dueño de la cita puede pagarla
         if ($cita->cliente_id !== auth()->id()) {
@@ -70,7 +69,38 @@ class PagoController extends Controller
                 ->withErrors(['error' => 'Esta cita ya fue procesada.']);
         }
 
-        // ---- Cálculos que antes estaban en la vista ----
+        // ---- Lógica para Múltiples Servicios y Especialistas ----
+        $especialistasIds = [];
+
+        if ($cita->relationLoaded('servicios') && $cita->servicios->isNotEmpty()) {
+            $servicios = $cita->servicios;
+            $nombreServicio = $servicios->pluck('nombre_servicio')->join(' + ');
+            $duracionTotal = $servicios->sum('duracion_minutos');
+            
+            // Recopilar los IDs de los especialistas desde la tabla pivote
+            foreach ($servicios as $s) {
+                if (isset($s->pivot->trabajador_id) && $s->pivot->trabajador_id) {
+                    $especialistasIds[] = $s->pivot->trabajador_id;
+                }
+            }
+        } else {
+            $servicios = collect([$cita->servicio]);
+            $nombreServicio = $cita->servicio->nombre_servicio ?? 'Servicio Spa';
+            $duracionTotal = $cita->servicio->duracion_minutos ?? 60;
+        }
+
+        // Si no se encontraron especialistas en el pivote, usamos el principal de la cita
+        if (empty($especialistasIds) && $cita->trabajador) {
+            $especialistasIds[] = $cita->trabajador->id;
+        }
+
+        // Buscamos los nombres de los especialistas en el modelo User
+        $especialistas = collect();
+        if (!empty($especialistasIds)) {
+            $especialistas = User::whereIn('id', array_unique($especialistasIds))->pluck('nombre');
+        }
+
+        // ---- Cálculos de montos ----
         $porcentaje     = $cita->servicio->porcentaje_abono ?? 10;
         $montoTotal     = (float) $cita->monto_total;
         $montoAbono     = round($montoTotal * $porcentaje / 100, 2);
@@ -81,13 +111,16 @@ class PagoController extends Controller
 
         return view('clientes.checkout', compact(
             'cita',
+            'servicios',
+            'nombreServicio',
+            'duracionTotal',
+            'especialistas',
             'porcentaje',
             'montoTotal',
             'montoAbono',
             'montoRestante',
             'fecha',
             'hora',
-            'nombreServicio',
         ));
     }
 
@@ -104,12 +137,10 @@ class PagoController extends Controller
 
         $cita = Cita::with('servicio')->findOrFail($data['cita_id']);
 
-        // Seguridad: el usuario autenticado debe ser dueño de la cita
         if ($cita->cliente_id !== auth()->id()) {
             abort(403, 'No puedes pagar esta cita.');
         }
 
-        // Evitar doble pago (sin tocar el modelo: consultamos Pago directamente)
         $yaAprobado = Pago::where('cita_id', $cita->id)
             ->where('estado_pago', 'aprobado')
             ->exists();
@@ -120,7 +151,6 @@ class PagoController extends Controller
             ]);
         }
 
-        // ---- Validación según método ----
         if ($data['metodo_pago'] === 'c2p') {
             $request->validate([
                 'banco'    => 'required|string',
@@ -145,11 +175,9 @@ class PagoController extends Controller
             $request->validate(['referencia' => 'required|string|min:4']);
             $estadoPago = 'revision';
         } else {
-            // divisas_efectivo
             $estadoPago = 'revision';
         }
 
-        // ---- Persistencia atómica ----
         DB::transaction(function () use ($request, $cita, $data, $estadoPago) {
             Pago::create([
                 'cita_id'          => $cita->id,
@@ -174,9 +202,6 @@ class PagoController extends Controller
         return redirect()->route('clientes.reserva')->with('success', $mensaje);
     }
 
-    /**
-     * Alias de compatibilidad: flujo anterior con $citaId en la URL.
-     */
     public function procesar(Request $request, int $citaId): RedirectResponse
     {
         $request->merge(['cita_id' => $citaId]);
@@ -184,12 +209,6 @@ class PagoController extends Controller
         return $this->procesarPago($request);
     }
 
-    /**
-     * Simulación del "banco falso" para pruebas de C2P.
-     * Token "123456" → aprobado. Otros → rechazado.
-     *
-     * @return array{status: string, mensaje: string}
-     */
     private function simularApiC2P(string $banco, string $telefono, string $token): array
     {
         if ($token === '123456') {

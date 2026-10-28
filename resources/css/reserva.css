@@ -737,6 +737,7 @@ h1, h2, h3, h4, h5, h6 {
     flex-direction: column;
     gap: 0.4rem;
     min-width: 0;
+    width: 100%; /* Asegura ancho completo */
 }
 
 .campos-cliente small {
@@ -759,6 +760,8 @@ h1, h2, h3, h4, h5, h6 {
     transition: var(--transition);
     outline: none;
     height: 42px;
+    width: 100%; /* Fuerza el ancho completo */
+    min-width: 0; /* Evita que el input se desborde en grid */
 }
 
 .campos-cliente input:focus {
@@ -889,14 +892,31 @@ h1, h2, h3, h4, h5, h6 {
         border-bottom: 1px solid var(--border-light);
     }
     .columna-horas { grid-column: auto; border-bottom: none; }
-    .panel-footer { grid-template-columns: 1fr; gap: 1rem; }
-    .campos-cliente { grid-template-columns: 1fr; }
+    
+    /* Ajustes clave para el footer en móvil */
+    .panel-footer { 
+        grid-template-columns: 1fr; 
+        gap: 1rem; 
+        padding: 1.5rem 1rem; /* Un poco menos de padding para dar más espacio */
+    }
+    .campos-cliente { 
+        grid-template-columns: 1fr; 
+        width: 100%; /* Asegura que ocupe todo el ancho */
+    }
+    
+    /* El contenedor de especialistas debe ocupar todo el ancho en móvil */
+    .especialistas-container {
+        grid-column: span 1 !important; 
+        width: 100%;
+    }
+    
     .resumen-precio {
         justify-content: space-between;
         padding-left: 0;
         border-left: none;
         border-top: 1px solid var(--border-color);
         padding-top: 1rem;
+        width: 100%;
     }
     .resumen-info { text-align: left; }
     .btn-confirmar { width: 100%; justify-content: center; }
