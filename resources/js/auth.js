@@ -14,10 +14,20 @@ function togglePassword(inputId, iconElement) {
 
     if (input.type === 'password') {
         input.type = 'text';
-        if (iconElement) iconElement.style.filter = 'grayscale(0) opacity(1)';
+        // Cambiamos el ícono a ojo tachado y aplicamos el color oscuro
+        if (iconElement) {
+            iconElement.innerHTML = '<i data-lucide="eye-off"></i>';
+            iconElement.style.filter = 'grayscale(0) opacity(1)';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
     } else {
         input.type = 'password';
-        if (iconElement) iconElement.style.filter = 'grayscale(100%) opacity(0.5)';
+        // Volvemos al ícono de ojo normal y lo atenuamos
+        if (iconElement) {
+            iconElement.innerHTML = '<i data-lucide="eye"></i>';
+            iconElement.style.filter = 'grayscale(100%) opacity(0.5)';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
     }
 }
 
@@ -39,11 +49,29 @@ document.addEventListener('DOMContentLoaded', function () {
     const btnIrRegistro = document.getElementById('btn-ir-registro');
     const btnIrLogin = document.getElementById('btn-ir-login');
 
+    // Botones móviles agregados
+    const btnMovilARegistro = document.getElementById('btn-movil-a-registro');
+    const btnMovilALogin = document.getElementById('btn-movil-a-login');
+
     if (btnPanelRegistro) btnPanelRegistro.addEventListener('click', () => contenedor.classList.add('activo'));
     if (btnIrRegistro) btnIrRegistro.addEventListener('click', () => contenedor.classList.add('activo'));
+    if (btnMovilARegistro) {
+        btnMovilARegistro.addEventListener('click', (e) => {
+            e.preventDefault();
+            contenedor.classList.add('activo');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
 
     if (btnPanelLogin) btnPanelLogin.addEventListener('click', () => contenedor.classList.remove('activo'));
     if (btnIrLogin) btnIrLogin.addEventListener('click', () => contenedor.classList.remove('activo'));
+    if (btnMovilALogin) {
+        btnMovilALogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            contenedor.classList.remove('activo');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
 
 
     // =============================================
@@ -56,10 +84,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (input.type === 'password') {
                 input.type = 'text';
+                this.innerHTML = '<i data-lucide="eye-off"></i>';
                 this.style.filter = 'grayscale(0) opacity(1)';
+                if (typeof lucide !== 'undefined') lucide.createIcons();
             } else {
                 input.type = 'password';
+                this.innerHTML = '<i data-lucide="eye"></i>';
                 this.style.filter = 'grayscale(100%) opacity(0.5)';
+                if (typeof lucide !== 'undefined') lucide.createIcons();
             }
         });
     });

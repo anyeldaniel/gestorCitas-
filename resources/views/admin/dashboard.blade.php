@@ -96,7 +96,13 @@
             <div class="dash-panel-body" id="lista-recepcionistas">
                 @forelse($recepcionistas as $recep)
                 <article class="dash-user-row" data-id="{{ $recep->id }}">
-                    <div class="dash-avatar">{{ substr($recep->nombre, 0, 2) }}</div>
+                    <div class="dash-avatar">
+                        @if($recep->foto && file_exists(public_path('storage/' . $recep->foto)))
+                            <img src="{{ asset('storage/' . $recep->foto) }}" alt="{{ $recep->nombre }}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                        @else
+                            {{ substr($recep->nombre, 0, 2) }}
+                        @endif
+                    </div>
                     <div class="dash-user-info">
                         <div class="dash-user-name">
                             <h4>{{ $recep->nombre }}</h4>
@@ -148,7 +154,13 @@
             <div class="dash-panel-body" id="lista-especialistas">
                 @forelse($trabajadores as $trab)
                 <article class="dash-user-row" data-id="{{ $trab->id }}">
-                    <div class="dash-avatar">{{ substr($trab->nombre, 0, 2) }}</div>
+                    <div class="dash-avatar">
+                        @if($trab->foto && file_exists(public_path('storage/' . $trab->foto)))
+                            <img src="{{ asset('storage/' . $trab->foto) }}" alt="{{ $trab->nombre }}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                        @else
+                            {{ substr($trab->nombre, 0, 2) }}
+                        @endif
+                    </div>
                     <div class="dash-user-info">
                         <div class="dash-user-name">
                             <h4>{{ $trab->nombre }}</h4>
@@ -170,7 +182,7 @@
                         </div>
                     </div>
                     <div class="dash-actions">
-                        <button class="dash-btn-action" onclick="Syncro.editEsp({{ $trab->id }})">Editar</button>
+                        <button class="dash-btn-action" onclick="Syncro.editEsp({{ $trab->id }}, '{{ addslashes($trab->nombre) }}', '{{ $trab->correo }}', '{{ $trab->telefono ?? '' }}', '{{ addslashes($trab->especialidades ?? '') }}', '{{ addslashes($trab->descripcion ?? '') }}')">Editar</button>
                         <button class="dash-btn-action dash-btn-action--danger" onclick="Syncro.delEsp({{ $trab->id }})">Eliminar</button>
                     </div>
                 </article>

@@ -18,22 +18,26 @@
 
 <body class="body-registro">
     
+    <!-- Contenedor maestro de dos columnas con altura fluida -->
     <div class="caja-registro-maestra">
         
-        <!-- LADO IZQUIERDO: FOTO -->
+        <!-- LADO IZQUIERDO: FOTO (Estiramiento fluido junto al formulario) -->
         <div class="registro-foto">
             <div class="capa-verde-filtro"></div>
             <div class="registro-texto">
                 <h2>The Beauty Room</h2>
                 <p>Accede a tu perfil para gestionar tus reservas y descubrir nuevas experiencias de relajación.</p>
-                <a href="{{ route('login.view') }}" class="btn-outline">Iniciar Sesión</a>
+                <a href="{{ route('login.view') }}" class="btn-outline">INICIAR SESIÓN</a>
             </div>
         </div>
 
-        <!-- LADO DERECHO: FORMULARIO -->
+        <!-- LADO DERECHO: FORMULARIO (Sin scroll interno, crece de forma natural) -->
         <div class="registro-formulario">
             <div class="registro-scroll">
-                <h2 class="registro-titulo">Crea tu cuenta</h2>
+                <div class="cabecera-formulario">
+                    <span class="subtitulo-experiencia">comienza tu experiencia</span>
+                    <h2 class="registro-titulo">Crea tu cuenta</h2>
+                </div>
 
                 <form method="POST" action="{{ route('registro.create') }}" id="form-registro" class="registro-form">
                     @csrf
@@ -48,55 +52,62 @@
                         </div>
                     @endif
 
-                    <label for="username">Nombre completo</label>
-                    <input type="text" id="username" name="username" placeholder="Ej: Anyel Daniel" value="{{ old('username') }}" required autocomplete="name">
-                    @error('username') <span class="error-texto">{{ $message }}</span> @enderror
+                    <div class="campo-completo">
+                        <label for="username">NOMBRE COMPLETO</label>
+                        <input type="text" id="username" name="username" placeholder="Ej: Elena Martínez" value="{{ old('username') }}" required>
+                        @error('username') <span class="error-texto">{{ $message }}</span> @enderror
+                    </div>
                     
-                    <label for="telefono">Teléfono</label>
-                    <input type="tel" id="telefono" name="telefono" placeholder="Ej: 04121234567" value="{{ old('telefono') }}" required autocomplete="tel">
-                    @error('telefono') <span class="error-texto">{{ $message }}</span> @enderror
-
-                    <label for="email_reg">Correo electrónico</label>
-                    <input type="email" id="email_reg" name="email" placeholder="correo@ejemplo.com" value="{{ old('email') }}" required autocomplete="email">
-                    @error('email') <span class="error-texto">{{ $message }}</span> @enderror
+                    <div class="grid-2-columnas">
+                        <div class="campo-completo">
+                            <label for="telefono">TELÉFONO</label>
+                            <input type="tel" id="telefono" name="telefono" placeholder="(+57) 300 123 4567" value="{{ old('telefono') }}" required>
+                            @error('telefono') <span class="error-texto">{{ $message }}</span> @enderror
+                        </div>
+                        <div class="campo-completo">
+                            <label for="email_reg">CORREO ELECTRÓNICO</label>
+                            <input type="email" id="email_reg" name="email" placeholder="valentina@gmail.com" value="{{ old('email') }}" required>
+                            @error('email') <span class="error-texto">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
 
                     <div class="grid-2-columnas">
-                        <div>
-                            <label for="password_reg">Contraseña</label>
+                        <div class="campo-completo">
+                            <label for="password_reg">CONTRASEÑA</label>
                             <div class="caja-input-clave">
-                                <input type="password" id="password_reg" name="password" placeholder="••••••••" required autocomplete="new-password">
-                                <button type="button" class="btn-ver-clave" onclick="togglePassword('password_reg', this)">👁️</button>
+                                <input type="password" id="password_reg" name="password" placeholder="........" required>
+                                <button type="button" class="btn-ver-clave" onclick="togglePassword('password_reg', this)">
+                                    <i data-lucide="eye"></i>
+                                </button>
                             </div>
                         </div>
-                        <div>
-                            <label for="confirm-password">Confirmar</label>
+                        <div class="campo-completo">
+                            <label for="confirm-password">CONFIRMAR</label>
                             <div class="caja-input-clave">
-                                <input type="password" id="confirm-password" name="confirmPassword" placeholder="••••••••" required autocomplete="new-password">
-                                <button type="button" class="btn-ver-clave" onclick="togglePassword('confirm-password', this)">👁️</button>
+                                <input type="password" id="confirm-password" name="confirmPassword" placeholder="........" required>
+                                <button type="button" class="btn-ver-clave" onclick="togglePassword('confirm-password', this)">
+                                    <i data-lucide="eye"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
-                    @error('password') <span class="error-texto">{{ $message }}</span> @enderror
 
-                    <div id="password-feedback" class="feedback-total">
+                    <div id="password-feedback" class="feedback-total" style="display: none;">
                         <span id="length-req"></span><br>
                         <span id="alpha-req"></span><br>
-                        <span id="special-req"></span><br>
-                        <span id="strength-text"></span>
+                        <span id="special-req"></span>
                     </div>
+                    <div id="strength-text"></div>
 
                     <div class="caja-recaptcha">
                         <div class="g-recaptcha" data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}"></div>
                     </div>
                     @error('captcha') <span class="error-texto">{{ $message }}</span> @enderror
 
-                    <button type="submit" class="button-aceptar" style="margin-top: 15px;">REGISTRARME</button>
+                    <button type="submit" class="button-aceptar">REGISTRARME</button>
                 </form>
             </div>
         </div>
-
     </div>
-
-    <div id="auth-config" data-success="{{ session('success') ? '1' : '0' }}" data-force-register="0" style="display:none;"></div>
 </body>
 </html>

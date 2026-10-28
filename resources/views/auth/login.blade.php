@@ -109,11 +109,14 @@
                 <button type="button" class="btn-google">
                     <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" alt="Google" width="16"> Google
                 </button>
+
+                <!-- BOTÓN MÓVIL: Cambiar al registro desde el login -->
+                <button type="button" class="btn-cambio-movil" id="btn-movil-a-registro">Crear cuenta nueva</button>
             </form>
         </div>
 
         <!-- ============================================== -->
-        <!-- LADO DERECHO: FORMULARIO DE REGISTRO           -->
+        <!-- LADO DERECHO: FORMULARIO DE REGISTRO          -->
         <!-- ============================================== -->
         <div class="tarjeta-registro">
             <div class="logo-header">
@@ -171,10 +174,8 @@
 
                 <button type="submit" class="button-aceptar" style="margin-top: 5px;">REGISTRARME</button>
 
-                <p class="register-link" style="text-align:center; font-size:12px; color:#727A74; margin-top:10px;">
-                    ¿Ya tienes cuenta?
-                    <a href="{{ route('login.view') }}" style="color:#B59B74; font-weight:600;">Inicia sesión aquí</a>
-                </p>
+                <!-- BOTÓN MÓVIL: Volver al login desde el registro -->
+                <button type="button" class="btn-cambio-movil" id="btn-movil-a-login">¿Ya tienes cuenta? Inicia sesión</button>
             </form>
         </div>
 

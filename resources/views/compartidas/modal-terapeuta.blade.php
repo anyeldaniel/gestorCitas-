@@ -13,6 +13,9 @@
         
         <!-- ✅ CAMPO OCULTO PARA EL MÉTODO (POST o PUT) -->
         <input type="hidden" name="_method" id="terapeuta_method" value="POST">
+        
+        <!-- ✅ CAMPO OCULTO PARA SABER DESDE QUÉ VISTA SE GUARDA -->
+        <input type="hidden" name="origen" id="form-origen" value="dashboard">
 
         <!-- FOTO -->
         <fieldset class="campo-formulario">

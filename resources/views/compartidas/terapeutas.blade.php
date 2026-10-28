@@ -44,6 +44,13 @@
         </div>
     </header>
 
+    {{-- ✅ MENSAJE DE ÉXITO --}}
+    @if(session('success'))
+    <div class="alert-success-spa" style="margin-bottom: 1.5rem; padding: 1rem; background: #d1fae5; color: #065f46; border-radius: 8px; border: 1px solid #a7f3d0;">
+        <strong>¡Éxito!</strong> {{ session('success') }}
+    </div>
+    @endif
+
     {{-- Contador de resultados --}}
     <p id="buscador-resultados" class="buscador-resultados" aria-live="polite" hidden></p>
 
