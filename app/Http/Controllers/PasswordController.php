@@ -12,31 +12,26 @@ class PasswordController extends Controller
 {
     public function VerifiCorreo(Request $request)
     {
-
-
         // 1. Verificamos si el usuario olvidó marcar la casilla
-         if (!$request->input('g-recaptcha-response')) {
-         return back()
-        ->withErrors(['captcha' => 'Por favor, marca la casilla de "No soy un robot".'])
-        ->withInput();
-                }
+        if (!$request->input('g-recaptcha-response')) {
+            return back()
+                ->withErrors(['captcha' => 'Por favor, marca la casilla de "No soy un robot".'])
+                ->withInput();
+        }
 
-// 2. Enviamos el código secreto a Google para verificar que sea un humano real
-     $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
-     'secret' => env('RECAPTCHA_SECRET_KEY'),
-     'response' => $request->input('g-recaptcha-response'),
-     'remoteip' => $request->ip(),
-                 ]);
+        // 2. Enviamos el código secreto a Google para verificar que sea un humano real
+        $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+            'secret' => env('RECAPTCHA_SECRET_KEY'),
+            'response' => $request->input('g-recaptcha-response'),
+            'remoteip' => $request->ip(),
+        ]);
 
-// 3. Si Google rechaza el código (es un bot o el tiempo expiró)
-          if (!$response->json('success')) {
-         return back()
-        ->withErrors(['captcha' => 'La validación del CAPTCHA falló. Intenta de nuevo.'])
-        ->withInput();
-                      }
-      
-
-
+        // 3. Si Google rechaza el código (es un bot o el tiempo expiró)
+        if (!$response->json('success')) {
+            return back()
+                ->withErrors(['captcha' => 'La validación del CAPTCHA falló. Intenta de nuevo.'])
+                ->withInput();
+        }
 
         $request->validate([ 
             'email' => 'required|email',
@@ -60,8 +55,6 @@ class PasswordController extends Controller
         return back()->with('status', 'Hemos enviado un enlace de restablecimiento a tu correo electrónico.');
     }
 
-
-
     public function resetPassword(Request $request)
     {
         $request->validate([
@@ -70,8 +63,6 @@ class PasswordController extends Controller
             'password' => 'required|confirmed|min:8',
             'password_confirmation' => 'required',
         ], [
-            
-            
             'email.required' => 'El correo es obligatorio.',
             'email.email' => 'El correo electrónico debe ser una dirección de correo válida.',
             'password.required' => 'La contraseña es obligatoria.',
@@ -80,16 +71,12 @@ class PasswordController extends Controller
             'password_confirmation.required' => 'La confirmación de la contraseña es obligatoria.',
         ]);
 
-
         $email = $request->input('email');
         $user = User::where('correo', $email)->first();
-
         
         if (! $user) {
             return back()->withErrors(['email' => 'El correo no está registrado en el sistema.'])->withInput();
         }
-
-
 
         $resetCredentials = $request->only('email', 'password', 'password_confirmation', 'token');
         $resetCredentials['correo'] = $resetCredentials['email'];
@@ -103,16 +90,13 @@ class PasswordController extends Controller
                 $user->save();
             }
         );
-
         
-    if ($status == Password::PASSWORD_RESET) {
-        // ¡Éxito! El token era válido y la clave se cambió.
-        return redirect('login')->with('status', '¡Tu contraseña ha sido actualizada con éxito!');
+        if ($status == Password::PASSWORD_RESET) {
+            // ¡Éxito! Redirigimos al login con el mensaje de éxito.
+            return redirect()->route('login.view')->with('status', '¡Tu nueva clave se ha creado con éxito!');
+        }
+
+        // Si falló (el token expiró, no coincide, etc.), lo devolvemos con error
+        return back()->withErrors(['email' => trans($status)])->withInput();
     }
-
-    // Si falló (el token expiró, no coincide, etc.), lo devolvemos con error
-    return back()->withErrors(['email' => trans($status)])->withInput();
-
-       
-}
 }

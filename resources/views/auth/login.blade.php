@@ -203,9 +203,11 @@
 
     </div>
 
-    <!-- Datos que el JS necesita (sin lógica, solo data-attributes) -->
+    <!-- ============================================== -->
+    <!-- DATOS QUE EL JS NECESITA (MODIFICADO AQUÍ)     -->
+    <!-- ============================================== -->
     <div id="auth-config"
-         data-success="{{ session('success') ? '1' : '0' }}"
+         data-success="{{ (session('success') || session('status')) ? '1' : '0' }}"
          data-force-register="{{ ($errors->has('username') || $errors->has('telefono') || $errors->has('captcha') || old('username')) ? '1' : '0' }}"
          style="display:none;"></div>
 

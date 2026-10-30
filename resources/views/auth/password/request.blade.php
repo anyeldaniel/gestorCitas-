@@ -9,12 +9,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
     
+    <!-- Tu CSS compilado por Vite -->
     @vite(['resources/css/auth.css'])
     
-    <!-- Mantenemos el script de reCAPTCHA -->
+    <!-- Script de reCAPTCHA (se mantiene porque es un CDN externo) -->
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
-    <!-- Forzar la imagen de fondo usando el helper asset() de Laravel -->
+    <!-- Forzar la imagen de fondo -->
     <style>
         body {
             background: linear-gradient(rgba(30, 25, 22, 0.85), rgba(30, 25, 22, 0.85)), 
@@ -24,8 +25,11 @@
 </head>
 <body>
 
-    <div class="tarjeta-unica">
-        <!-- Cambiado el icono a diamante (✦) para igualar al login/registro -->
+    <!-- Aquí pasamos el mensaje de sesión y el error al HTML usando atributos data-* -->
+    <div class="tarjeta-unica" 
+         data-session-status="{{ session('status') }}" 
+         data-error-message="{{ $errors->first() }}">
+        
         <div class="logo-header">
             <span class="estrellitas" style="font-size: 16px; line-height: 1;">✦</span>
             <small>RECUPERACIÓN</small>
@@ -33,11 +37,6 @@
         
         <h2>¿Olvidaste tu contraseña?</h2>
         <p>Ingresa tu correo electrónico y te enviaremos los pasos para crear una nueva.</p>
-
-        <!-- Mensaje de éxito de sesión -->
-        @if (session('status'))
-            <div class="mensaje-exito">{{ session('status') }}</div>
-        @endif
 
         <form id="forgot-password-form" method="POST" action="{{ route('password.email') }}">
             @csrf
@@ -58,5 +57,10 @@
         </div>
     </div>
 
+    <!-- CDN de SweetAlert2 (necesario para que auth.js pueda usarlo) -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Llamada a tu archivo JS compilado por Vite -->
+    @vite(['resources/js/auth.js'])
 </body>
 </html>

@@ -633,4 +633,67 @@ form input:focus {
     .contenedor-formularios {
         margin-bottom: 20px; /* Espacio antes del footer */
     }
+/* =========================================
+   ESTILOS ESPECÍFICOS PARA RESET PASSWORD
+========================================= */
+
+.tarjeta-unica .logo-header {
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.feedback-total {
+    margin-top: 10px;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+#strength-text {
+    font-weight: 600;
+    font-size: 12px;
+    margin-top: 8px;
+    display: block;
+}
+
+.link-volver {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 20px;
+    color: #B59B74;
+    font-size: 13px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.link-volver:hover {
+    color: #2C221D;
+}
+
+.btn-ver-clave {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    color: #AFAFAF;
+    transition: color 0.3s ease;
+}
+
+.btn-ver-clave:hover {
+    color: #2C221D;
+}
+
+.btn-ver-clave i {
+    width: 18px;
+    height: 18px;
+}
 }

@@ -1,12 +1,11 @@
 /**
  * auth.js — The Beauty Room
- * Toda la lógica de la vista de autenticación (login + registro).
- * El Blade no ejecuta JS: solo carga este archivo y pasa datos por data-attributes.
+ * Toda la lógica de la vista de autenticación (login + registro + reset + forgot).
  */
 
 // =============================================
 // FUNCIÓN GLOBAL: ojito para ver/ocultar contraseña
-// (el Blade la llama por onclick="togglePassword('id', this)")
+// (Exactamente como tu código original)
 // =============================================
 function togglePassword(inputId, iconElement) {
     const input = document.getElementById(inputId);
@@ -49,7 +48,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const btnIrRegistro = document.getElementById('btn-ir-registro');
     const btnIrLogin = document.getElementById('btn-ir-login');
 
-    // Botones móviles agregados
     const btnMovilARegistro = document.getElementById('btn-movil-a-registro');
     const btnMovilALogin = document.getElementById('btn-movil-a-login');
 
@@ -98,7 +96,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     // =============================================
-    // 3. VALIDACIÓN DE CONTRASEÑA EN VIVO
+    // 3. VALIDACIÓN DE CONTRASEÑA EN VIVO (REGISTRO)
     // =============================================
     const passwordInput = document.getElementById('password_reg');
     const emailInput = document.getElementById('email_reg');
@@ -169,10 +167,11 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!isPasswordValid) {
                 event.preventDefault();
                 if (passwordInput) passwordInput.focus();
-                return; // <-- IMPORTANTE: Evita que el SweetAlert de "Creando cuenta" salga si hay error
+                return; 
             }
         });
     }
+    
     // =============================================
     // 5. SWEETALERT2
     // =============================================
@@ -215,5 +214,88 @@ document.addEventListener('DOMContentLoaded', function () {
                 contenedor.classList.add('activo');
             }
         }
+
+        // 5c. NUEVA ALERTA: Recuperación de contraseña (Forgot Password)
+        const tarjetaForgot = document.querySelector('.tarjeta-unica');
+        
+        if (tarjetaForgot) {
+            if (tarjetaForgot.dataset.sessionStatus && tarjetaForgot.dataset.sessionStatus.trim() !== '') {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Enlace enviado!',
+                    text: tarjetaForgot.dataset.sessionStatus,
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#2C221D',
+                    background: '#F8F6F4',
+                    color: '#2C221D'
+                });
+            }
+        }
     }
+            // 5d. Contraseña restablecida con éxito (Reset Password)
+        const resetConfig = document.getElementById('reset-config');
+        
+        if (resetConfig && resetConfig.dataset.success === '1') {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Clave actualizada!',
+                text: resetConfig.dataset.message || 'Tu nueva clave se creó con éxito. Serás redirigido al login.',
+                confirmButtonText: 'Ir al Login',
+                confirmButtonColor: '#2C221D',
+                background: '#F8F6F4',
+                color: '#2C221D',
+                allowOutsideClick: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "{{ route('login.view') }}"; 
+                }
+            });
+        }
+
+    // =============================================
+    // 6. LÓGICA DE RESET PASSWORD (ESTADO DE LA NUEVA CLAVE)
+    // =============================================
+    const resetPasswordInput = document.getElementById('password');
+    
+    if (resetPasswordInput && document.getElementById('length-req')) {
+        resetPasswordInput.addEventListener('input', function() {
+            const pwd = this.value;
+
+            const reqLength = document.getElementById('length-req');
+            const reqAlpha = document.getElementById('alpha-req');
+            const reqSpecial = document.getElementById('special-req');
+            const strengthText = document.getElementById('strength-text');
+            const feedbackBox = document.getElementById('password-feedback');
+
+            if (feedbackBox) feedbackBox.style.display = pwd.length > 0 ? 'block' : 'none';
+
+            const hasLetters = /[a-zA-Z]/.test(pwd);
+            const hasNumbers = /[0-9]/.test(pwd);
+            const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(pwd);
+            const isLongEnough = pwd.length >= 8;
+
+            const updateRequirement = (element, isValid, text) => {
+                if (!element) return;
+                element.style.color = isValid ? '#198754' : '#dc3545';
+                element.innerHTML = isValid ? `✓ ${text}` : `✗ ${text}`;
+            };
+
+            updateRequirement(reqLength, isLongEnough, 'Mínimo 8 caracteres');
+            updateRequirement(reqAlpha, (hasLetters && hasNumbers), 'Alfanumérica (letras y números)');
+            updateRequirement(reqSpecial, hasSpecial, 'Un carácter especial (@, $, !, %, etc.)');
+
+            if (isLongEnough && hasLetters && hasNumbers && hasSpecial) {
+                if (strengthText) {
+                    strengthText.textContent = 'Estado: Contraseña Muy Segura';
+                    strengthText.style.color = '#198754';
+                }
+            } else {
+                if (strengthText) {
+                    strengthText.textContent = 'Estado: Contraseña Poco Segura';
+                    strengthText.style.color = '#dc3545';
+                }
+            }
+        });
+    }
+
 });
