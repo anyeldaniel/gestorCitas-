@@ -5,6 +5,22 @@
 document.addEventListener("DOMContentLoaded", function() {
     console.log('✅ Módulo de terapeutas cargado');
 
+    // --- LECTURA DE MENSAJES DE ÉXITO (SweetAlert) ---
+    // Esto atrapa el mensaje que Laravel envía al guardar o editar un especialista
+    const mensajeExito = document.getElementById("dashboard-mensaje-exito");
+    if (mensajeExito) {
+        const texto = mensajeExito.dataset.mensaje;
+        if (texto && typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Excelente!',
+                text: texto,
+                confirmButtonColor: '#8b5e3c',
+                confirmButtonText: 'Aceptar'
+            });
+        }
+    }
+
     const form = document.getElementById('form-terapeuta');
     if (form) {
         form.addEventListener('submit', function(e) {
@@ -395,8 +411,14 @@ window.editarTerapeutaDesdeDashboard = function(id, nombre, email, telefono, esp
     modal.showModal();
 };
 
+/**
+ * Eliminar especialista
+ * Usa fetch para mostrar SweetAlert y luego recargar la página.
+ */
 window.eliminarTerapeuta = function(id) {
     const modal = document.getElementById('modal-confirmacion-custom');
+    
+    // Fallback por si el modal de confirmación no existe en la vista actual
     if (!modal) {
         if (confirm('¿Estás seguro de eliminar este especialista?')) {
             const token = document.querySelector('input[name="_token"]')?.value || '';
@@ -411,9 +433,11 @@ window.eliminarTerapeuta = function(id) {
     }
 
     let nombreTerapeuta = '';
-    const tarjeta = document.querySelector(`.tarjeta-terapeuta[data-id="${id}"], .tarjeta-fila[data-id="${id}"]`);
+    const tarjeta = document.querySelector(`.tarjeta-terapeuta[data-id="${id}"], .tarjeta-fila[data-id="${id}"], .dash-user-row[data-id="${id}"]`);
     if (tarjeta) {
-        nombreTerapeuta = tarjeta.querySelector('.terapeuta-nombre')?.textContent.trim() || tarjeta.querySelector('.info-usuario h4')?.textContent.trim() || '';
+        nombreTerapeuta = tarjeta.querySelector('.terapeuta-nombre')?.textContent.trim() || 
+                          tarjeta.querySelector('.info-usuario h4')?.textContent.trim() || 
+                          tarjeta.querySelector('.dash-user-name h4')?.textContent.trim() || '';
     }
 
     const nombreTexto = nombreTerapeuta ? `"${nombreTerapeuta.toUpperCase()}"` : 'este especialista';
@@ -428,13 +452,55 @@ window.eliminarTerapeuta = function(id) {
 
     nuevoAceptar.onclick = function() {
         modal.close();
+        
         const token = document.querySelector('input[name="_token"]')?.value || '';
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `${getBaseUrl()}/admin/usuario/${id}`;
-        form.innerHTML = `<input type="hidden" name="_token" value="${token}"><input type="hidden" name="_method" value="DELETE">`;
-        document.body.appendChild(form);
-        form.submit();
+        const formData = new FormData();
+        formData.append('_token', token);
+        formData.append('_method', 'DELETE');
+
+        // Enviamos la petición con fetch
+        fetch(`${getBaseUrl()}/admin/usuario/${id}`, {
+            method: 'POST', // POST simulando DELETE por el _method
+            headers: {
+                'X-CSRF-TOKEN': token,
+                'Accept': 'application/json'
+            },
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Error al eliminar');
+            return response.json().catch(() => ({}));
+        })
+        .then(() => {
+            // Mostramos el SweetAlert de éxito
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Excelente!',
+                    text: 'Especialista eliminado correctamente del sistema.',
+                    confirmButtonColor: '#8b5e3c',
+                    confirmButtonText: 'Aceptar',
+                    allowOutsideClick: false
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                window.location.reload();
+            }
+        })
+        .catch(error => {
+            console.error(error);
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo eliminar al especialista. Intenta de nuevo.',
+                    confirmButtonColor: '#c53030'
+                });
+            } else {
+                alert('No se pudo eliminar al especialista.');
+            }
+        });
     };
 
     document.getElementById('btn-confirm-cancelar').onclick = function() { modal.close(); };
@@ -513,3 +579,28 @@ window.Syncro.editEsp = function(id, nombre, email, telefono, especialidades, de
     }
 };
 window.Syncro.delEsp = function(id) { if (typeof window.eliminarTerapeuta === 'function') window.eliminarTerapeuta(id); };
+// ============================================
+// VISOR DE FOTO COMPLETA (LIGHTBOX)
+// ============================================
+window.abrirVisorFoto = function(url, nombre) {
+    const visor = document.getElementById('visor-foto-terapeuta');
+    const imagen = document.getElementById('visor-foto-imagen');
+    const texto = document.getElementById('visor-foto-nombre');
+    
+    if (visor && imagen) {
+        imagen.src = url;
+        texto.textContent = nombre;
+        visor.showModal();
+    }
+};
+
+// Permitir cerrar con la tecla Escape
+document.addEventListener('DOMContentLoaded', () => {
+    const visor = document.getElementById('visor-foto-terapeuta');
+    if (visor) {
+        visor.addEventListener('cancel', (e) => {
+            e.preventDefault();
+            visor.close();
+        });
+    }
+});

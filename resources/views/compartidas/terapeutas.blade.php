@@ -44,11 +44,9 @@
         </div>
     </header>
 
-    {{-- ✅ MENSAJE DE ÉXITO --}}
+    {{-- ✅ MENSAJE DE ÉXITO OCULTO (El JS lo leerá para mostrar el SweetAlert) --}}
     @if(session('success'))
-    <div class="alert-success-spa" style="margin-bottom: 1.5rem; padding: 1rem; background: #d1fae5; color: #065f46; border-radius: 8px; border: 1px solid #a7f3d0;">
-        <strong>¡Éxito!</strong> {{ session('success') }}
-    </div>
+    <div id="dashboard-mensaje-exito" data-mensaje="{{ session('success') }}" style="display: none;"></div>
     @endif
 
     {{-- Contador de resultados --}}
@@ -69,23 +67,20 @@
         <article class="tarjeta-terapeuta"
                  data-id="{{ $terapeuta->id }}"
                  data-especialidades="{{ $terapeuta->especialidades ?? '' }}">
-
-            <!-- FOTO / PLACEHOLDER -->
-            <figure class="terapeuta-foto-contenedor">
-                @if($terapeuta->foto && file_exists(public_path('storage/' . $terapeuta->foto)))
-                    <img src="{{ asset('storage/' . $terapeuta->foto) }}" alt="Foto de {{ $terapeuta->nombre }}">
-                @else
-                    <div class="foto-avatar-simulado" aria-label="Sin imagen disponible">
-                        <svg class="icono-placeholder" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="3" width="18" height="18" rx="3"/>
-                            <circle cx="9" cy="9" r="2"/>
-                            <path d="M21 15l-5-5L5 21"/>
-                        </svg>
-                        <span class="texto-placeholder">Coloque imagen</span>
-                    </div>
-                @endif
-                <span class="indicador-estado disponible"></span>
-            </figure>
+          <!-- FOTO / PLACEHOLDER -->
+          <figure class="terapeuta-foto-contenedor">
+             @if($terapeuta->foto && file_exists(public_path('storage/' . $terapeuta->foto)))
+         <img src="{{ asset('storage/' . $terapeuta->foto) }}" 
+                   alt="Foto de {{ $terapeuta->nombre }}"
+                 style="cursor: zoom-in;"
+                 onclick="abrirVisorFoto('{{ asset('storage/' . $terapeuta->foto) }}', '{{ addslashes($terapeuta->nombre) }}')">
+            @else
+        <div class="foto-avatar-simulado" aria-label="Sin imagen disponible">
+            <!-- ... tu svg y texto ... -->
+          </div>
+             @endif
+               <span class="indicador-estado disponible"></span>
+          </figure>
 
             <!-- INFORMACIÓN -->
             <div class="terapeuta-info">
@@ -153,6 +148,18 @@
 
     <!-- MODAL COMPARTIDO -->
     @include('compartidas.modal-terapeuta', ['userRole' => $userRole ?? null])
+ 
+    <!-- VISOR DE FOTO (LIGHTBOX) -->
+<dialog id="visor-foto-terapeuta" style="border: none; background: transparent; padding: 0; outline: none; max-width: 100vw; max-height: 100vh; overflow: visible;">
+    <div style="position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);" onclick="document.getElementById('visor-foto-terapeuta').close()">
+        
+        <button type="button" style="position: absolute; top: 20px; right: 30px; background: none; border: none; color: white; font-size: 2.5rem; cursor: pointer;" onclick="document.getElementById('visor-foto-terapeuta').close()">&times;</button>
+        
+        <img id="visor-foto-imagen" src="" alt="Vista ampliada" style="max-width: 90vw; max-height: 85vh; object-fit: contain; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+        
+        <h3 id="visor-foto-nombre" style="color: white; margin-top: 1rem; font-family: var(--font-display); font-size: 1.5rem;"></h3>
+    </div>
+</dialog>
 
 </section>
 @endsection

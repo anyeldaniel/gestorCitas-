@@ -209,6 +209,11 @@
          data-force-register="{{ ($errors->has('username') || $errors->has('telefono') || $errors->has('captcha') || old('username')) ? '1' : '0' }}"
          style="display:none;"></div>
 
+    <!-- FOOTER SYNCROSTYLE -->
+    <footer class="footer-syncrostyle">
+        Sistema de Gestión Operativo <strong>SYNCROSTYLE</strong>
+    </footer>
+
     <!-- Único script: tu archivo JS externo -->
     <script src="{{ asset('js/auth.js') }}"></script>
 

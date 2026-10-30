@@ -109,5 +109,11 @@
             </div>
         </div>
     </div>
+
+    <!-- FOOTER SYNCROSTYLE -->
+    <footer class="footer-syncrostyle">
+        Sistema de Gestión Operativo <strong>SYNCROSTYLE</strong>
+    </footer>
+
 </body>
 </html>

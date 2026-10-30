@@ -540,6 +540,7 @@ form input:focus {
         grid-template-columns: 1fr; 
         gap: 12px; 
     } 
+    /* --- AJUSTES PARA LA TARJETA DE RECUPERACIÓN EN TABLET/MÓVIL --- */
     .tarjeta-unica { 
         padding: 35px 25px; 
         width: 100%; 
@@ -554,4 +555,82 @@ form input:focus {
     h1, h2 { font-size: 24px; } 
     .button-aceptar { padding: 13px; font-size: 13px; } 
     .caja-recaptcha > div { transform: scale(0.85); transform-origin: 0 0; } 
+    
+    /* --- AJUSTES EXTRA PARA LA TARJETA DE RECUPERACIÓN EN MÓVILES PEQUEÑOS --- */
+    .tarjeta-unica {
+        padding: 30px 20px;
+        border-radius: 12px;
+    }
+    .tarjeta-unica h2 {
+        font-size: 22px;
+    }
+    .tarjeta-unica p {
+        font-size: 12px;
+        margin-bottom: 20px;
+    }
+    /* Hacemos que el reCAPTCHA no se desborde en pantallas muy estrechas */
+    .g-recaptcha {
+        transform: scale(0.85);
+        transform-origin: 0 0;
+        margin-bottom: -10px; /* Compensa el espacio extra que deja el escalado */
+    }
+}
+/* =========================================
+   FOOTER SYNCROSTYLE
+========================================= */
+.footer-syncrostyle {
+    position: fixed;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #FFFFFF !important; 
+    text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.8); 
+    z-index: 9999;
+    pointer-events: none; 
+}
+
+.footer-syncrostyle strong {
+    font-weight: 700;
+    color: #FFFFFF !important;
+}
+
+/* Ajuste para que el texto sea blanco también en la vista de registro */
+.body-registro .footer-syncrostyle {
+    color: #FFFFFF !important;
+}
+.body-registro .footer-syncrostyle strong {
+    color: #FFFFFF !important;
+}
+
+/* =========================================
+   RESPONSIVE PARA EL FOOTER (Evitar superposición)
+========================================= */
+@media (max-width: 768px) { 
+    /* En móviles, el footer pasa a ser relativo (fluye al final de la página) */
+    .footer-syncrostyle {
+        position: relative;
+        bottom: auto;
+        margin-top: 30px;
+        margin-bottom: 20px;
+        padding: 0 15px;
+        font-size: 10px;
+        /* Mantenemos el blanco puro pero con una sombra más sutil para el fondo claro/oscuro */
+        text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.9); 
+    }
+
+    /* Ajuste específico para la vista de login en móvil */
+    body {
+        /* Aseguramos que el body sea flex en columna para que el footer baje */
+        flex-direction: column; 
+        justify-content: flex-start;
+    }
+    
+    .contenedor-formularios {
+        margin-bottom: 20px; /* Espacio antes del footer */
+    }
 }

@@ -25,10 +25,12 @@
 <body>
 
     <div class="tarjeta-unica">
+        <!-- Cambiado el icono a diamante (✦) para igualar al login/registro -->
         <div class="logo-header">
-            <span class="estrellitas">✨</span>
+            <span class="estrellitas" style="font-size: 16px; line-height: 1;">✦</span>
             <small>RECUPERACIÓN</small>
         </div>
+        
         <h2>¿Olvidaste tu contraseña?</h2>
         <p>Ingresa tu correo electrónico y te enviaremos los pasos para crear una nueva.</p>
 
