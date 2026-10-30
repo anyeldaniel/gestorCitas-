@@ -11,17 +11,50 @@
 
     <!-- HEADER -->
     <header class="terapeutas-header">
-        <div>
+        <div class="terapeutas-header-texto">
             <h1>Nuestros Terapeutas</h1>
             <p>Conoce al equipo profesional detrás de las experiencias exclusivas de The Beauty Room.</p>
         </div>
-        {{-- Solo admin puede registrar especialistas --}}
-        @if(auth()->check() && auth()->user()->rol === 'admin')
-        <button type="button" class="btn-terapeuta-agregar" onclick="abrirModalAgregar()">
-            <span class="icono-mas">+</span> Registrar Especialista
-        </button>
-        @endif
+
+        <div class="terapeutas-header-acciones">
+            <!-- Buscador -->
+            <div class="terapeutas-buscador">
+                <svg class="buscador-icono" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M17 11a6 6 0 1 1-12 0 6 6 0 0 1 12 0Z" />
+                </svg>
+                <input
+                    type="search"
+                    id="buscador-terapeutas"
+                    class="buscador-input"
+                    placeholder="Buscar por nombre o especialidad..."
+                    aria-label="Buscar terapeutas"
+                    autocomplete="off"
+                >
+                <button type="button" id="buscador-limpiar" class="buscador-limpiar" aria-label="Limpiar búsqueda" hidden>
+                    &times;
+                </button>
+            </div>
+
+            <!-- Botón Registrar (solo admin) -->
+            @if(auth()->check() && auth()->user()->rol === 'admin')
+            <button type="button" class="btn-terapeuta-agregar" onclick="abrirModalAgregar()">
+                <span class="icono-mas">+</span> Registrar Especialista
+            </button>
+            @endif
+        </div>
     </header>
+
+    {{-- Contador de resultados --}}
+    <p id="buscador-resultados" class="buscador-resultados" aria-live="polite" hidden></p>
+
+    {{-- Mensaje vacío --}}
+    <div id="buscador-sin-resultados" class="buscador-sin-resultados" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M17 11a6 6 0 1 1-12 0 6 6 0 0 1 12 0Z" />
+        </svg>
+        <p>No se encontraron terapeutas que coincidan con tu búsqueda.</p>
+        <small>Prueba con otro nombre o especialidad.</small>
+    </div>
 
     <!-- GRID DE TERAPEUTAS -->
     <main class="grid-terapeutas">
@@ -33,18 +66,10 @@
             <!-- FOTO / PLACEHOLDER -->
             <figure class="terapeuta-foto-contenedor">
                 @if($terapeuta->foto && file_exists(public_path('storage/' . $terapeuta->foto)))
-                    <img src="{{ asset('storage/' . $terapeuta->foto) }}"
-                         alt="Foto de {{ $terapeuta->nombre }}">
+                    <img src="{{ asset('storage/' . $terapeuta->foto) }}" alt="Foto de {{ $terapeuta->nombre }}">
                 @else
                     <div class="foto-avatar-simulado" aria-label="Sin imagen disponible">
-                        <svg class="icono-placeholder"
-                             xmlns="http://www.w3.org/2000/svg"
-                             viewBox="0 0 24 24"
-                             fill="none"
-                             stroke="currentColor"
-                             stroke-width="1.4"
-                             stroke-linecap="round"
-                             stroke-linejoin="round">
+                        <svg class="icono-placeholder" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="3" width="18" height="18" rx="3"/>
                             <circle cx="9" cy="9" r="2"/>
                             <path d="M21 15l-5-5L5 21"/>
@@ -67,9 +92,6 @@
 
                 <h2 class="terapeuta-nombre">{{ $terapeuta->nombre }}</h2>
 
-                {{-- ============================================
-                     ESTRELLAS DINÁMICAS (promedio real de reseñas)
-                     ============================================ --}}
                 @php
                     $promedio = $terapeuta->promedio ?? 0;
                     $totalResenas = $terapeuta->total_resenas ?? 0;

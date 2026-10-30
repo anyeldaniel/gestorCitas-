@@ -5,7 +5,17 @@
 @vite(['resources/css/reserva.css'])
 
 @section('content')
-<main class="modulo-reserva">
+<main class="modulo-reserva" id="modulo-reserva" 
+      data-especialistas="{{ json_encode($serviciosAgrupados->flatten()->map(function($s) {
+          return [
+              'id' => $s->id,
+              'nombre' => $s->nombre_servicio,
+              'especialistas' => $s->especialistas->map(function($e) {
+                  return ['id' => $e->id, 'nombre' => $e->nombre];
+              })
+          ];
+      })->keyBy('id')) }}"
+      data-success="{{ session('success') }}">
 
     <header class="reserva-header">
         <div class="reserva-header__left">
@@ -95,19 +105,19 @@
 
         <footer class="panel-footer">
             <div class="paso-footer"><span class="numero-footer">04</span><div><strong>Tus datos</strong><small>Para enviarte la confirmación</small></div></div>
+            
             <div class="campos-cliente">
                 <label><small>Nombre completo</small><input type="text" name="nombre" placeholder="Ej.María González" required></label>
                 <label><small>Correo electrónico</small><input type="email" name="email" placeholder="nombre@correo.com" required></label>
-                <label class="label-especialista">
-                    <small>Especialista</small>
-                    <select name="trabajador_id" required>
-                        <option value="">Selecciona un especialista</option>
-                        @foreach($terapeutas ?? [] as $t)
-                            <option value="{{ $t->id }}" {{ old('trabajador_id') == $t->id ? 'selected' : '' }}>{{ $t->nombre }}</option>
-                        @endforeach
-                    </select>
-                </label>
+                
+                {{-- CONTENEDOR DINÁMICO PARA ESPECIALISTAS --}}
+                <div class="especialistas-container" id="contenedor-especialistas" style="grid-column: span 2; display: flex; flex-direction: column; gap: 10px;">
+                    <small style="font-family: var(--font-ui); font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted);">Especialistas</small>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;" id="msg-especialistas">Selecciona un servicio para asignar especialistas.</p>
+                </div>
+                
             </div>
+            
             <div class="resumen-precio">
                 <div class="resumen-info">
                     <strong id="resumen-servicio">Ningún servicio</strong>
@@ -120,21 +130,5 @@
     </form>
 </main>
 @endsection
-
-@vite(['resources/js/reserva.js'])
-
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-@if(session('success'))
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        Swal.fire({
-            icon: 'success',
-            title: '¡Operación Exitosa!',
-            text: @json(session('success')),
-            confirmButtonColor: '#5A6B5D',
-            timer: 4500,
-            showConfirmButton: true,
-        });
-    });
-</script>
-@endif
+@vite(['resources/js/reserva.js'])

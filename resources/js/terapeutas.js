@@ -1,6 +1,5 @@
 /**
  * MÓDULO: Gestión de Terapeutas - Vista Pública y Dashboard
- * CORREGIDO: Rutas dinámicas para funcionar con o sin /public/
  */
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -27,6 +26,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // ✅ NUEVO: Asegurar que las estrellas se rendericen correctamente
     renderizarEstrellas();
+
+    // 🆕 NUEVO: Inicializar buscador de terapeutas
+    initBuscadorTerapeutas();
 });
 
 // ============================================
@@ -38,6 +40,131 @@ function getBaseUrl() {
         baseUrl += window.location.pathname.substring(0, window.location.pathname.indexOf('/public') + 7);
     }
     return baseUrl;
+}
+
+// ============================================
+// 🆕 NUEVO: BUSCADOR DE TERAPEUTAS
+// ============================================
+/**
+ * Filtra las tarjetas de terapeutas en tiempo real por nombre o especialidad.
+ * - Búsqueda insensible a mayúsculas y acentos.
+ * - Coincidencia por "contiene" (parcial).
+ * - Muestra contador de resultados y mensaje si no hay coincidencias.
+ */
+function initBuscadorTerapeutas() {
+    const input       = document.getElementById('buscador-terapeutas');
+    const limpiarBtn  = document.getElementById('buscador-limpiar');
+    const resultados  = document.getElementById('buscador-resultados');
+    const sinResult   = document.getElementById('buscador-sin-resultados');
+    const grid        = document.querySelector('.grid-terapeutas');
+
+    if (!input || !grid) return;
+
+    const tarjetas = Array.from(grid.querySelectorAll('.tarjeta-terapeuta'));
+    if (tarjetas.length === 0) return;
+
+    /**
+     * Normaliza una cadena: minúsculas, sin acentos, sin espacios extra.
+     */
+    function normalizar(texto) {
+        return (texto || '')
+            .toString()
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '') // quita tildes
+            .trim();
+    }
+
+    /**
+     * Pre-cachea los datos de cada tarjeta para búsquedas rápidas.
+     */
+    const datosTarjetas = tarjetas.map(tarjeta => {
+        const nombre = tarjeta.querySelector('.terapeuta-nombre')?.textContent || '';
+        const especialidades = tarjeta.dataset.especialidades || '';
+        // Unimos nombre + especialidades en un solo string normalizado
+        const buscar = normalizar(`${nombre} ${especialidades}`);
+        return { tarjeta, buscar, nombre, especialidades };
+    });
+
+    /**
+     * Aplica el filtro según el término de búsqueda.
+     */
+    function aplicarFiltro(termino) {
+        const q = normalizar(termino);
+        let visibles = 0;
+
+        datosTarjetas.forEach(({ tarjeta, buscar }) => {
+            const coincide = q === '' || buscar.includes(q);
+            if (coincide) {
+                tarjeta.classList.remove('is-hidden');
+                visibles++;
+            } else {
+                tarjeta.classList.add('is-hidden');
+            }
+        });
+
+        // Mostrar / ocultar botón limpiar
+        if (limpiarBtn) {
+            limpiarBtn.hidden = (q === '');
+        }
+
+        // Contador de resultados (solo si hay búsqueda activa)
+        if (resultados) {
+            if (q === '') {
+                resultados.hidden = true;
+                resultados.innerHTML = '';
+            } else {
+                resultados.hidden = false;
+                const total = datosTarjetas.length;
+                if (visibles === 0) {
+                    resultados.innerHTML = `Sin resultados para <strong>"${escaparHTML(termino)}"</strong>`;
+                } else {
+                    resultados.innerHTML = `Mostrando <strong>${visibles}</strong> de <strong>${total}</strong> especialistas`;
+                }
+            }
+        }
+
+        // Mensaje "sin resultados"
+        if (sinResult) {
+            sinResult.hidden = (visibles !== 0);
+        }
+    }
+
+    /**
+     * Escapa HTML para evitar inyección al mostrar el término buscado.
+     */
+    function escaparHTML(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    // --- Eventos ---
+    input.addEventListener('input', (e) => {
+        aplicarFiltro(e.target.value);
+    });
+
+    // Enter no debe enviar formulario (no hay form, pero por si acaso)
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            input.value = '';
+            aplicarFiltro('');
+            input.blur();
+        }
+    });
+
+    if (limpiarBtn) {
+        limpiarBtn.addEventListener('click', () => {
+            input.value = '';
+            aplicarFiltro('');
+            input.focus();
+        });
+    }
+
+    // Estado inicial: todo visible, contador oculto
+    aplicarFiltro('');
+
+    console.log('✅ Buscador de terapeutas inicializado con', tarjetas.length, 'tarjetas');
 }
 
 // ============================================
@@ -541,3 +668,17 @@ window.Syncro.delEsp = function(id) {
 };
 
 console.log('✅ Funciones de terapeutas cargadas correctamente');
+
+// Cuando se elimina un terapeuta desde el dashboard, el número de filas
+// cambia. Para que el paginador se recalcule correctamente, escuchamos
+// el evento submit de eliminación y refrescamos tras un pequeño delay.
+document.addEventListener('submit', function(e) {
+    const form = e.target;
+    if (form && form.querySelector('input[name="_method"][value="DELETE"]')) {
+        setTimeout(function() {
+            if (typeof window.refrescarPaginadoresDashboard === 'function') {
+                window.refrescarPaginadoresDashboard();
+            }
+        }, 300);
+    }
+});

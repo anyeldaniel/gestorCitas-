@@ -107,6 +107,10 @@
                 $enRevision = $proximaCita->pagos->where('estado_pago', 'revision')->sum('monto_anticipado');
                 $montoRestante = $proximaCita->monto_total - $totalPagado;
                 $estaPagado = $totalPagado >= $proximaCita->monto_total;
+
+                // NUEVAS VARIABLES PARA MULTI-SERVICIO
+                $nombresServicios = $proximaCita->servicios->pluck('nombre_servicio')->join(' + ');
+                $duracionTotal = $proximaCita->servicios->sum('duracion_minutos');
             @endphp
 
             <div class="cita-layout-grid">
@@ -163,7 +167,7 @@
                             </span>
                         </div>
 
-                        <h3 class="ticket-titulo">{{ $proximaCita->servicio->nombre_servicio ?? 'Tratamiento' }}</h3>
+                        <h3 class="ticket-titulo">{{ $nombresServicios ?: ($proximaCita->servicio->nombre_servicio ?? 'Tratamiento') }}</h3>
                         <p class="ticket-desc">{{ $descripcionServicio }}</p>
 
                         <div class="ticket-meta">
@@ -177,13 +181,24 @@
                                 </div>
                             </div>
                             
-                            <div class="meta-item">
-                                <span class="meta-icon">
+                            <div class="meta-item" style="grid-column: span 2; align-items: flex-start; margin-top: 5px; margin-bottom: 5px;">
+                                <span class="meta-icon" style="margin-top: 3px;">
                                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2"/></svg>
                                 </span>
-                                <div>
-                                    <small>ESPECIALISTA</small>
-                                    <strong>{{ $proximaCita->trabajador->nombre ?? 'Por asignar' }}</strong>
+                                <div style="width: 100%;">
+                                    <small>ESPECIALISTAS ASIGNADOS</small>
+                                    <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 5px;">
+                                        @foreach($proximaCita->servicios as $serv)
+                                            @php
+                                                $espId = $serv->pivot->trabajador_id;
+                                                $especialista = \App\Models\User::find($espId);
+                                            @endphp
+                                            <strong style="font-size: 0.85rem; color: var(--text-main); line-height: 1.3;">
+                                                {{ $especialista->nombre ?? 'Por asignar' }} <br>
+                                                <span style="font-weight: 500; font-size: 0.75rem; color: var(--text-muted);">({{ $serv->nombre_servicio }})</span>
+                                            </strong>
+                                        @endforeach
+                                    </div>
                                 </div>
                             </div>
 
@@ -192,8 +207,8 @@
                                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                                 </span>
                                 <div>
-                                    <small>DURACIÓN</small>
-                                    <strong>{{ $proximaCita->servicio->duracion_minutos ?? 60 }} minutos</strong>
+                                    <small>DURACIÓN TOTAL</small>
+                                    <strong>{{ $duracionTotal > 0 ? $duracionTotal : ($proximaCita->servicio->duracion_minutos ?? 60) }} minutos</strong>
                                 </div>
                             </div>
                         </div>
