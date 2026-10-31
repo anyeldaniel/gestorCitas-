@@ -13,6 +13,8 @@ use App\Http\Controllers\TerapeutaController;
 use App\Http\Controllers\SalaEsperaController;
 use App\Http\Controllers\PagoController;
 use App\Http\Controllers\ResenaController;
+use App\Http\Controllers\NotificacionController;
+
 
 // ==========================================
 //   ACCESO PÚBLICO Y AUTENTICACIÓN
@@ -64,6 +66,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/agenda/cita/{id}/cancelar', [AgendaController::class, 'cancelar'])
         ->name('agenda.cita.cancelar');
 
+    Route::get('/notificaciones/lista',      [NotificacionController::class, 'lista'])->name('notificaciones.lista');
+    Route::post('/notificaciones/{notificacion}/leer', [NotificacionController::class, 'marcarLeida'])->name('notificaciones.leer');
+    Route::post('/notificaciones/leer-todas',          [NotificacionController::class, 'marcarTodas'])->name('notificaciones.leerTodas');
     // ----------------------------------------------------------
 
     Route::get('/catalogo', [ServicioController::class, 'index'])->name('catalogo');

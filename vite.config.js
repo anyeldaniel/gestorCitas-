@@ -12,6 +12,7 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/js/layout.js',
                 'resources/js/bootstrap.js',
+                
 
                 // === Auth (login/registro/password) ===
                 'resources/css/auth.css',
@@ -26,6 +27,10 @@ export default defineConfig({
                 // === Agenda ===
                 'resources/css/agenda.css',
                 'resources/js/agenda.js',
+
+                // === Notificaciones ===
+                'resources/css/notificaciones.css',
+                'resources/js/notificaciones.js',
 
                 // === Terapeutas ===
                 'resources/css/terapeutas.css',

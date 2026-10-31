@@ -1,0 +1,241 @@
+/* =========================================
+   WIDGET BASE (La Campana)
+   ========================================= */
+.notif-widget { position: relative; }
+
+.notif-campana {
+    position: relative;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    padding: .5rem;
+    border-radius: 50%;
+    color: #fff;
+    transition: all .2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.notif-campana:hover { 
+    background: rgba(255, 255, 255, .15); 
+}
+.notif-campana svg { width: 20px; height: 20px; }
+
+/* =========================================
+   BADGE (Contador rojo)
+   ========================================= */
+.notif-badge {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    background: #ef4444; /* Rojo vibrante */
+    color: #fff;
+    border-radius: 999px;
+    font-size: .65rem;
+    padding: .15rem .35rem;
+    font-weight: 700;
+    line-height: 1;
+    min-width: 16px;
+    text-align: center;
+    border: 2px solid #8b5e3c; /* Hace que resalte sobre el header */
+    box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+
+/* =========================================
+   PANEL DESPLEGABLE (Contenedor principal)
+   ========================================= */
+.notif-panel {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 15px);
+    width: 360px;
+    max-height: 450px;
+    overflow-y: auto;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0,0,0,0.1);
+    z-index: 1000;
+    color: #1f2937;
+    animation: notifFade .2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes notifFade {
+    from { opacity: 0; transform: translateY(-5px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* =========================================
+   CABECERA DEL PANEL
+   ========================================= */
+.notif-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #f3f4f6;
+    position: sticky;
+    top: 0;
+    background: #ffffff;
+    z-index: 2;
+    border-radius: 16px 16px 0 0;
+}
+
+.notif-panel-header strong {
+    font-size: 1.05rem;
+    color: #111827;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.notif-btn-mini {
+    background: transparent;
+    border: 0;
+    color: #8b5e3c;
+    font-size: .8rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: opacity .2s;
+}
+.notif-btn-mini:hover { opacity: 0.7; }
+
+/* =========================================
+   LISTA E ITEMS
+   ========================================= */
+.notif-lista {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.notif-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #f9fafb;
+    cursor: pointer;
+    transition: background .2s;
+    position: relative;
+}
+
+.notif-item:hover { 
+    background: #f9fafb; 
+}
+
+/* Estilo para las no leídas */
+.notif-item.nueva { 
+    background: #fdf8f5; /* Un tono muy sutil del color del spa */
+}
+.notif-item.nueva:hover { 
+    background: #faeee6; 
+}
+
+/* Puntito indicador de "No leída" a la derecha */
+.notif-item.nueva::after {
+    content: '';
+    position: absolute;
+    right: 1.5rem;
+    top: 1.75rem;
+    width: 8px;
+    height: 8px;
+    background: #8b5e3c;
+    border-radius: 50%;
+}
+
+/* =========================================
+   ICONOS CON FONDO DE COLOR SUAVE
+   ========================================= */
+.notif-icono-wrapper {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Colores dinámicos que vienen desde el JS (n.color) */
+.notif-icono-wrapper.rojo    { background: #fee2e2; color: #ef4444; }
+.notif-icono-wrapper.verde   { background: #dcfce7; color: #22c55e; }
+.notif-icono-wrapper.azul    { background: #dbeafe; color: #3b82f6; }
+.notif-icono-wrapper.violeta { background: #f3e8ff; color: #a855f7; }
+.notif-icono-wrapper.gris    { background: #f3f4f6; color: #6b7280; }
+
+.notif-icono-wrapper svg { width: 18px; height: 18px; }
+
+/* =========================================
+   TEXTOS
+   ========================================= */
+.notif-contenido {
+    flex: 1;
+    min-width: 0;
+    padding-right: 1rem; /* Espacio para el puntito */
+}
+
+.notif-cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: .35rem;
+}
+
+.notif-cabecera strong {
+    font-size: .9rem;
+    color: #111827;
+    font-weight: 600;
+}
+
+.notif-tiempo {
+    font-size: .75rem;
+    color: #9ca3af;
+    white-space: nowrap;
+}
+
+.notif-mensaje {
+    font-size: .85rem;
+    margin: 0;
+    color: #4b5563;
+    line-height: 1.5;
+    /* Truncar texto a 2 líneas si es muy largo */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* ESTADO VACÍO */
+.notif-vacio {
+    padding: 3rem 1rem;
+    text-align: center;
+    color: #9ca3af;
+    font-size: .9rem;
+}
+
+/* =========================================
+   RESPONSIVE (MÓVIL)
+   ========================================= */
+@media (max-width: 768px) {
+    .notif-panel {
+        position: fixed;
+        right: 50%;
+        transform: translateX(50%);
+        top: 80px;
+        width: calc(100vw - 32px);
+        max-width: 400px;
+        max-height: calc(100vh - 120px);
+    }
+
+    .notif-widget-mobile {
+        display: flex;
+        justify-content: flex-end;
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    .notif-widget-mobile .notif-campana {
+        color: #8b5e3c;
+        background: #fff;
+        padding: 0.75rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,.1);
+    }
+}
