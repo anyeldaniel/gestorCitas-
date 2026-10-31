@@ -7,6 +7,7 @@ use App\Models\Cita;
 use App\Models\User;
 use Carbon\Carbon;
 use App\Services\WeatherService;
+use App\Services\NotificacionService;
 
 class AgendaController extends Controller
 {
@@ -181,6 +182,8 @@ class AgendaController extends Controller
         $cita->estado = $request->estado;
         $cita->save();
 
+        NotificacionService::cambioEstado($cita, $request->estado);
+
         return response()->json([
             'ok'       => true,
             'mensaje'  => 'Estado actualizado correctamente.',
@@ -207,9 +210,18 @@ class AgendaController extends Controller
 
         $cita = Cita::findOrFail($id);
 
+        // 👈 NUEVO: verificar también la tabla pivote cita_servicio
+        // (para multi-servicio, el trabajador puede no ser el $cita->trabajador_id principal)
+        $esTrabajadorDeLaCita = $user->rol === 'trabajador' && (
+            $cita->trabajador_id === $user->id ||
+            $cita->servicios()
+                ->wherePivot('trabajador_id', $user->id)
+                ->exists()
+        );
+
         $puedeCancelar =
             in_array($user->rol, ['admin', 'recepcion']) ||
-            ($user->rol === 'trabajador' && $cita->trabajador_id === $user->id);
+            $esTrabajadorDeLaCita;
 
         if (!$puedeCancelar) {
             return response()->json([
@@ -230,6 +242,8 @@ class AgendaController extends Controller
         $cita->cancelada_por       = $user->id;
         $cita->cancelada_en        = now();
         $cita->save();
+
+        NotificacionService::citaCancelada($cita, $request->motivo);
 
         return response()->json([
             'ok'      => true,

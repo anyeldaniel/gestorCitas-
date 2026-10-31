@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\Cita;
@@ -106,5 +107,21 @@ class User extends Authenticatable
     public function resenasRecibidas()
     {
         return $this->hasMany(Resena::class, 'terapeuta_id');
+    }
+
+    /**
+     * Notificaciones del usuario (más recientes primero).
+     */
+    public function notificaciones(): HasMany
+    {
+        return $this->hasMany(Notificacion::class, 'user_id')->latest();
+    }
+
+    /**
+     * Solo notificaciones no leídas.
+     */
+    public function notificacionesNoLeidas(): HasMany
+    {
+        return $this->notificaciones()->whereNull('leida_at');
     }
 }
