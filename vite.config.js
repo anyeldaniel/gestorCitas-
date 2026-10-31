@@ -12,6 +12,7 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/js/layout.js',
                 'resources/js/bootstrap.js',
+                
 
                 // === Auth (login/registro/password) ===
                 'resources/css/auth.css',
