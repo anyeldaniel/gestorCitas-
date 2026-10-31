@@ -8,6 +8,29 @@ function initCatalogo() {
     const inputFoto = document.getElementById("servicio_foto");
 
     // ==========================================================================
+    // DETECTAR MENSAJES DE SESIÓN (Para mostrarlos con SweetAlert al recargar)
+    // ==========================================================================
+    const mensajeExitoOculto = document.getElementById("mensaje-exito-oculto");
+    if (mensajeExitoOculto) {
+        const textoMensaje = mensajeExitoOculto.dataset.mensaje;
+        if (textoMensaje) {
+            // Mostramos el SweetAlert verde
+            if (typeof Swal !== 'undefined' && Swal && typeof Swal.fire === 'function') {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Excelente!',
+                    text: textoMensaje,
+                    confirmButtonColor: '#8b5e3c',
+                    confirmButtonText: 'Aceptar'
+                });
+            } else {
+                // Fallback si no carga Swal
+                alert(textoMensaje);
+            }
+        }
+    }
+
+    // ==========================================================================
     // UTILIDAD: CONSTRUIR BASE URL (con o sin /public)
     // ==========================================================================
     function obtenerBaseUrl() {
@@ -278,7 +301,7 @@ function initCatalogo() {
     };
 
     // ==========================================================================
-    // ADVERTENCIA DE ELIMINACIÓN
+    // ADVERTENCIA DE ELIMINACIÓN (AHORA CON SWEETALERT Y FETCH)
     // ==========================================================================
     window.eliminarServicio = function (id) {
         const tarjeta = document.querySelector(`.tarjeta-servicio-item[data-id="${id}"]`);
@@ -290,15 +313,49 @@ function initCatalogo() {
             () => {
                 const baseUrl = obtenerBaseUrl();
                 const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `${baseUrl}/admin/servicios/${id}/eliminar`;
-                form.innerHTML = `
-                    <input type="hidden" name="_token" value="${csrfMeta ? csrfMeta.content : ''}">
-                    <input type="hidden" name="_method" value="DELETE">
-                `;
-                document.body.appendChild(form);
-                form.submit();
+                const csrfToken = csrfMeta ? csrfMeta.content : '';
+
+                // Creamos un FormData para enviar la petición DELETE simulada con POST
+                const formData = new FormData();
+                formData.append('_method', 'DELETE');
+                formData.append('_token', csrfToken);
+
+                fetch(`${baseUrl}/admin/servicios/${id}/eliminar`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                    },
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error al eliminar el servicio');
+                    }
+                    return response.json().catch(() => ({}));
+                })
+                .then(data => {
+                    // ✅ MOSTRAMOS EL SWEETALERT VERDE AQUÍ
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Excelente!',
+                        text: '¡Servicio eliminado correctamente!',
+                        confirmButtonColor: '#8b5e3c',
+                        confirmButtonText: 'Aceptar',
+                        allowOutsideClick: false
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'No se pudo eliminar el servicio. Intenta de nuevo.',
+                        confirmButtonColor: '#c53030'
+                    });
+                });
             }
         );
     };

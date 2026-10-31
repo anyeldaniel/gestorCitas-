@@ -5,10 +5,39 @@
 document.addEventListener("DOMContentLoaded", function() {
     console.log('✅ Módulo de terapeutas cargado');
 
+    // --- LECTURA DE MENSAJES DE ÉXITO (SweetAlert) ---
+    // Esto atrapa el mensaje que Laravel envía al guardar o editar un especialista
+    const mensajeExito = document.getElementById("dashboard-mensaje-exito");
+    if (mensajeExito) {
+        const texto = mensajeExito.dataset.mensaje;
+        if (texto && typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Excelente!',
+                text: texto,
+                confirmButtonColor: '#8b5e3c',
+                confirmButtonText: 'Aceptar'
+            });
+        }
+    }
+
     const form = document.getElementById('form-terapeuta');
     if (form) {
         form.addEventListener('submit', function(e) {
             sincronizarEspecialidades();
+            
+            // ✅ FORZAR EL ORIGEN JUSTO ANTES DE ENVIAR
+            const origenInput = document.getElementById('form-origen');
+            if (origenInput) {
+                // Si existe el buscador, estamos en la vista de terapeutas
+                if (document.getElementById('buscador-terapeutas')) {
+                    origenInput.value = 'terapeutas';
+                } else {
+                    // Si no, estamos en el dashboard
+                    origenInput.value = 'dashboard';
+                }
+            }
+
             if (!validarContrasenas()) {
                 e.preventDefault();
                 return false;
@@ -24,16 +53,10 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 
-    // ✅ NUEVO: Asegurar que las estrellas se rendericen correctamente
     renderizarEstrellas();
-
-    // 🆕 NUEVO: Inicializar buscador de terapeutas
     initBuscadorTerapeutas();
 });
 
-// ============================================
-// FUNCIÓN AUXILIAR: DETECTAR URL BASE
-// ============================================
 function getBaseUrl() {
     let baseUrl = window.location.origin;
     if (window.location.pathname.includes('/public')) {
@@ -42,15 +65,6 @@ function getBaseUrl() {
     return baseUrl;
 }
 
-// ============================================
-// 🆕 NUEVO: BUSCADOR DE TERAPEUTAS
-// ============================================
-/**
- * Filtra las tarjetas de terapeutas en tiempo real por nombre o especialidad.
- * - Búsqueda insensible a mayúsculas y acentos.
- * - Coincidencia por "contiene" (parcial).
- * - Muestra contador de resultados y mensaje si no hay coincidencias.
- */
 function initBuscadorTerapeutas() {
     const input       = document.getElementById('buscador-terapeutas');
     const limpiarBtn  = document.getElementById('buscador-limpiar');
@@ -63,32 +77,22 @@ function initBuscadorTerapeutas() {
     const tarjetas = Array.from(grid.querySelectorAll('.tarjeta-terapeuta'));
     if (tarjetas.length === 0) return;
 
-    /**
-     * Normaliza una cadena: minúsculas, sin acentos, sin espacios extra.
-     */
     function normalizar(texto) {
         return (texto || '')
             .toString()
             .toLowerCase()
             .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '') // quita tildes
+            .replace(/[\u0300-\u036f]/g, '')
             .trim();
     }
 
-    /**
-     * Pre-cachea los datos de cada tarjeta para búsquedas rápidas.
-     */
     const datosTarjetas = tarjetas.map(tarjeta => {
         const nombre = tarjeta.querySelector('.terapeuta-nombre')?.textContent || '';
         const especialidades = tarjeta.dataset.especialidades || '';
-        // Unimos nombre + especialidades en un solo string normalizado
         const buscar = normalizar(`${nombre} ${especialidades}`);
         return { tarjeta, buscar, nombre, especialidades };
     });
 
-    /**
-     * Aplica el filtro según el término de búsqueda.
-     */
     function aplicarFiltro(termino) {
         const q = normalizar(termino);
         let visibles = 0;
@@ -103,12 +107,10 @@ function initBuscadorTerapeutas() {
             }
         });
 
-        // Mostrar / ocultar botón limpiar
         if (limpiarBtn) {
             limpiarBtn.hidden = (q === '');
         }
 
-        // Contador de resultados (solo si hay búsqueda activa)
         if (resultados) {
             if (q === '') {
                 resultados.hidden = true;
@@ -124,27 +126,21 @@ function initBuscadorTerapeutas() {
             }
         }
 
-        // Mensaje "sin resultados"
         if (sinResult) {
             sinResult.hidden = (visibles !== 0);
         }
     }
 
-    /**
-     * Escapa HTML para evitar inyección al mostrar el término buscado.
-     */
     function escaparHTML(str) {
         const div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
     }
 
-    // --- Eventos ---
     input.addEventListener('input', (e) => {
         aplicarFiltro(e.target.value);
     });
 
-    // Enter no debe enviar formulario (no hay form, pero por si acaso)
     input.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             input.value = '';
@@ -161,26 +157,14 @@ function initBuscadorTerapeutas() {
         });
     }
 
-    // Estado inicial: todo visible, contador oculto
     aplicarFiltro('');
-
-    console.log('✅ Buscador de terapeutas inicializado con', tarjetas.length, 'tarjetas');
 }
 
-// ============================================
-// 🆕 NUEVO: RENDERIZAR ESTRELLAS DINÁMICAS
-// ============================================
-/**
- * Asegura que las estrellas se pinten correctamente según
- * el promedio que viene desde el backend (data-promedio).
- * Esta función es un "fallback" visual por si el Blade no lo aplicó.
- */
 function renderizarEstrellas() {
     document.querySelectorAll('.contenedor-estrellas').forEach(contenedor => {
         const promedio = parseFloat(contenedor.dataset.promedio || 0);
         const total = parseInt(contenedor.dataset.total || 0);
 
-        // Si el Blade ya pintó las estrellas, no hacemos nada
         const estrellasExistentes = contenedor.querySelectorAll('.estrellas span, .estrellas');
         if (estrellasExistentes.length > 0) return;
 
@@ -221,24 +205,13 @@ function renderizarEstrellas() {
     });
 }
 
-// ============================================
-// FUNCIONES GLOBALES - TERAPEUTAS
-// ============================================
-
 window.verTerapeutaDetalle = function(id) {
     let tarjeta = document.querySelector(`.tarjeta-terapeuta[data-id="${id}"]`);
-
     if (!tarjeta) {
         const elemento = document.querySelector(`[data-id="${id}"]`);
-        if (elemento) {
-            tarjeta = elemento.closest('.tarjeta-terapeuta');
-        }
+        if (elemento) tarjeta = elemento.closest('.tarjeta-terapeuta');
     }
-
-    if (!tarjeta) {
-        alert('Terapeuta no encontrado');
-        return;
-    }
+    if (!tarjeta) { alert('Terapeuta no encontrado'); return; }
 
     const nombre = tarjeta.querySelector('.terapeuta-nombre')?.textContent.trim() || 'Sin nombre';
     const especialidades = tarjeta.querySelector('.contenedor-tags-especialidades .tag-especialidad')?.textContent.trim() || 'Sin especialidad';
@@ -257,9 +230,7 @@ window.verTerapeutaDetalle = function(id) {
         const espContainer = document.getElementById('view-terapeuta-especialidades');
         if (especialidades && especialidades !== 'Sin especialidad') {
             const espArray = especialidades.split(',').map(e => e.trim());
-            espContainer.innerHTML = espArray.map(esp =>
-                `<span class="badge">${esp}</span>`
-            ).join('');
+            espContainer.innerHTML = espArray.map(esp => `<span class="badge">${esp}</span>`).join('');
         } else {
             espContainer.innerHTML = '<span style="color: var(--gris-texto); font-size: 0.85rem;">Sin especialidades registradas</span>';
         }
@@ -280,7 +251,6 @@ window.verTerapeutaDetalle = function(id) {
             fotoContainer.style.color = 'var(--color-marron-oscuro)';
         }
 
-        // Botones de admin dentro del modal Ver Perfil (aportado por josebackend)
         const accionesAdmin = document.getElementById('view-acciones-admin');
         if (accionesAdmin) {
             accionesAdmin.innerHTML = `
@@ -288,39 +258,24 @@ window.verTerapeutaDetalle = function(id) {
                 <button type="button" class="btn-zen btn-baja" onclick="document.getElementById('modal-ver-terapeuta').close(); eliminarTerapeuta(${id});">Dar de Baja</button>
             `;
         }
-
         modal.showModal();
-    } else {
-        alert(`Perfil de: ${nombre}\nEspecialidad: ${especialidades}\nTeléfono: ${telefono}\nEmail: ${email}\nDescripción: ${descripcion}`);
     }
 };
 
-/**
- * Abrir modal para agregar terapeuta
- * RUTA: POST /admin/crear-trabajador
- */
 window.abrirModalAgregar = function() {
-    console.log('✅ abrirModalAgregar ejecutado');
     const modal = document.getElementById('modal-terapeuta');
     const form = document.getElementById('form-terapeuta');
-
-    if (!modal || !form) {
-        console.error('❌ No se encontró el modal de terapeuta');
-        return;
-    }
+    if (!modal || !form) return;
 
     form.reset();
-
-    // ✅ RUTA DINÁMICA
     form.action = `${getBaseUrl()}/admin/crear-trabajador`;
+    
+    document.getElementById('terapeuta_method').value = 'POST';
 
-    const methodInput = document.getElementById('terapeuta_method');
-    if (methodInput) {
-        methodInput.value = 'POST';
+    const origenInput = document.getElementById('form-origen');
+    if (origenInput) {
+        origenInput.value = document.getElementById('buscador-terapeutas') ? 'terapeutas' : 'dashboard';
     }
-
-    const metodoPut = document.getElementById('metodo-put-laravel');
-    if (metodoPut) metodoPut.remove();
 
     document.getElementById('modal-titulo').textContent = 'Registrar Nuevo Especialista';
 
@@ -346,75 +301,39 @@ window.abrirModalAgregar = function() {
         `;
     }
 
-    const campoPassword = document.getElementById('campo-password');
-    if (campoPassword) campoPassword.style.display = 'block';
-
-    const passwordInput = document.getElementById('password');
-    const confirmInput = document.getElementById('password_confirmation');
-    if (passwordInput) {
-        passwordInput.required = true;
-        passwordInput.placeholder = 'Mínimo 8 caracteres';
-        passwordInput.value = '';
-    }
-    if (confirmInput) {
-        confirmInput.required = true;
-        confirmInput.placeholder = 'Repita la contraseña';
-        confirmInput.value = '';
-    }
+    document.getElementById('campo-password').style.display = 'block';
+    document.getElementById('password').required = true;
+    document.getElementById('password').value = '';
+    document.getElementById('password_confirmation').required = true;
+    document.getElementById('password_confirmation').value = '';
 
     modal.showModal();
 };
 
-/**
- * Editar terapeuta
- * RUTA: PUT /admin/trabajador/{id}
- */
 window.editarTerapeuta = function(id) {
-    console.log('✅ editarTerapeuta ejecutado para ID:', id);
     const modal = document.getElementById('modal-terapeuta');
     const form = document.getElementById('form-terapeuta');
-
-    if (!modal || !form) {
-        console.error('❌ Modal o formulario no encontrados');
-        return;
-    }
+    if (!modal || !form) return;
 
     let tarjeta = document.querySelector(`.tarjeta-terapeuta[data-id="${id}"]`);
-    if (!tarjeta) {
-        tarjeta = document.querySelector(`.tarjeta-fila[data-id="${id}"]`);
-    }
+    if (!tarjeta) tarjeta = document.querySelector(`.tarjeta-fila[data-id="${id}"]`);
 
-    // ✅ RUTA DINÁMICA
     form.action = `${getBaseUrl()}/admin/trabajador/${id}`;
+    document.getElementById('terapeuta_method').value = 'PUT';
 
-    const methodInput = document.getElementById('terapeuta_method');
-    if (methodInput) {
-        methodInput.value = 'PUT';
+    const origenInput = document.getElementById('form-origen');
+    if (origenInput) {
+        origenInput.value = 'terapeutas';
     }
 
     document.getElementById('modal-titulo').textContent = 'Editar Información del Especialista';
+    document.getElementById('campo-password').style.display = 'none';
+    document.getElementById('password').required = false;
+    document.getElementById('password').value = '';
+    document.getElementById('password_confirmation').required = false;
+    document.getElementById('password_confirmation').value = '';
 
-    const campoPassword = document.getElementById('campo-password');
-    if (campoPassword) campoPassword.style.display = 'none';
-
-    const passwordInput = document.getElementById('password');
-    const confirmInput = document.getElementById('password_confirmation');
-    if (passwordInput) {
-        passwordInput.required = false;
-        passwordInput.placeholder = 'Dejar vacío para mantener';
-        passwordInput.value = '';
-    }
-    if (confirmInput) {
-        confirmInput.required = false;
-        confirmInput.placeholder = 'Dejar vacío para mantener';
-        confirmInput.value = '';
-    }
-
-    let nombre = '';
-    let email = '';
-    let telefono = '';
-    let descripcion = '';
-    let especialidades = '';
+    let nombre = '', email = '', telefono = '', descripcion = '', especialidades = '';
 
     if (tarjeta) {
         nombre = tarjeta.querySelector('.terapeuta-nombre')?.textContent.trim() || '';
@@ -422,80 +341,91 @@ window.editarTerapeuta = function(id) {
         telefono = tarjeta.querySelector('.terapeuta-telefono')?.textContent.replace('Teléfono:', '').trim() || '';
         descripcion = tarjeta.querySelector('.terapeuta-descripcion')?.textContent.trim() || '';
         especialidades = tarjeta.dataset.especialidades || '';
-
-        if (!nombre) {
-            const infoUsuario = tarjeta.querySelector('.info-usuario');
-            if (infoUsuario) {
-                nombre = infoUsuario.querySelector('h4')?.textContent.trim() || '';
-                const badges = infoUsuario.querySelectorAll('.badge');
-                if (badges.length > 0) {
-                    especialidades = Array.from(badges).map(b => b.textContent.trim()).join(',');
-                }
-            }
-        }
-    }
-
-    if (!nombre) {
-        nombre = `Especialista #${id}`;
     }
 
     document.getElementById('nombre').value = nombre;
-    document.getElementById('email').value = email || '';
-    document.getElementById('telefono').value = telefono || '';
-    document.getElementById('descripcion').value = descripcion || '';
+    document.getElementById('email').value = email;
+    document.getElementById('telefono').value = telefono;
+    document.getElementById('descripcion').value = descripcion;
 
     const wrapper = document.getElementById('wrapper-especialidades-lista');
     if (wrapper) {
         wrapper.innerHTML = '';
         const espData = especialidades ? especialidades.split(',') : [];
-
         if (espData.length === 0 || (espData.length === 1 && espData[0] === '')) {
-            wrapper.innerHTML = `
-                <div class="fila-especialidad">
-                    <input type="text" class="input-especialidad-item" placeholder="Ej. Rejuvenecimiento Facial" required>
-                    <button type="button" class="btn-añadir-especialidad" onclick="agregarCampoEspecialidad('')">+</button>
-                </div>
-            `;
+            wrapper.innerHTML = `<div class="fila-especialidad"><input type="text" class="input-especialidad-item" placeholder="Ej. Rejuvenecimiento Facial" required><button type="button" class="btn-añadir-especialidad" onclick="agregarCampoEspecialidad('')">+</button></div>`;
         } else {
             espData.forEach((esp, index) => {
                 const div = document.createElement('div');
                 div.className = 'fila-especialidad';
-                if (index === 0) {
-                    div.innerHTML = `
-                        <input type="text" class="input-especialidad-item" value="${esp.trim()}" required>
-                        <button type="button" class="btn-añadir-especialidad" onclick="agregarCampoEspecialidad('')">+</button>
-                    `;
-                } else {
-                    div.innerHTML = `
-                        <input type="text" class="input-especialidad-item" value="${esp.trim()}" required>
-                        <button type="button" class="btn-remover-especialidad" onclick="this.parentElement.remove()">×</button>
-                    `;
-                }
+                div.innerHTML = `
+                    <input type="text" class="input-especialidad-item" value="${esp.trim()}" required>
+                    ${index === 0 ? `<button type="button" class="btn-añadir-especialidad" onclick="agregarCampoEspecialidad('')">+</button>` : `<button type="button" class="btn-remover-especialidad" onclick="this.parentElement.remove()">×</button>`}
+                `;
                 wrapper.appendChild(div);
             });
         }
     }
+    modal.showModal();
+};
 
+window.editarTerapeutaDesdeDashboard = function(id, nombre, email, telefono, especialidades, descripcion) {
+    const modal = document.getElementById('modal-terapeuta');
+    const form = document.getElementById('form-terapeuta');
+    if (!modal || !form) return;
+
+    form.action = `${getBaseUrl()}/admin/trabajador/${id}`;
+    document.getElementById('terapeuta_method').value = 'PUT';
+    document.getElementById('modal-titulo').textContent = 'Editar Información del Especialista';
+
+    const origenInput = document.getElementById('form-origen');
+    if (origenInput) origenInput.value = 'dashboard';
+
+    document.getElementById('campo-password').style.display = 'none';
+    document.getElementById('password').required = false;
+    document.getElementById('password').value = '';
+    document.getElementById('password_confirmation').required = false;
+    document.getElementById('password_confirmation').value = '';
+
+    document.getElementById('nombre').value = nombre || '';
+    document.getElementById('email').value = email || '';
+    document.getElementById('telefono').value = telefono || '';
+    document.getElementById('descripcion').value = descripcion || '';
+
+    const wrapper = document.getElementById('wrapper-especialidades-lista');
+    wrapper.innerHTML = '';
+    const espData = especialidades ? especialidades.split(',') : [];
+    if (espData.length === 0 || (espData.length === 1 && espData[0] === '')) {
+        wrapper.innerHTML = `<div class="fila-especialidad"><input type="text" class="input-especialidad-item" placeholder="Ej. Rejuvenecimiento Facial" required><button type="button" class="btn-añadir-especialidad" onclick="agregarCampoEspecialidad('')">+</button></div>`;
+    } else {
+        espData.forEach((esp, index) => {
+            const div = document.createElement('div');
+            div.className = 'fila-especialidad';
+            div.innerHTML = `
+                <input type="text" class="input-especialidad-item" value="${esp.trim()}" required>
+                ${index === 0 ? `<button type="button" class="btn-añadir-especialidad" onclick="agregarCampoEspecialidad('')">+</button>` : `<button type="button" class="btn-remover-especialidad" onclick="this.parentElement.remove()">×</button>`}
+            `;
+            wrapper.appendChild(div);
+        });
+    }
     modal.showModal();
 };
 
 /**
- * Eliminar terapeuta
- * RUTA: DELETE /admin/usuario/{id}
+ * Eliminar especialista
+ * Usa fetch para mostrar SweetAlert y luego recargar la página.
  */
 window.eliminarTerapeuta = function(id) {
     const modal = document.getElementById('modal-confirmacion-custom');
-
+    
+    // Fallback por si el modal de confirmación no existe en la vista actual
     if (!modal) {
         if (confirm('¿Estás seguro de eliminar este especialista?')) {
             const token = document.querySelector('input[name="_token"]')?.value || '';
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = `${getBaseUrl()}/admin/usuario/${id}`;
-            form.innerHTML = `
-                <input type="hidden" name="_token" value="${token}">
-                <input type="hidden" name="_method" value="DELETE">
-            `;
+            form.innerHTML = `<input type="hidden" name="_token" value="${token}"><input type="hidden" name="_method" value="DELETE">`;
             document.body.appendChild(form);
             form.submit();
         }
@@ -503,14 +433,14 @@ window.eliminarTerapeuta = function(id) {
     }
 
     let nombreTerapeuta = '';
-    const tarjeta = document.querySelector(`.tarjeta-terapeuta[data-id="${id}"], .tarjeta-fila[data-id="${id}"]`);
+    const tarjeta = document.querySelector(`.tarjeta-terapeuta[data-id="${id}"], .tarjeta-fila[data-id="${id}"], .dash-user-row[data-id="${id}"]`);
     if (tarjeta) {
-        nombreTerapeuta = tarjeta.querySelector('.terapeuta-nombre')?.textContent.trim() ||
-                          tarjeta.querySelector('.info-usuario h4')?.textContent.trim() || '';
+        nombreTerapeuta = tarjeta.querySelector('.terapeuta-nombre')?.textContent.trim() || 
+                          tarjeta.querySelector('.info-usuario h4')?.textContent.trim() || 
+                          tarjeta.querySelector('.dash-user-name h4')?.textContent.trim() || '';
     }
 
     const nombreTexto = nombreTerapeuta ? `"${nombreTerapeuta.toUpperCase()}"` : 'este especialista';
-
     document.getElementById('confirm-alerta-titulo').textContent = '¿Remover especialista del equipo?';
     document.getElementById('confirm-alerta-mensaje').textContent = `¿Estás seguro de eliminar permanentemente a ${nombreTexto} del sistema? Esta operación no se puede deshacer.`;
 
@@ -522,48 +452,66 @@ window.eliminarTerapeuta = function(id) {
 
     nuevoAceptar.onclick = function() {
         modal.close();
+        
         const token = document.querySelector('input[name="_token"]')?.value || '';
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `${getBaseUrl()}/admin/usuario/${id}`;
-        form.innerHTML = `
-            <input type="hidden" name="_token" value="${token}">
-            <input type="hidden" name="_method" value="DELETE">
-        `;
-        document.body.appendChild(form);
-        form.submit();
+        const formData = new FormData();
+        formData.append('_token', token);
+        formData.append('_method', 'DELETE');
+
+        // Enviamos la petición con fetch
+        fetch(`${getBaseUrl()}/admin/usuario/${id}`, {
+            method: 'POST', // POST simulando DELETE por el _method
+            headers: {
+                'X-CSRF-TOKEN': token,
+                'Accept': 'application/json'
+            },
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Error al eliminar');
+            return response.json().catch(() => ({}));
+        })
+        .then(() => {
+            // Mostramos el SweetAlert de éxito
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Excelente!',
+                    text: 'Especialista eliminado correctamente del sistema.',
+                    confirmButtonColor: '#8b5e3c',
+                    confirmButtonText: 'Aceptar',
+                    allowOutsideClick: false
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                window.location.reload();
+            }
+        })
+        .catch(error => {
+            console.error(error);
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo eliminar al especialista. Intenta de nuevo.',
+                    confirmButtonColor: '#c53030'
+                });
+            } else {
+                alert('No se pudo eliminar al especialista.');
+            }
+        });
     };
 
-    document.getElementById('btn-confirm-cancelar').onclick = function() {
-        modal.close();
-    };
+    document.getElementById('btn-confirm-cancelar').onclick = function() { modal.close(); };
 };
-
-// ============================================
-// FUNCIONES DE UTILIDAD
-// ============================================
 
 window.agregarCampoEspecialidad = function(valor = '') {
     const wrapper = document.getElementById('wrapper-especialidades-lista');
     if (!wrapper) return;
-
-    const filas = wrapper.querySelectorAll('.fila-especialidad');
-    const ultimaFila = filas[filas.length - 1];
-
-    if (ultimaFila) {
-        const input = ultimaFila.querySelector('input');
-        if (input && input.value.trim() === '') {
-            input.focus();
-            return;
-        }
-    }
-
     const div = document.createElement('div');
     div.className = 'fila-especialidad';
-    div.innerHTML = `
-        <input type="text" class="input-especialidad-item" value="${valor}" placeholder="Ej. Rejuvenecimiento Facial" required>
-        <button type="button" class="btn-remover-especialidad" onclick="this.parentElement.remove()">×</button>
-    `;
+    div.innerHTML = `<input type="text" class="input-especialidad-item" value="${valor}" placeholder="Ej. Rejuvenecimiento Facial" required><button type="button" class="btn-remover-especialidad" onclick="this.parentElement.remove()">×</button>`;
     wrapper.appendChild(div);
 };
 
@@ -581,51 +529,30 @@ window.sincronizarEspecialidades = function() {
 window.validarContrasenas = function() {
     const pass = document.getElementById('password');
     const confirm = document.getElementById('password_confirmation');
-
     if (!pass || !confirm) return true;
-
     if (pass.value === '' && confirm.value === '') return true;
-
-    if (pass.value !== confirm.value) {
-        alert('❌ Las contraseñas no coinciden.');
-        pass.focus();
-        return false;
-    }
-
-    if (pass.value.length > 0 && pass.value.length < 8) {
-        alert('❌ La contraseña debe tener al menos 8 caracteres.');
-        pass.focus();
-        return false;
-    }
-
+    if (pass.value !== confirm.value) { alert('❌ Las contraseñas no coinciden.'); pass.focus(); return false; }
+    if (pass.value.length > 0 && pass.value.length < 8) { alert('❌ La contraseña debe tener al menos 8 caracteres.'); pass.focus(); return false; }
     return true;
 };
 
 window.alternarVisibilidad = function(inputId, btn) {
     const input = document.getElementById(inputId);
     if (!input) return;
-
     const svg = btn.querySelector('.svg-ojo');
     if (!svg) return;
-
     if (input.type === 'password') {
         input.type = 'text';
-        svg.innerHTML = `
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
-        `;
+        svg.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />`;
     } else {
         input.type = 'password';
-        svg.innerHTML = `
-            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-        `;
+        svg.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />`;
     }
 };
 
 window.previsualizarImagen = function(input, previewId) {
     const preview = document.getElementById(previewId);
     if (!preview || !input.files || !input.files[0]) return;
-
     const reader = new FileReader();
     reader.onload = function(e) {
         preview.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
@@ -641,44 +568,39 @@ window.cerrarModal = function() {
     document.querySelectorAll('dialog[open]').forEach(d => d.close());
 };
 
+if (typeof window.Syncro === 'undefined') window.Syncro = {};
+
+window.Syncro.openEsp = function() { if (typeof window.abrirModalAgregar === 'function') window.abrirModalAgregar(); };
+window.Syncro.editEsp = function(id, nombre, email, telefono, especialidades, descripcion) {
+    if (nombre !== undefined) {
+        if (typeof window.editarTerapeutaDesdeDashboard === 'function') window.editarTerapeutaDesdeDashboard(id, nombre, email, telefono, especialidades, descripcion);
+    } else {
+        if (typeof window.editarTerapeuta === 'function') window.editarTerapeuta(id);
+    }
+};
+window.Syncro.delEsp = function(id) { if (typeof window.eliminarTerapeuta === 'function') window.eliminarTerapeuta(id); };
 // ============================================
-// SYNCRO - COMPATIBILIDAD CON DASHBOARD
+// VISOR DE FOTO COMPLETA (LIGHTBOX)
 // ============================================
-
-if (typeof window.Syncro === 'undefined') {
-    window.Syncro = {};
-}
-
-window.Syncro.openEsp = function() {
-    if (typeof window.abrirModalAgregar === 'function') {
-        window.abrirModalAgregar();
+window.abrirVisorFoto = function(url, nombre) {
+    const visor = document.getElementById('visor-foto-terapeuta');
+    const imagen = document.getElementById('visor-foto-imagen');
+    const texto = document.getElementById('visor-foto-nombre');
+    
+    if (visor && imagen) {
+        imagen.src = url;
+        texto.textContent = nombre;
+        visor.showModal();
     }
 };
 
-window.Syncro.editEsp = function(id) {
-    if (typeof window.editarTerapeuta === 'function') {
-        window.editarTerapeuta(id);
-    }
-};
-
-window.Syncro.delEsp = function(id) {
-    if (typeof window.eliminarTerapeuta === 'function') {
-        window.eliminarTerapeuta(id);
-    }
-};
-
-console.log('✅ Funciones de terapeutas cargadas correctamente');
-
-// Cuando se elimina un terapeuta desde el dashboard, el número de filas
-// cambia. Para que el paginador se recalcule correctamente, escuchamos
-// el evento submit de eliminación y refrescamos tras un pequeño delay.
-document.addEventListener('submit', function(e) {
-    const form = e.target;
-    if (form && form.querySelector('input[name="_method"][value="DELETE"]')) {
-        setTimeout(function() {
-            if (typeof window.refrescarPaginadoresDashboard === 'function') {
-                window.refrescarPaginadoresDashboard();
-            }
-        }, 300);
+// Permitir cerrar con la tecla Escape
+document.addEventListener('DOMContentLoaded', () => {
+    const visor = document.getElementById('visor-foto-terapeuta');
+    if (visor) {
+        visor.addEventListener('cancel', (e) => {
+            e.preventDefault();
+            visor.close();
+        });
     }
 });

@@ -50,10 +50,20 @@
                     <span class="kicker">Tu cita</span>
                     <div class="cita-duracion-badge">
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                        60 min
+                        {{ $duracionTotal }} min
                     </div>
                 </header>
-                <h2 class="service-title">{{ $nombreServicio }}</h2>
+
+                <!-- LISTADO DE SERVICIOS -->
+                <div class="service-title-list">
+                    @if($servicios->count() > 1)
+                        @foreach($servicios as $s)
+                            <h2 class="service-title">{{ $s->nombre_servicio ?? $s->nombre }}</h2>
+                        @endforeach
+                    @else
+                        <h2 class="service-title">{{ $nombreServicio }}</h2>
+                    @endif
+                </div>
                 
                 <section class="service-meta-grid">
                     <article class="meta-item">
@@ -70,8 +80,16 @@
                             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2"/></svg>
                         </div>
                         <div class="meta-text">
-                            <small>Especialista</small>
-                            <strong>{{ $cita->trabajador->nombre ?? 'Por asignar' }}</strong>
+                            <small>Especialista{{ $especialistas->count() > 1 ? 's' : '' }}</small>
+                            @if($especialistas->count() > 1)
+                                <ul class="especialistas-lista" style="margin: 0; padding-left: 1rem; font-size: 0.9em; color: #555; line-height: 1.4;">
+                                    @foreach($especialistas as $esp)
+                                        <li>{{ $esp }}</li>
+                                    @endforeach
+                                </ul>
+                            @else
+                                <strong>{{ $especialistas->first() ?? 'Por asignar' }}</strong>
+                            @endif
                         </div>
                     </article>
                 </section>
@@ -184,8 +202,17 @@
                 </header>
 
                 <div class="sidebar-resumen-servicio">
-                    <h3>{{ $nombreServicio }}</h3>
-                    <p>1 sesión · 60 minutos</p>
+                    @if($servicios->count() > 1)
+                        <ul class="sidebar-servicios-lista">
+                            @foreach($servicios as $s)
+                                <li>{{ $s->nombre_servicio ?? $s->nombre }}</li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <h3>{{ $nombreServicio }}</h3>
+                    @endif
+                    
+                    <p>{{ $servicios->count() }} sesión{{ $servicios->count() > 1 ? 'es' : '' }} · {{ $duracionTotal }} minutos</p>
                     <div class="sidebar-precio-total">${{ number_format($montoTotal, 2) }}</div>
                 </div>
 
@@ -241,10 +268,6 @@
         </section>
     </form>
 </main>
-
-<script>
-    window.LaravelErrors = @json($errors->all());
-</script>
 @endsection
 
 @push('scripts')

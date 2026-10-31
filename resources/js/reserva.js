@@ -111,11 +111,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const servicioItems = document.querySelectorAll('.servicio-item');
     
     servicioItems.forEach(item => {
-        item.addEventListener('click', (e) => {
-            if (e.target.tagName !== 'INPUT') {
-                const checkbox = item.querySelector('input[type="checkbox"]');
-                checkbox.checked = !checkbox.checked;
-            }
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        checkbox.addEventListener('change', () => {
             actualizarSeleccionServicios();
             renderSelectoresEspecialistas();
         });

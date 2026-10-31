@@ -58,6 +58,7 @@ h1, h2, h3, h4, h5, h6 {
     max-width: 1280px;
     margin: 0 auto;
     padding: 2.5rem 2rem 3rem;
+    width: 100%;
 }
 
 /* ==========================================================================
@@ -386,6 +387,16 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     flex-direction: column;
     gap: 0.7rem;
+    max-height: 520px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.lista-servicios::-webkit-scrollbar { width: 6px; }
+.lista-servicios::-webkit-scrollbar-track { background: transparent; }
+.lista-servicios::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
 }
 
 .servicio-item {
@@ -482,6 +493,7 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
+    width: 100%;
 }
 
 .calendario-nav {
@@ -526,6 +538,7 @@ h1, h2, h3, h4, h5, h6 {
     grid-template-columns: repeat(7, 1fr);
     gap: 0.2rem;
     margin-bottom: 0.4rem;
+    width: 100%;
 }
 
 .calendario-dias-semana span {
@@ -543,10 +556,14 @@ h1, h2, h3, h4, h5, h6 {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 0.2rem;
+    width: 100%;
 }
 
 .dia-calendario {
     aspect-ratio: 1;
+    width: 100%;
+    max-width: 44px;
+    margin: 0 auto;
     border: none;
     background: transparent;
     border-radius: 50%;
@@ -561,7 +578,7 @@ h1, h2, h3, h4, h5, h6 {
     justify-content: center;
     padding: 0;
     position: relative;
-    min-height: 36px;
+    min-height: 30px;
 }
 
 .dia-calendario:hover:not(:disabled):not(.vacio) {
@@ -691,6 +708,7 @@ h1, h2, h3, h4, h5, h6 {
     gap: 1.5rem;
     align-items: center;
     background: var(--bg-soft);
+    width: 100%;
 }
 
 .paso-footer {
@@ -730,6 +748,8 @@ h1, h2, h3, h4, h5, h6 {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.85rem;
+    width: 100%;
+    min-width: 0;
 }
 
 .campos-cliente label {
@@ -737,6 +757,7 @@ h1, h2, h3, h4, h5, h6 {
     flex-direction: column;
     gap: 0.4rem;
     min-width: 0;
+    width: 100%;
 }
 
 .campos-cliente small {
@@ -759,6 +780,8 @@ h1, h2, h3, h4, h5, h6 {
     transition: var(--transition);
     outline: none;
     height: 42px;
+    width: 100%;
+    min-width: 0;
 }
 
 .campos-cliente input:focus {
@@ -772,6 +795,7 @@ h1, h2, h3, h4, h5, h6 {
     gap: 1rem;
     padding-left: 1.5rem;
     border-left: 1px solid var(--border-color);
+    min-width: 0;
 }
 
 .resumen-info {
@@ -877,26 +901,43 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @media (max-width: 768px) {
-    .modulo-reserva { padding: 1.5rem 1rem 2.5rem; }
+    .modulo-reserva { padding: 1rem 0.5rem 2rem; }
     .reserva-header { flex-direction: column; align-items: flex-start; }
     .pasos-container { grid-template-columns: 1fr; }
     .paso-numero { font-size: 3.5rem; }
     .reserva-grid { grid-template-columns: 1fr; }
+    
     .columna-servicios,
     .columna-calendario,
     .columna-horas {
+        padding: 1.25rem 1rem;
         border-right: none;
         border-bottom: 1px solid var(--border-light);
     }
     .columna-horas { grid-column: auto; border-bottom: none; }
-    .panel-footer { grid-template-columns: 1fr; gap: 1rem; }
-    .campos-cliente { grid-template-columns: 1fr; }
+    
+    .panel-footer { 
+        grid-template-columns: 1fr; 
+        gap: 1rem; 
+        padding: 1.25rem 1rem;
+    }
+    .campos-cliente { 
+        grid-template-columns: 1fr; 
+        width: 100%;
+    }
+    
+    .especialistas-container {
+        grid-column: span 1 !important; 
+        width: 100%;
+    }
+    
     .resumen-precio {
         justify-content: space-between;
         padding-left: 0;
         border-left: none;
         border-top: 1px solid var(--border-color);
         padding-top: 1rem;
+        width: 100%;
     }
     .resumen-info { text-align: left; }
     .btn-confirmar { width: 100%; justify-content: center; }
@@ -907,10 +948,17 @@ h1, h2, h3, h4, h5, h6 {
     .panel-header h2 { font-size: 1.55rem; }
     .columna-header h3 { font-size: 1.2rem; }
     .columna-numero { font-size: 1.35rem; }
+    
+    /* Reducción adicional de espacios en pantallas muy pequeñas para evitar desbordes */
+    .columna-servicios,
+    .columna-calendario,
+    .columna-horas {
+        padding: 1rem 0.75rem;
+    }
 }
 
 /* ==========================================================================
-   NUEVAS MEJORAS: CATEGORÍAS Y SCROLL
+   CATEGORÍAS Y SCROLL
    ========================================================================== */
 .categoria-servicios {
     margin-bottom: 1.5rem;
@@ -932,30 +980,17 @@ h1, h2, h3, h4, h5, h6 {
     border-bottom: 1px dashed var(--border-light);
 }
 
-/* Hacemos que la lista de servicios tenga un scroll elegante si hay muchos */
-.lista-servicios {
-    max-height: 520px;
-    overflow-y: auto;
-    padding-right: 0.5rem;
-}
-
-.lista-servicios::-webkit-scrollbar { width: 6px; }
-.lista-servicios::-webkit-scrollbar-track { background: transparent; }
-.lista-servicios::-webkit-scrollbar-thumb {
-    background: var(--border-color);
-    border-radius: 3px;
-}
-
 /* ==========================================================================
-   NUEVO: SELECT DE ESPECIALISTA PREMIUM
+   SELECT DE ESPECIALISTA PREMIUM
    ========================================================================== */
 .label-especialista {
-    grid-column: span 2; /* Ocupa todo el ancho en la grilla de 2 columnas */
+    grid-column: span 2;
+    width: 100%;
 }
 
 .select-especialista {
     width: 100%;
-    padding: 0.7rem 2.5rem 0.7rem 1rem; /* Espacio extra a la derecha para la flecha */
+    padding: 0.7rem 2.5rem 0.7rem 1rem;
     border: 1px solid var(--border-color);
     border-radius: 8px;
     background-color: var(--bg-card);
@@ -966,8 +1001,8 @@ h1, h2, h3, h4, h5, h6 {
     outline: none;
     height: 42px;
     cursor: pointer;
+    min-width: 0;
     
-    /* Ocultar flecha por defecto y poner una personalizada */
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -989,7 +1024,6 @@ h1, h2, h3, h4, h5, h6 {
     opacity: 0.7;
 }
 
-/* Ajuste responsive para el select en móvil */
 @media (max-width: 768px) {
     .label-especialista {
         grid-column: span 1;

@@ -19,14 +19,22 @@
         </div>
         <div class="dash-fecha-resumen">
             <span>Resumen Actual</span>
-            <strong>{{ \Carbon\Carbon::now()->translatedFormat('F Y') }}</strong>
-        </div>
+            <strong>
+    @php
+        $meses = [
+            1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
+            5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
+            9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'
+        ];
+        echo $meses[(int)date('n')] . ' ' . date('Y');
+    @endphp
+</strong>
+         </div>
     </header>
 
+    {{-- Mensaje de Éxito Oculto (El JS lo leerá para mostrar el SweetAlert) --}}
     @if(session('success'))
-    <div class="alert-success-spa" style="margin-bottom: 1.5rem; padding: 1rem; background: #d1fae5; color: #065f46; border-radius: 8px; border: 1px solid #a7f3d0;">
-        <strong>¡Éxito!</strong> {{ session('success') }}
-    </div>
+    <div id="dashboard-mensaje-exito" data-mensaje="{{ session('success') }}" style="display: none;"></div>
     @endif
 
     <!-- ==========================================
@@ -96,7 +104,13 @@
             <div class="dash-panel-body" id="lista-recepcionistas">
                 @forelse($recepcionistas as $recep)
                 <article class="dash-user-row" data-id="{{ $recep->id }}">
-                    <div class="dash-avatar">{{ substr($recep->nombre, 0, 2) }}</div>
+                    <div class="dash-avatar">
+                        @if($recep->foto && file_exists(public_path('storage/' . $recep->foto)))
+                            <img src="{{ asset('storage/' . $recep->foto) }}" alt="{{ $recep->nombre }}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                        @else
+                            {{ substr($recep->nombre, 0, 2) }}
+                        @endif
+                    </div>
                     <div class="dash-user-info">
                         <div class="dash-user-name">
                             <h4>{{ $recep->nombre }}</h4>
@@ -117,7 +131,7 @@
                 @endforelse
             </div>
 
-            {{-- 🆕 PAGINADOR RECEPCIONISTAS --}}
+            {{-- PAGINADOR RECEPCIONISTAS --}}
             <footer class="dash-paginador" id="paginador-recepcionistas" data-total="{{ $recepcionistas->count() ?? 0 }}">
                 <button type="button" class="dash-paginador-btn" data-pagina="prev" aria-label="Página anterior">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -148,7 +162,13 @@
             <div class="dash-panel-body" id="lista-especialistas">
                 @forelse($trabajadores as $trab)
                 <article class="dash-user-row" data-id="{{ $trab->id }}">
-                    <div class="dash-avatar">{{ substr($trab->nombre, 0, 2) }}</div>
+                    <div class="dash-avatar">
+                        @if($trab->foto && file_exists(public_path('storage/' . $trab->foto)))
+                            <img src="{{ asset('storage/' . $trab->foto) }}" alt="{{ $trab->nombre }}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                        @else
+                            {{ substr($trab->nombre, 0, 2) }}
+                        @endif
+                    </div>
                     <div class="dash-user-info">
                         <div class="dash-user-name">
                             <h4>{{ $trab->nombre }}</h4>
@@ -170,7 +190,7 @@
                         </div>
                     </div>
                     <div class="dash-actions">
-                        <button class="dash-btn-action" onclick="Syncro.editEsp({{ $trab->id }})">Editar</button>
+                        <button class="dash-btn-action" onclick="Syncro.editEsp({{ $trab->id }}, '{{ addslashes($trab->nombre) }}', '{{ $trab->correo }}', '{{ $trab->telefono ?? '' }}', '{{ addslashes($trab->especialidades ?? '') }}', '{{ addslashes($trab->descripcion ?? '') }}')">Editar</button>
                         <button class="dash-btn-action dash-btn-action--danger" onclick="Syncro.delEsp({{ $trab->id }})">Eliminar</button>
                     </div>
                 </article>
@@ -179,7 +199,7 @@
                 @endforelse
             </div>
 
-            {{-- 🆕 PAGINADOR ESPECIALISTAS --}}
+            {{-- PAGINADOR ESPECIALISTAS --}}
             <footer class="dash-paginador" id="paginador-especialistas" data-total="{{ $trabajadores->count() ?? 0 }}">
                 <button type="button" class="dash-paginador-btn" data-pagina="prev" aria-label="Página anterior">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -283,6 +303,7 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 @vite(['resources/js/dashboard.js'])
 @vite(['resources/js/terapeutas.js'])
 @endpush

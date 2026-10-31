@@ -24,6 +24,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const formRecepcionista = document.getElementById("form-recepcionista");
 
+    // --- LECTURA DE MENSAJES DE ÉXITO (SweetAlert) ---
+    const mensajeExito = document.getElementById("dashboard-mensaje-exito");
+    if (mensajeExito) {
+        const texto = mensajeExito.dataset.mensaje;
+        if (texto && typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Excelente!',
+                text: texto,
+                confirmButtonColor: '#8b5e3c',
+                confirmButtonText: 'Aceptar'
+            });
+        }
+    }
+
     // --- VALIDACIÓN DEL FORMULARIO RECEPCIONISTA ---
     if (formRecepcionista) {
         formRecepcionista.addEventListener("submit", (e) => {
@@ -67,12 +82,12 @@ document.addEventListener("DOMContentLoaded", () => {
         actualizarPaginadoresTotales();
     }
 
-    // 🆕 NUEVO: Inicializar paginadores del dashboard
+    // Inicializar paginadores del dashboard
     initPaginadoresDashboard();
 });
 
 // ============================================
-// 🆕 NUEVO: PAGINADOR PROFESIONAL DEL DASHBOARD
+// PAGINADOR PROFESIONAL DEL DASHBOARD
 // ============================================
 /**
  * Inicializa los paginadores de las listas de recepcionistas y especialistas.
@@ -261,12 +276,13 @@ window.editarRecepcionista = function(id, nombre, email, telefono) {
  */
 window.eliminarRecepcionista = function(id) {
     const modal = document.getElementById('modal-confirmacion-custom');
+    
+    // Si por alguna razón el modal no existe, usamos el método clásico
     if (!modal) {
         if (confirm('¿Estás seguro de eliminar este recepcionista?')) {
             const token = document.querySelector('input[name="_token"]')?.value || '';
             const form = document.createElement('form');
             form.method = 'POST';
-            // ✅ RUTA DINÁMICA
             form.action = `${getBaseUrl()}/admin/usuario/${id}`;
             form.innerHTML = `
                 <input type="hidden" name="_token" value="${token}">
@@ -279,9 +295,9 @@ window.eliminarRecepcionista = function(id) {
     }
 
     let nombreRecepcionista = '';
-    const tarjeta = document.querySelector(`.tarjeta-fila[data-id="${id}"]`);
+    const tarjeta = document.querySelector(`.dash-user-row[data-id="${id}"]`);
     if (tarjeta) {
-        nombreRecepcionista = tarjeta.querySelector('.info-usuario h4')?.textContent.trim() || '';
+        nombreRecepcionista = tarjeta.querySelector('.dash-user-name h4')?.textContent.trim() || '';
     }
 
     const nombreTexto = nombreRecepcionista ? `"${nombreRecepcionista.toUpperCase()}"` : 'este recepcionista';
@@ -299,17 +315,55 @@ window.eliminarRecepcionista = function(id) {
 
     nuevoAceptar.onclick = function() {
         modal.close();
+        
         const token = document.querySelector('input[name="_token"]')?.value || '';
-        const form = document.createElement('form');
-        form.method = 'POST';
-        // ✅ RUTA DINÁMICA
-        form.action = `${getBaseUrl()}/admin/usuario/${id}`;
-        form.innerHTML = `
-            <input type="hidden" name="_token" value="${token}">
-            <input type="hidden" name="_method" value="DELETE">
-        `;
-        document.body.appendChild(form);
-        form.submit();
+        const formData = new FormData();
+        formData.append('_token', token);
+        formData.append('_method', 'DELETE');
+
+        // Enviamos la petición con fetch para poder mostrar el SweetAlert sin recargar de golpe
+        fetch(`${getBaseUrl()}/admin/usuario/${id}`, {
+            method: 'POST', // Usamos POST simulando DELETE
+            headers: {
+                'X-CSRF-TOKEN': token,
+                'Accept': 'application/json'
+            },
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Error al eliminar');
+            return response.json().catch(() => ({}));
+        })
+        .then(() => {
+            // Mostramos el SweetAlert verde
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Excelente!',
+                    text: 'Recepcionista eliminado correctamente del sistema.',
+                    confirmButtonColor: '#8b5e3c',
+                    confirmButtonText: 'Aceptar',
+                    allowOutsideClick: false
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                window.location.reload();
+            }
+        })
+        .catch(error => {
+            console.error(error);
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo eliminar al recepcionista. Intenta de nuevo.',
+                    confirmButtonColor: '#c53030'
+                });
+            } else {
+                alert('No se pudo eliminar al recepcionista.');
+            }
+        });
     };
 
     btnCancelar.onclick = function() {
@@ -427,7 +481,7 @@ window.Syncro = {
 };
 
 // ============================================
-// 🆕 RE-INICIALIZAR PAGINADOR TRAS CAMBIOS DINÁMICOS
+// RE-INICIALIZAR PAGINADOR TRAS CAMBIOS DINÁMICOS
 // ============================================
 /**
  * Expone la función globalmente para que otros módulos

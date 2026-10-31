@@ -3,7 +3,7 @@
 @section('title', 'Catálogo de Bienestar Premium')
 
 @push('styles')
-    {{-- Asegúrate de que este archivo CSS esté compilado por Vite --}}
+  
     @vite(['resources/css/modal.css'])
 @endpush
 
@@ -28,11 +28,9 @@
         @endif
     </header>
 
-    {{-- Mensaje de Éxito --}}
+    {{-- Mensaje de Éxito Oculto (SweetAlert lo leerá desde el JS) --}}
     @if(session('success'))
-        <div class="alert-success-spa" style="background: #d4edda; color: #155724; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; border: 1px solid #c3e6cb;">
-            <span>✨</span> {{ session('success') }}
-        </div>
+        <div id="mensaje-exito-oculto" data-mensaje="{{ session('success') }}" style="display: none;"></div>
     @endif
 
     {{-- Rejilla del Catálogo --}}
