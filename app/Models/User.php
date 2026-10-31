@@ -124,4 +124,13 @@ class User extends Authenticatable
     {
         return $this->notificaciones()->whereNull('leida_at');
     }
+
+    /**
+     * Alias de citas como trabajador (compatibilidad con josebackend).
+     * Equivalente a citasComoTrabajador().
+     */
+    public function citas()
+    {
+        return $this->hasMany(Cita::class, 'trabajador_id');
+    }
 }
