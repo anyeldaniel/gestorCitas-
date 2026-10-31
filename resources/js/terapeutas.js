@@ -604,3 +604,93 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// ============================================
+// MODAL DE RESEÑAS - CONTROLADOR LIMPIO
+// ============================================
+window.verResenasTerapeuta = function(btn) {
+    if (typeof event !== 'undefined' && event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+
+    const modal = document.getElementById('modal-resenas');
+    const titulo = document.getElementById('resenas-titulo-terapeuta');
+    const contenedor = document.getElementById('lista-resenas');
+    
+    if (!modal) return;
+
+    const nombre = btn.dataset.nombre || 'Especialista';
+    let resenas = [];
+    try {
+        resenas = JSON.parse(btn.dataset.resenas || '[]');
+    } catch (e) {
+        console.error("Error al parsear las reseñas", e);
+    }
+    
+    titulo.textContent = `Reseñas de ${nombre}`;
+    contenedor.innerHTML = '';
+
+    if (resenas.length === 0) {
+        contenedor.innerHTML = `
+            <div style="text-align: center; padding: 2.5rem 1rem; color: #8c7a6b;">
+                <p style="font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; margin: 0;">Este especialista aún no cuenta con opiniones registradas.</p>
+                <small style="font-size: 0.8rem; color: #a89a8c; display: block; margin-top: 0.4rem;">¡Sé el primero en calificar su servicio!</small>
+            </div>
+        `;
+    } else {
+        resenas.forEach(resena => {
+            let estrellasHTML = '';
+            const puntuacion = parseInt(resena.puntuacion || 0);
+            for (let i = 1; i <= 5; i++) {
+                estrellasHTML += i <= puntuacion ? '★' : '<span style="color: #d1c7bd;">★</span>';
+            }
+
+            const htmlResena = `
+                <div style="border-bottom: 1px solid #efe9e1; padding-bottom: 1.25rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                        <div style="color: #f5b301; font-size: 0.95rem; letter-spacing: 2px;">${estrellasHTML}</div>
+                        <span style="font-family: 'Inter', sans-serif; font-size: 0.72rem; color: #a89a8c; font-weight: 500;">${resena.fecha}</span>
+                    </div>
+                    <p style="font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-style: italic; color: #3d2c1e; margin: 0 0 0.5rem 0; line-height: 1.4;">
+                        "${resena.comentario}"
+                    </p>
+                    <span style="font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 700; color: #8b5e3c; text-transform: uppercase; letter-spacing: 0.5px;">
+                        ${resena.cliente}
+                    </span>
+                </div>
+            `;
+            contenedor.insertAdjacentHTML('beforeend', htmlResena);
+        });
+    }
+
+    // Forzar visualización centrada con flex
+    modal.style.setProperty('display', 'flex', 'important');
+};
+
+window.cerrarModalResenas = function() {
+    const modal = document.getElementById('modal-resenas');
+    if (modal) {
+        modal.style.setProperty('display', 'none', 'important');
+    }
+};
+
+// Cerrar al hacer clic fuera de la caja blanca o presionando Escape
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('modal-resenas');
+    if (modal) {
+        modal.style.setProperty('display', 'none', 'important');
+
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.style.setProperty('display', 'none', 'important');
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                modal.style.setProperty('display', 'none', 'important');
+            }
+        });
+    }
+});

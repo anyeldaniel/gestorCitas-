@@ -130,6 +130,31 @@
                     <span class="flecha">→</span>
                 </button>
 
+                <!-- BOTÓN DE RESEÑAS -->
+                @php
+                    // Preparamos los datos en un array de PHP y lo convertimos a JSON
+                    $resenasData = $terapeuta->resenasRecibidas->map(function($r) {
+                        return [
+                            "puntuacion" => $r->puntuacion,
+                            "comentario" => $r->comentario ?? "Sin comentario.",
+                            "cliente" => $r->cliente->nombre ?? "Cliente Anónimo",
+                            "fecha" => $r->created_at->format("d M, Y")
+                        ];
+                    })->toJson(); 
+                @endphp
+
+                <button type="button" class="btn-zen" style="background: #f6f1ea; color: #3d2c1e; border: 1px solid #e8e2dd; margin-top: 0.5rem;" 
+                        data-id="{{ $terapeuta->id }}"
+                        data-nombre="{{ addslashes($terapeuta->nombre) }}"
+                        data-promedio="{{ $terapeuta->promedio }}"
+                        data-total="{{ $terapeuta->total_resenas }}"
+                        data-resenas="{{ $resenasData }}"
+                        onclick="verResenasTerapeuta(this)">
+                    Ver Reseñas
+                    <span class="flecha" style="color: #8b5e3c;">★</span>
+                </button>
+                <!-- FIN BOTÓN DE RESEÑAS -->
+
                 @if(auth()->check() && auth()->user()->rol === 'admin')
                 <div style="display:flex; gap:0.25rem; width:100%;">
                     <button type="button" class="btn-terapeuta-editar" style="flex:1;" onclick="editarTerapeuta({{ $terapeuta->id }})">Editar Info</button>
@@ -161,6 +186,32 @@
     </div>
 </dialog>
 
+<!-- ========================================== -->
+<!-- MODAL DE RESEÑAS (ESTILO BLINDADO E INLINE)-->
+<!-- ========================================== -->
+<div id="modal-resenas" style="display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; background-color: rgba(45, 42, 38, 0.75); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); z-index: 2147483647; align-items: center; justify-content: center; padding: 1rem; box-sizing: border-box; margin: 0; border: none;">
+    
+    <!-- Caja contenedora blanca centrada -->
+    <div style="background: #fbf8f5; width: 100%; max-width: 580px; max-height: 85vh; border-radius: 14px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; overflow: hidden; position: relative; border: 1px solid #efe9e1;">
+        
+        <!-- Cabecera marrón -->
+        <div style="background-color: #8b5e3c; padding: 1.5rem 2rem; color: #ffffff; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-shrink: 0;">
+            <div style="display: flex; flex-direction: column; flex: 1; min-width: 0;">
+                <span style="font-family: 'Inter', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.35rem; color: rgba(255, 255, 255, 0.8);">OPINIONES VERIFICADAS</span>
+                <h2 id="resenas-titulo-terapeuta" style="font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 600; margin: 0; color: #ffffff; line-height: 1.2;">Reseñas</h2>
+            </div>
+            <button type="button" onclick="cerrarModalResenas()" style="background: rgba(255, 255, 255, 0.15); border: none; color: #ffffff; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;" aria-label="Cerrar modal">
+                ✕
+            </button>
+        </div>
+        
+        <!-- Cuerpo con scroll para las reseñas -->
+        <div id="lista-resenas" style="padding: 1.75rem 2rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem; flex: 1; box-sizing: border-box; background: #fbf8f5;">
+            <!-- Contenido dinámico -->
+        </div>
+
+    </div>
+</div>
 </section>
 @endsection
 

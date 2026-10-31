@@ -105,11 +105,6 @@
 
                 <button type="submit" class="button-aceptar">INICIAR SESIÓN</button>
 
-                <div class="separador"><span>O ingresa con</span></div>
-                <button type="button" class="btn-google">
-                    <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" alt="Google" width="16"> Google
-                </button>
-
                 <!-- BOTÓN MÓVIL: Cambiar al registro desde el login -->
                 <button type="button" class="btn-cambio-movil" id="btn-movil-a-registro">Crear cuenta nueva</button>
             </form>
