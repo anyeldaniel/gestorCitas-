@@ -48,13 +48,13 @@ class ReservaController extends Controller
      */
     public function store(Request $request)
     {
-        // Validación
+        // 1. VALIDACIÓN ORIGINAL DE TU SISTEMA
         $request->validate([
             'servicios'                     => 'required|array|min:1',
             'servicios.*'                   => 'exists:servicios,id',
             'trabajadores_por_servicio'     => 'required|array',
             'trabajadores_por_servicio.*'   => 'integer|exists:usuarios,id',
-            'fecha'                         => 'required|date|after_or_equal:today',
+            'fecha'                         => 'required|date', //'required|date|after_or_equal:today',
             'hora'                          => 'required',
         ]);
 
@@ -62,15 +62,51 @@ class ReservaController extends Controller
         $servicios = Servicio::whereIn('id', $request->servicios)->get();
         $montoTotal = $servicios->sum('precio');
 
-        // Guardamos el arreglo en una variable antes de usar reset() para evitar el error de PHP
+        // Guardamos el arreglo original que envía el formulario
         $trabajadoresArray = $request->trabajadores_por_servicio;
-        $primerEspecialistaId = reset($trabajadoresArray);
 
-        // Crear la cita principal
+        // Si el cliente seleccionó una alternativa sugerida por el sistema anti-choques
+        if ($request->filled('trabajador_id_alternativo')) {
+            $firstKey = array_key_first($trabajadoresArray);
+            $trabajadoresArray[$firstKey] = $request->trabajador_id_alternativo;
+        }
+
+        // Extraemos los IDs principales para la validación de solapamiento
+        $primerEspecialistaId = reset($trabajadoresArray);
+        $primerServicioId = $servicios->first()->id;
+
+        // 2. SISTEMA ANTI-CHOQUES (OVERLAPPING)
+        $citaOcupada = Cita::where('fecha', $request->fecha)
+            ->where('hora', $request->hora)
+            ->where('trabajador_id', $primerEspecialistaId)
+            ->whereIn('estado', ['pendiente', 'confirmada', 'revision'])
+            ->first();
+
+        if ($citaOcupada) {
+            // Si el horario está ocupado, buscamos alternativas de terapeutas libres
+            $terapeutasAlternativos = User::where('rol', 'trabajador')
+                ->where('id', '!=', $primerEspecialistaId)
+                ->whereHas('servicios', function($query) use ($primerServicioId) {
+                    $query->where('servicio_id', $primerServicioId);
+                })
+                ->whereDoesntHave('citas', function($query) use ($request) {
+                    $query->where('fecha', $request->fecha)
+                          ->where('hora', $request->hora)
+                          ->whereIn('estado', ['pendiente', 'confirmada', 'revision']);
+                })
+                ->get();
+
+            // Abortamos y mostramos las alternativas en la vista sin borrar datos
+            return back()->withInput()->withErrors([
+                'hora' => 'El especialista seleccionado ya tiene una reserva asignada en este horario.'
+            ])->with('terapeutas_alternativos', $terapeutasAlternativos);
+        }
+
+        // 3. GUARDADO DE LA CITA PRINCIPAL
         $cita = Cita::create([
             'cliente_id'    => auth()->id(),
             'trabajador_id' => $primerEspecialistaId, 
-            'servicio_id'   => $servicios->first()->id,
+            'servicio_id'   => $primerServicioId,
             'cabina_id'     => null,
             'monto_total'   => $montoTotal,
             'fecha'         => $request->fecha,
@@ -78,14 +114,14 @@ class ReservaController extends Controller
             'estado'        => 'pendiente',
         ]);
 
-        // Guardar TODOS los servicios en la tabla intermedia (cita_servicio)
+        // Guardar TODOS los servicios seleccionados en la tabla intermedia (cita_servicio)
         foreach ($trabajadoresArray as $servicioId => $especialistaId) {
             $cita->servicios()->attach($servicioId, [
                 'trabajador_id' => $especialistaId
             ]);
         }
 
-        // Redirigir al checkout de pago
+        // Redirigir a la pasarela de pago (checkout)
         return redirect()
             ->route('checkout.view', ['cita_id' => $cita->id])
             ->with('success', 'Cita apartada. Asignamos a tus especialistas seleccionados.');
@@ -106,7 +142,7 @@ class ReservaController extends Controller
     }
 
     /**
-     * Obtener especialistas disponibles para un servicio.
+     * Obtener especialistas disponibles para un servicio (Para peticiones AJAX).
      */
     public function getEspecialistas($id)
     {

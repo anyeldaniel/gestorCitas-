@@ -18,8 +18,12 @@ class ResenaController extends Controller
 
         $cita = Cita::findOrFail($request->cita_id);
 
-        // 1. Validar que la cita sea del cliente logueado
-        if ($cita->user_id !== auth()->id()) {
+        // La validación anterior consultaba user_id, pero citas almacena al cliente en cliente_id.
+        // voy a dejar esto comentado por si acaso y se valida con el campo real de la tabla.
+        // if ($cita->user_id !== auth()->id()) {
+       
+        // 1. Validar que la cita sea del cliente logueado usando la columna cliente_id.
+        if ((int) $cita->cliente_id !== (int) auth()->id()) {
             return back()->with('error', 'No puedes puntuar una cita que no es tuya.');
         }
 

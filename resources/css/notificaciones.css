@@ -1,7 +1,12 @@
 /* =========================================
    WIDGET BASE (La Campana)
    ========================================= */
-.notif-widget { position: relative; }
+.notif-widget {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
 
 .notif-campana {
     position: relative;
@@ -15,20 +20,29 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    -webkit-tap-highlight-color: transparent;
 }
-.notif-campana:hover { 
-    background: rgba(255, 255, 255, .15); 
+.notif-campana:hover {
+    background: rgba(255, 255, 255, .15);
 }
-.notif-campana svg { width: 20px; height: 20px; }
+.notif-campana:focus-visible {
+    outline: 2px solid rgba(255,255,255,.6);
+    outline-offset: 2px;
+}
+.notif-campana svg {
+    width: 20px;
+    height: 20px;
+    display: block;
+}
 
 /* =========================================
    BADGE (Contador rojo)
    ========================================= */
 .notif-badge {
     position: absolute;
-    top: 0px;
-    right: 0px;
-    background: #ef4444; /* Rojo vibrante */
+    top: 0;
+    right: 0;
+    background: #ef4444;
     color: #fff;
     border-radius: 999px;
     font-size: .65rem;
@@ -37,8 +51,9 @@
     line-height: 1;
     min-width: 16px;
     text-align: center;
-    border: 2px solid #8b5e3c; /* Hace que resalte sobre el header */
+    border: 2px solid #8b5e3c;
     box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    pointer-events: none;
 }
 
 /* =========================================
@@ -49,8 +64,11 @@
     right: 0;
     top: calc(100% + 15px);
     width: 360px;
-    max-height: 450px;
+    max-width: calc(100vw - 24px);
+    max-height: min(450px, calc(100vh - 100px));
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
     background: #ffffff;
     border-radius: 16px;
     box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0,0,0,0.1);
@@ -71,6 +89,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: .75rem;
     padding: 1.25rem 1.5rem;
     border-bottom: 1px solid #f3f4f6;
     position: sticky;
@@ -85,6 +104,10 @@
     color: #111827;
     font-weight: 600;
     letter-spacing: -0.01em;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .notif-btn-mini {
@@ -95,6 +118,10 @@
     cursor: pointer;
     font-weight: 600;
     transition: opacity .2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding: .25rem .25rem;
+    -webkit-tap-highlight-color: transparent;
 }
 .notif-btn-mini:hover { opacity: 0.7; }
 
@@ -115,21 +142,22 @@
     cursor: pointer;
     transition: background .2s;
     position: relative;
+    align-items: flex-start;
 }
 
-.notif-item:hover { 
-    background: #f9fafb; 
+.notif-item:last-child { border-bottom: 0; }
+
+.notif-item:hover {
+    background: #f9fafb;
 }
 
-/* Estilo para las no leídas */
-.notif-item.nueva { 
-    background: #fdf8f5; /* Un tono muy sutil del color del spa */
+.notif-item.nueva {
+    background: #fdf8f5;
 }
-.notif-item.nueva:hover { 
-    background: #faeee6; 
+.notif-item.nueva:hover {
+    background: #faeee6;
 }
 
-/* Puntito indicador de "No leída" a la derecha */
 .notif-item.nueva::after {
     content: '';
     position: absolute;
@@ -139,6 +167,7 @@
     height: 8px;
     background: #8b5e3c;
     border-radius: 50%;
+    flex-shrink: 0;
 }
 
 /* =========================================
@@ -154,14 +183,17 @@
     justify-content: center;
 }
 
-/* Colores dinámicos que vienen desde el JS (n.color) */
 .notif-icono-wrapper.rojo    { background: #fee2e2; color: #ef4444; }
 .notif-icono-wrapper.verde   { background: #dcfce7; color: #22c55e; }
 .notif-icono-wrapper.azul    { background: #dbeafe; color: #3b82f6; }
 .notif-icono-wrapper.violeta { background: #f3e8ff; color: #a855f7; }
 .notif-icono-wrapper.gris    { background: #f3f4f6; color: #6b7280; }
 
-.notif-icono-wrapper svg { width: 18px; height: 18px; }
+.notif-icono-wrapper svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+}
 
 /* =========================================
    TEXTOS
@@ -169,13 +201,14 @@
 .notif-contenido {
     flex: 1;
     min-width: 0;
-    padding-right: 1rem; /* Espacio para el puntito */
+    padding-right: 1rem;
 }
 
 .notif-cabecera {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
+    gap: .5rem;
     margin-bottom: .35rem;
 }
 
@@ -183,12 +216,17 @@
     font-size: .9rem;
     color: #111827;
     font-weight: 600;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .notif-tiempo {
     font-size: .75rem;
     color: #9ca3af;
     white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .notif-mensaje {
@@ -196,11 +234,12 @@
     margin: 0;
     color: #4b5563;
     line-height: 1.5;
-    /* Truncar texto a 2 líneas si es muy largo */
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    word-break: break-word;
 }
 
 /* ESTADO VACÍO */
@@ -212,17 +251,49 @@
 }
 
 /* =========================================
-   RESPONSIVE (MÓVIL)
+   RESPONSIVE (MÓVIL CORREGIDO)
    ========================================= */
 @media (max-width: 768px) {
     .notif-panel {
+        /* Lo fijamos a la pantalla */
         position: fixed;
-        right: 50%;
-        transform: translateX(50%);
-        top: 80px;
+        
+        /* Lo centramos usando márgenes, la forma más segura */
+        top: 10vh;
+        bottom: auto;
+        left: 0;
+        right: 0;
+        margin: 0 auto;
+        
+        /* Ancho seguro */
         width: calc(100vw - 32px);
         max-width: 400px;
-        max-height: calc(100vh - 120px);
+        max-height: 80vh;
+        
+        /* Z-INDEX ALTÍSIMO para que pase por encima del menú marrón */
+        z-index: 99999; 
+        
+        /* Fondo blanco sólido para que no se transparente el menú */
+        background: #ffffff;
+        
+        /* Quitamos la animación problemática */
+        transform: none;
+        animation: none;
+    }
+
+    /* Ajustes de la cabecera en móvil */
+    .notif-panel-header {
+        padding: 1.1rem 1.25rem;
+    }
+
+    .notif-item {
+        padding: 1rem 1.25rem;
+        gap: .75rem;
+    }
+
+    .notif-item.nueva::after {
+        right: 1.25rem;
+        top: 1.5rem;
     }
 
     .notif-widget-mobile {
@@ -238,4 +309,29 @@
         padding: 0.75rem;
         box-shadow: 0 2px 8px rgba(0,0,0,.1);
     }
+}
+
+/* =========================================
+   RESPONSIVE (MÓVIL PEQUEÑO)
+   ========================================= */
+@media (max-width: 420px) {
+    .notif-icono-wrapper {
+        width: 36px;
+        height: 36px;
+    }
+    .notif-cabecera strong {
+        font-size: .85rem;
+    }
+    .notif-mensaje {
+        font-size: .8rem;
+    }
+}
+
+/* =========================================
+   ACCESIBILIDAD / PREFERENCIAS
+   ========================================= */
+@media (prefers-reduced-motion: reduce) {
+    .notif-campana,
+    .notif-item,
+    .notif-btn-mini { transition: none; }
 }
