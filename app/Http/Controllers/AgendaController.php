@@ -5,9 +5,14 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Cita;
 use App\Models\User;
+// Mailable que contiene el asunto y el contenido del aviso de confirmación.
+use App\Mail\CitaConfirmada;
 use Carbon\Carbon;
 use App\Services\WeatherService;
 use App\Services\NotificacionService;
+// Facade de Laravel que entrega el correo al transporte configurado.
+use Illuminate\Support\Facades\Mail;
+use App\Mail\CitaCancelada;
 
 class AgendaController extends Controller
 {
@@ -170,7 +175,8 @@ class AgendaController extends Controller
             'estado' => 'required|in:pendiente,confirmada,en curso,completada',
         ]);
 
-        $cita = Cita::findOrFail($id);
+        // Carga al cliente y al servicio para usarlos en el correo sin consultas adicionales.
+        $cita = Cita::with(['cliente', 'servicio'])->findOrFail($id);
 
         if ($cita->estaCancelada()) {
             return response()->json([
@@ -179,10 +185,20 @@ class AgendaController extends Controller
             ], 422);
         }
 
+        // Guarda el estado previo para detectar si esta petición realmente confirma la cita.
+        $estadoAnterior = $cita->estado;
+        // Asigna a la cita el nuevo estado validado que llegó desde la agenda.
         $cita->estado = $request->estado;
+        // Persiste el cambio de estado en la base de datos.
         $cita->save();
 
         NotificacionService::cambioEstado($cita, $request->estado);
+
+        // Envía el aviso solo al cambiar a confirmada, evitando repetirlo si ya lo estaba.
+        if ($request->estado === 'confirmada' && $estadoAnterior !== 'confirmada') {
+            // Envía el Mailable a la dirección de correo del cliente de la cita.
+            Mail::to($cita->cliente->correo)->send(new CitaConfirmada($cita));
+        }
 
         return response()->json([
             'ok'       => true,
@@ -208,7 +224,7 @@ class AgendaController extends Controller
             'motivo.min'      => 'El motivo debe tener al menos 5 caracteres.',
         ]);
 
-        $cita = Cita::findOrFail($id);
+        $cita = Cita::with(['cliente', 'servicio'])->findOrFail($id);
 
         // 👈 NUEVO: verificar también la tabla pivote cita_servicio
         // (para multi-servicio, el trabajador puede no ser el $cita->trabajador_id principal)
@@ -244,6 +260,8 @@ class AgendaController extends Controller
         $cita->save();
 
         NotificacionService::citaCancelada($cita, $request->motivo);
+
+        Mail::to($cita->cliente->correo)->send(new CitaCancelada($cita, $request->motivo));
 
         return response()->json([
             'ok'      => true,

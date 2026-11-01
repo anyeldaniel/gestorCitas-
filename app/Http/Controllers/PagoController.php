@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Cita;
 use App\Models\Pago;
 use App\Models\User;
+use App\Mail\CitaPendienteConfirmacion;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
 class PagoController extends Controller
@@ -135,7 +137,8 @@ class PagoController extends Controller
             'monto'       => 'required|numeric|min:1',
         ]);
 
-        $cita = Cita::with('servicio')->findOrFail($data['cita_id']);
+        // Carga el servicio y el cliente para guardar el pago y dirigirle el correo.
+        $cita = Cita::with(['servicio', 'cliente'])->findOrFail($data['cita_id']);
 
         if ($cita->cliente_id !== auth()->id()) {
             abort(403, 'No puedes pagar esta cita.');
@@ -195,9 +198,13 @@ class PagoController extends Controller
             }
         });
 
+        // Aclara que aprobar el pago C2P no cambia el estado de confirmación de la cita.
         $mensaje = $estadoPago === 'aprobado'
-            ? 'Pago C2P aprobado. Tu cita está confirmada.'
+            ? 'Pago C2P aprobado. Tu cita está pendiente de confirmación por el equipo.'
             : 'Datos enviados. La recepción verificará tu pago en breve.';
+
+        // Envía el aviso una vez guardado el pago correctamente.
+        Mail::to($cita->cliente->correo)->send(new CitaPendienteConfirmacion($cita));
 
         return redirect()->route('clientes.reserva')->with('success', $mensaje);
     }

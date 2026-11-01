@@ -187,9 +187,15 @@
 
                         <div class="ticket-top">
                             <span class="ticket-ref">RESERVA #BR-{{ $fechaCarbon->format('Ymd') }}{{ $cita->id }}</span>
-                            <span class="badge {{ $estaPagado ? 'badge-pagado' : 'badge-pendiente' }}">
-                                {{ $estaPagado ? '✓ PAGADO' : '● PENDIENTE DE PAGO' }}
-                            </span>
+                            <div class="ticket-badges">
+                                <span class="badge {{ $estaPagado ? 'badge-pagado' : 'badge-pendiente' }}">
+                                    {{ $estaPagado ? '✓ PAGADO' : '● PENDIENTE DE PAGO RESTANTE' }}
+                                </span>
+                                {{-- Nuevo indicador del estado de confirmación de la cita. --}}
+                                <span class="badge {{ $cita->estado === 'confirmada' ? 'badge-pagado' : 'badge-pendiente' }}">
+                                    {{ $cita->estado === 'confirmada' ? '✓ CITA CONFIRMADA' : '● CITA PENDIENTE' }}
+                                </span>
+                            </div>
                         </div>
 
                         <h3 class="ticket-titulo">{{ $nombresServicios ?: ($cita->servicio->nombre_servicio ?? 'Tratamiento') }}</h3>
