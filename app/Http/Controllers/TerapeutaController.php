@@ -18,9 +18,11 @@ class TerapeutaController extends Controller
      */
     public function index()
     {
-        // 1. Traemos a los trabajadores con sus reseñas
+        // 1. Traemos a los trabajadores con sus reseñas Y los datos del cliente que la escribió
         $terapeutas = User::where('rol', 'trabajador')
-            ->with('resenasRecibidas')
+            ->with(['resenasRecibidas' => function ($query) {
+                $query->with('cliente')->latest(); // Trae al cliente y ordena por fecha descendente
+            }])
             ->get()
             ->map(function ($terapeuta) {
                 // 2. Calcular promedio y total de reseñas

@@ -1388,7 +1388,7 @@ dialog[open] .cuerpo-alerta-centrado {
 }
 
 /* ============================================
-   🆕 BUSCADOR DE TERAPEUTAS (CORREGIDO Y ORDENADO)
+    BUSCADOR DE TERAPEUTAS 
    ============================================ */
 .terapeutas-buscador {
     position: relative;
@@ -1734,4 +1734,156 @@ dialog[open] .cuerpo-alerta-centrado {
         width: 32px;
         height: 32px;
     }
+/* ==========================================================================
+   MODAL DE RESEÑAS - DISEÑO EXACTO Y CENTRADO PERFECTO
+   ========================================================================== */
+
+#modal-resenas {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background-color: rgba(0, 0, 0, 0.65) !important;
+    backdrop-filter: blur(5px) !important;
+    -webkit-backdrop-filter: blur(5px) !important;
+    z-index: 99999999 !important;
+    
+    /* BLOQUEADO TOTALMENTE POR DEFECTO (Evita que se abra solo en móviles) */
+    display: none !important; 
+    align-items: center !important;
+    justify-content: center !important;
+    
+    padding: 1rem !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    border: none !important;
+}
+
+/* Se activa únicamente mediante esta clase controlada por JavaScript */
+#modal-resenas.is-open {
+    display: flex !important;
+}
+
+/* Caja principal idéntica a la imagen de referencia */
+#modal-resenas .resenas-contenedor {
+    background: #fbf8f5 !important;
+    width: 100% !important;
+    max-width: 580px !important;
+    max-height: 85vh !important;
+    border-radius: 12px !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    position: relative !important;
+    box-sizing: border-box !important;
+    border: 1px solid #e8e2dd !important;
+}
+
+/* Cabecera marrón oscuro con tipografía e icono de cierre exactos */
+#modal-resenas .resenas-header {
+    background-color: #8b5e3c !important; /* Marrón elegante idéntico al diseño */
+    padding: 1.75rem 2rem !important;
+    color: #ffffff !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    gap: 1rem !important;
+    flex-shrink: 0 !important;
+}
+
+#modal-resenas .resenas-header-texto {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+#modal-resenas .resenas-subtitulo {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+#modal-resenas #resenas-titulo-terapeuta {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.6rem, 4vw, 2.1rem);
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: #ffffff !important;
+    line-height: 1.15;
+}
+
+#modal-resenas .resenas-resumen {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    color: #ffffff;
+}
+
+/* Botón de cierre circular superior derecho */
+#modal-resenas .resenas-btn-cerrar {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: none !important;
+    color: #ffffff !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    flex-shrink: 0 !important;
+    transition: background 0.2s ease !important;
+}
+
+#modal-resenas .resenas-btn-cerrar:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Contenedor interno con scroll para las reseñas */
+#modal-resenas .resenas-body {
+    padding: 1.75rem 2rem !important;
+    overflow-y: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1.5rem !important;
+    flex: 1 !important;
+    box-sizing: border-box !important;
+    background: #fbf8f5 !important;
+}
+
+/* Estilo individual para cada tarjeta de reseña dentro del modal */
+.resena-item-card {
+    border-bottom: 1px solid #efe9e1;
+    padding-bottom: 1.25rem;
+}
+
+.resena-item-card:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+/* Adaptación responsiva para celulares */
+@media (max-width: 600px) {
+    #modal-resenas {
+        padding: 0.75rem !important;
+    }
+    #modal-resenas .resenas-contenedor {
+        max-height: 92vh !important;
+    }
+    #modal-resenas .resenas-header {
+        padding: 1.25rem 1.25rem !important;
+    }
+    #modal-resenas .resenas-body {
+        padding: 1.25rem 1.25rem !important;
+    }
+}
 }
