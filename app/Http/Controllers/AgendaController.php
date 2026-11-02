@@ -13,6 +13,7 @@ use App\Services\NotificacionService;
 // Facade de Laravel que entrega el correo al transporte configurado.
 use Illuminate\Support\Facades\Mail;
 use App\Mail\CitaCancelada;
+use Illuminate\Support\Facades\Log; // <-- Agregado para manejar los logs de error
 
 class AgendaController extends Controller
 {
@@ -259,9 +260,22 @@ class AgendaController extends Controller
         $cita->cancelada_en        = now();
         $cita->save();
 
+        // 1. Notificación interna (campanita)
         NotificacionService::citaCancelada($cita, $request->motivo);
 
+        // 2. Correo electrónico
         Mail::to($cita->cliente->correo)->send(new CitaCancelada($cita, $request->motivo));
+
+        // 3. NUEVO: Notificación Push al cliente
+        try {
+            $cliente = \App\Models\User::find($cita->cliente_id);
+            if ($cliente) {
+                $cliente->notify(new \App\Notifications\CitaCanceladaNotification($cita));
+            }
+        } catch (\Exception $e) {
+            // Si falla el envío (ej. sin internet), no rompemos la cancelación.
+            Log::error("Error al enviar Push de cancelación: " . $e->getMessage());
+        }
 
         return response()->json([
             'ok'      => true,
