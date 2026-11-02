@@ -6,7 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Syncrostyle SPA — The Beauty Room')</title>
 
-    {{-- Google Fonts (de josebackend) --}}
+    {{-- ✅ PWA MANIFEST Y METADATOS --}}
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0A5C9E">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+
+    {{-- Google Fonts --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
@@ -14,10 +19,17 @@
     {{-- Estilos globales --}}
     @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/layout.js'])
 
-    {{-- Stack para que tus vistas hijas inyecten sus estilos --}}
     @stack('styles')
 </head>
-<body>
+{{-- 👇 DATOS INYECTADOS DE FORMA SEGURA PARA EL JAVASCRIPT 👇 --}}
+<body 
+    data-auth="{{ auth()->check() ? 'true' : 'false' }}"
+    data-route-push="{{ route('push.subscribe') }}"
+    data-vapid-key="{{ config('pwa.vapid_public_key') }}"
+    data-notif-lista="{{ route('notificaciones.lista') }}"
+    data-notif-leer="{{ route('notificaciones.leer', ['notificacion' => ':id']) }}"
+    data-notif-leer-todas="{{ route('notificaciones.leerTodas') }}"
+>
     @auth
         @php
             $user = auth()->user();
@@ -93,13 +105,11 @@
             
             <div class="flex flex-col gap-6 text-left w-full">
                 @auth
-                    {{-- 🔔 CAMPANA MÓVIL --}}
                     <div class="notif-widget notif-widget-mobile" id="notif-widget-mobile" style="margin-bottom: 1rem; display: flex; justify-content: flex-end;">
                         <button type="button" class="notif-campana" id="notif-btn-mobile" aria-label="Notificaciones">
                             <i data-lucide="bell"></i>
                             <span class="notif-badge" id="notif-badge-mobile" hidden>0</span>
                         </button>
-
                         <div class="notif-panel" id="notif-panel-mobile" hidden style="right: 0; left: auto; width: 100%;">
                             <header class="notif-panel-header">
                                 <strong>Notificaciones</strong>
@@ -169,18 +179,8 @@
         </div>
     </footer>
 
-    {{-- Inicialización de Iconos --}}
+    {{-- Scripts finales --}}
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script>
-        lucide.createIcons();
-        document.getElementById('hamburger-btn')?.addEventListener('click', () => {
-            document.getElementById('mobile-menu').classList.add('active');
-        });
-        window.NOTIF_URL_LISTA = "{{ route('notificaciones.lista') }}";
-        window.NOTIF_URL_LEER = "{{ route('notificaciones.leer', ['notificacion' => ':id']) }}";
-        window.NOTIF_URL_LEER_TODAS = "{{ route('notificaciones.leerTodas') }}";
-    </script>
-
     @vite(['resources/js/notificaciones.js'])
     @stack('scripts')
 </body>

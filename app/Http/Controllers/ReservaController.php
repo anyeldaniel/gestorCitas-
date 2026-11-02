@@ -7,6 +7,7 @@ use App\Models\Cita;
 use App\Models\Servicio;
 use App\Models\User;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Log; // <-- Agregado para manejar errores silenciosos
 
 class ReservaController extends Controller
 {
@@ -120,6 +121,30 @@ class ReservaController extends Controller
                 'trabajador_id' => $especialistaId
             ]);
         }
+
+        // ==========================================
+        // ENVÍO DE NOTIFICACIONES PUSH (NUEVO)
+        // ==========================================
+        try {
+            // 1. Notificar al Cliente
+            $cliente = auth()->user();
+            if ($cliente) {
+                $cliente->notify(new \App\Notifications\NuevaCitaNotification($cita));
+            }
+
+            // 2. Notificar a los Terapeutas (usando unique para no enviar doble si eligieron al mismo)
+            $terapeutasNotificar = array_unique(array_values($trabajadoresArray));
+            foreach ($terapeutasNotificar as $terapeutaId) {
+                $terapeuta = User::find($terapeutaId);
+                if ($terapeuta) {
+                    $terapeuta->notify(new \App\Notifications\NuevaCitaNotification($cita));
+                }
+            }
+        } catch (\Exception $e) {
+            // Si falla el envío (ej. sin internet), no rompemos la reserva.
+            Log::error("Error al enviar notificación Push: " . $e->getMessage());
+        }
+        // ==========================================
 
         // Redirigir a la pasarela de pago (checkout)
         return redirect()

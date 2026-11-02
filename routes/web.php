@@ -28,7 +28,7 @@ Route::view('/Registro', 'auth.Registro')->name('registro.view');
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 Route::post('/registrado', [LoginController::class, 'RegistroController'])->name('registro.create');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
-
+Route::post('/push/subscribe', [App\Http\Controllers\WebPushController::class, 'subscribe'])->name('push.subscribe');
 // ==========================================
 //   RECUPERACIÓN DE CONTRASEÑA
 // ==========================================
