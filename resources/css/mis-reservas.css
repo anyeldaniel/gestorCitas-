@@ -171,6 +171,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; font-weight: 700; 
     align-items: flex-start;
     margin-bottom: 1rem;
 }
+.ticket-badges { display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
 
 .ticket-ref {
     font-family: var(--font-body);
