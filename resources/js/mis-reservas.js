@@ -10,9 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const etiquetas = { 1: 'Muy malo 😞', 2: 'Malo 😕', 3: 'Regular 😐', 4: 'Bueno 😊', 5: '¡Excelente! 🤩' };
 
-    // Esta función la llamas desde el botón del historial o la consola
     window.abrirModalResena = function(citaId, nombreTerapeuta) {
-        // Reseteamos
         puntuacionSeleccionada = 0;
         estrellas.forEach(e => e.style.color = '#d1c7bd');
         textoPuntuacion.innerHTML = 'Selecciona una puntuación';
@@ -20,12 +18,10 @@ document.addEventListener('DOMContentLoaded', function() {
         btnEnviar.style.opacity = '0.5';
         document.getElementById('comentario-resena').value = '';
         
-        // Seteamos datos
         document.getElementById('resena-cita-id').value = citaId;
         document.getElementById('resena-nombre-terapeuta').textContent = nombreTerapeuta;
         inputPuntuacion.value = 0;
         
-        // Lo mostramos usando flexbox inline
         overlay.style.display = 'flex'; 
     };
 
@@ -59,7 +55,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Cerrar al hacer clic fuera
     overlay.addEventListener('click', function(e) {
         if (e.target === overlay) cerrarModalResena();
     });

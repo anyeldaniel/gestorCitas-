@@ -65,13 +65,32 @@
 @endphp
 
 <main class="dashboard-wrapper">
-    {{-- Mostrar los mensajes flash y errores de validación tras regresar del envío de la reseña. --}}
+    {{-- TARJETA CENTRAL DE ÉXITO (Gracias por tu reseña) --}}
     @if(session('success'))
-        <div role="status" style="margin-bottom: 1.5rem; padding: 1rem; border: 1px solid #a7d7b5; border-radius: 8px; background: #edf8f0; color: #245c32;">
-            {{ session('success') }}
+        <div id="modal-exito-resena" style="position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 99999; display: flex; align-items: center; justify-content: center;">
+            <div style="background: #fff; padding: 2.5rem 2rem; border-radius: 16px; width: 90%; max-width: 380px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: relative;">
+                
+                <!-- Icono decorativo -->
+                <div style="width: 60px; height: 60px; background: #edf8f0; color: #245c32; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.2rem auto; font-size: 1.8rem; font-weight: bold;">
+                    ✓
+                </div>
+
+                <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; color: #1f1d1a; margin: 0 0 0.5rem 0;">
+                    ¡Muchas gracias!
+                </h3>
+                
+                <p style="font-size: 0.9rem; color: #666; margin: 0 0 1.8rem 0; line-height: 1.5;">
+                    {{ session('success') }}
+                </p>
+
+                <button type="button" onclick="document.getElementById('modal-exito-resena').style.display='none';" style="width: 100%; padding: 0.75rem; border-radius: 24px; border: none; background: #1f1d1a; color: #fff; font-weight: 600; font-size: 0.8rem; letter-spacing: 0.5px; cursor: pointer;">
+                    ACEPTAR
+                </button>
+            </div>
         </div>
     @endif
 
+    {{-- ERRORES DE VALIDACIÓN O GENERALES --}}
     @if(session('error') || $errors->any())
         <div role="alert" style="margin-bottom: 1.5rem; padding: 1rem; border: 1px solid #e5b3b3; border-radius: 8px; background: #fff1f1; color: #842626;">
             @if(session('error'))
@@ -87,7 +106,6 @@
         </div>
     @endif
 
-    
     <!-- HERO & STATS -->
     <header class="hero-section">
         <section class="hero-text">
@@ -124,7 +142,6 @@
             <a href="{{ route('catalogo') }}" class="btn-nueva-reserva">Nueva reserva <span>+</span></a>
         </header>
 
-        {{-- MODIFICADO: mostrar una tarjeta por cada cita pendiente o confirmada. --}}
         @forelse($citasPendientes as $cita)
             @php
                 $fechaCarbon = \Carbon\Carbon::parse($cita->fecha);
@@ -133,7 +150,6 @@
                 $montoRestante = $cita->monto_total - $totalPagado;
                 $estaPagado = $totalPagado >= $cita->monto_total;
 
-                // NUEVAS VARIABLES PARA MULTI-SERVICIO
                 $nombresServicios = $cita->servicios->pluck('nombre_servicio')->join(' + ');
                 $duracionTotal = $cita->servicios->sum('duracion_minutos');
             @endphp
@@ -191,7 +207,6 @@
                                 <span class="badge {{ $estaPagado ? 'badge-pagado' : 'badge-pendiente' }}">
                                     {{ $estaPagado ? '✓ PAGADO' : '● PENDIENTE DE PAGO RESTANTE' }}
                                 </span>
-                                {{-- Nuevo indicador del estado de confirmación de la cita. --}}
                                 <span class="badge {{ $cita->estado === 'confirmada' ? 'badge-pagado' : 'badge-pendiente' }}">
                                     {{ $cita->estado === 'confirmada' ? '✓ CITA CONFIRMADA' : '● CITA PENDIENTE' }}
                                 </span>
@@ -292,7 +307,6 @@
             @forelse($historialCitas as $cita)
                 @php 
                     $fechaHist = \Carbon\Carbon::parse($cita->fecha); 
-                    // Verificamos si ya calificó esta cita
                     $yaCalifico = \App\Models\Resena::where('user_id', auth()->id())->where('cita_id', $cita->id)->exists();
                 @endphp
                 
@@ -307,7 +321,6 @@
                         <h4>{{ $cita->servicio->nombre_servicio ?? 'Tratamiento' }}</h4>
                         <p>{{ $cita->trabajador->nombre ?? 'Especialista' }} - {{ $cita->servicio->duracion_minutos ?? 60 }} min</p>
                         
-                        <!-- 🆕 BOTÓN PARA CALIFICAR (Solo si no lo ha hecho) -->
                         @if(!$yaCalifico)
                             <button type="button" class="btn-calificar" 
                                     onclick="abrirModalResena({{ $cita->id }}, '{{ $cita->trabajador->nombre ?? 'Especialista' }}')">
@@ -337,7 +350,6 @@
 
 <div id="modal-resena-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 99999; align-items: center; justify-content: center;">
    
-    <!-- CORRECCIÓN AQUÍ: Se usa 0 como ID temporal y se reemplaza dinámicamente al enviar -->
     <form id="form-resena" method="POST" action="{{ route('resenas.store', 0) }}" 
           onsubmit="this.action = this.action.replace('/0', '/' + document.getElementById('resena-cita-id').value);" 
           style="background: #fff; padding: 2rem; border-radius: 16px; width: 90%; max-width: 400px; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
@@ -375,8 +387,4 @@
         </div>
     </form>
 </div>
-
-@push('scripts')
-    @vite(['resources/js/mis-reservas.js'])
-@endpush
 @endsection

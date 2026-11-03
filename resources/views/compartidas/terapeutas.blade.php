@@ -187,14 +187,13 @@
 </dialog>
 
 <!-- ========================================== -->
-<!-- MODAL DE RESEÑAS (ESTILO BLINDADO E INLINE)-->
+<!-- MODAL DE RESEÑAS CON SOPORTE DE PAGINACIÓN -->
 <!-- ========================================== -->
 <div id="modal-resenas" style="display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; background-color: rgba(45, 42, 38, 0.75); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); z-index: 2147483647; align-items: center; justify-content: center; padding: 1rem; box-sizing: border-box; margin: 0; border: none;">
     
-    <!-- Caja contenedora blanca centrada -->
     <div style="background: #fbf8f5; width: 100%; max-width: 580px; max-height: 85vh; border-radius: 14px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; overflow: hidden; position: relative; border: 1px solid #efe9e1;">
         
-        <!-- Cabecera marrón -->
+        <!-- Cabecera -->
         <div style="background-color: #8b5e3c; padding: 1.5rem 2rem; color: #ffffff; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-shrink: 0;">
             <div style="display: flex; flex-direction: column; flex: 1; min-width: 0;">
                 <span style="font-family: 'Inter', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.35rem; color: rgba(255, 255, 255, 0.8);">OPINIONES VERIFICADAS</span>
@@ -205,14 +204,13 @@
             </button>
         </div>
         
-        <!-- Cuerpo con scroll para las reseñas -->
+        <!-- Cuerpo (Con Flex para que el paginador quede anclado abajo si hace falta) -->
         <div id="lista-resenas" style="padding: 1.75rem 2rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem; flex: 1; box-sizing: border-box; background: #fbf8f5;">
-            <!-- Contenido dinámico -->
+            <!-- Contenido dinámico inyectado por JS -->
         </div>
 
     </div>
 </div>
-</section>
 @endsection
 
 @push('scripts')

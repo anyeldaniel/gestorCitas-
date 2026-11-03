@@ -604,10 +604,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+// ============================================
+// MODAL DE RESEÑAS - CONTROLADOR CON PAGINACIÓN
+// ============================================
+let resenasActuales = [];
+let paginaActualResenas = 1;
+const LIMITE_RESENAS_POR_PAGINA = 3; // 👈 Aquí puedes cambiar cuántas reseñas se ven por página
 
-// ============================================
-// MODAL DE RESEÑAS - CONTROLADOR LIMPIO
-// ============================================
 window.verResenasTerapeuta = function(btn) {
     if (typeof event !== 'undefined' && event) {
         event.stopPropagation();
@@ -616,81 +619,108 @@ window.verResenasTerapeuta = function(btn) {
 
     const modal = document.getElementById('modal-resenas');
     const titulo = document.getElementById('resenas-titulo-terapeuta');
-    const contenedor = document.getElementById('lista-resenas');
     
     if (!modal) return;
 
     const nombre = btn.dataset.nombre || 'Especialista';
-    let resenas = [];
     try {
-        resenas = JSON.parse(btn.dataset.resenas || '[]');
+        resenasActuales = JSON.parse(btn.dataset.resenas || '[]');
     } catch (e) {
         console.error("Error al parsear las reseñas", e);
+        resenasActuales = [];
     }
     
     titulo.textContent = `Reseñas de ${nombre}`;
+    paginaActualResenas = 1; // Reiniciar a la primera página
+    renderizarPaginaResenas();
+
+    // Forzar visualización centrada con flex
+    modal.style.setProperty('display', 'flex', 'important');
+    modal.classList.add('is-open');
+};
+
+window.renderizarPaginaResenas = function() {
+    const contenedor = document.getElementById('lista-resenas');
+    if (!contenedor) return;
     contenedor.innerHTML = '';
 
-    if (resenas.length === 0) {
+    if (resenasActuales.length === 0) {
         contenedor.innerHTML = `
             <div style="text-align: center; padding: 2.5rem 1rem; color: #8c7a6b;">
                 <p style="font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; margin: 0;">Este especialista aún no cuenta con opiniones registradas.</p>
                 <small style="font-size: 0.8rem; color: #a89a8c; display: block; margin-top: 0.4rem;">¡Sé el primero en calificar su servicio!</small>
             </div>
         `;
-    } else {
-        resenas.forEach(resena => {
-            let estrellasHTML = '';
-            const puntuacion = parseInt(resena.puntuacion || 0);
-            for (let i = 1; i <= 5; i++) {
-                estrellasHTML += i <= puntuacion ? '★' : '<span style="color: #d1c7bd;">★</span>';
-            }
-
-            const htmlResena = `
-                <div style="border-bottom: 1px solid #efe9e1; padding-bottom: 1.25rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-                        <div style="color: #f5b301; font-size: 0.95rem; letter-spacing: 2px;">${estrellasHTML}</div>
-                        <span style="font-family: 'Inter', sans-serif; font-size: 0.72rem; color: #a89a8c; font-weight: 500;">${resena.fecha}</span>
-                    </div>
-                    <p style="font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-style: italic; color: #3d2c1e; margin: 0 0 0.5rem 0; line-height: 1.4;">
-                        "${resena.comentario}"
-                    </p>
-                    <span style="font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 700; color: #8b5e3c; text-transform: uppercase; letter-spacing: 0.5px;">
-                        ${resena.cliente}
-                    </span>
-                </div>
-            `;
-            contenedor.insertAdjacentHTML('beforeend', htmlResena);
-        });
+        return;
     }
 
-    // Forzar visualización centrada con flex
-    modal.style.setProperty('display', 'flex', 'important');
+    // Calcular índices para el slice
+    const totalResenas = resenasActuales.length;
+    const totalPaginas = Math.ceil(totalResenas / LIMITE_RESENAS_POR_PAGINA);
+    
+    if (paginaActualResenas > totalPaginas) paginaActualResenas = totalPaginas;
+    if (paginaActualResenas < 1) paginaActualResenas = 1;
+
+    const inicio = (paginaActualResenas - 1) * LIMITE_RESENAS_POR_PAGINA;
+    const fin = inicio + LIMITE_RESENAS_POR_PAGINA;
+    const resenasPagina = resenasActuales.slice(inicio, fin);
+
+    // Renderizar las reseñas de la página actual
+    resenasPagina.forEach(resena => {
+        let estrellasHTML = '';
+        const puntuacion = parseInt(resena.puntuacion || 0);
+        for (let i = 1; i <= 5; i++) {
+            estrellasHTML += i <= puntuacion ? '★' : '<span style="color: #d1c7bd;">★</span>';
+        }
+
+        const htmlResena = `
+            <div class="resena-item-card" style="border-bottom: 1px solid #efe9e1; padding-bottom: 1.25rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                    <div style="color: #f5b301; font-size: 0.95rem; letter-spacing: 2px;">${estrellasHTML}</div>
+                    <span style="font-family: 'Inter', sans-serif; font-size: 0.72rem; color: #a89a8c; font-weight: 500;">${resena.fecha}</span>
+                </div>
+                <p style="font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-style: italic; color: #3d2c1e; margin: 0 0 0.5rem 0; line-height: 1.4;">
+                    "${resena.comentario}"
+                </p>
+                <span style="font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 700; color: #8b5e3c; text-transform: uppercase; letter-spacing: 0.5px;">
+                    ${resena.cliente}
+                </span>
+            </div>
+        `;
+        contenedor.insertAdjacentHTML('beforeend', htmlResena);
+    });
+
+    // Agregar barra de paginación si hay más de una página
+    if (totalPaginas > 1) {
+        const paginadorHTML = `
+            <div class="modal-paginador-container" style="display: flex; align-items: center; justify-content: space-between; padding-top: 1rem; border-top: 1px solid #efe9e1; margin-top: auto;">
+                <button type="button" onclick="cambiarPaginaResenas(-1)" ${paginaActualResenas === 1 ? 'disabled' : ''} class="btn-paginador-modal" style="padding: 0.4rem 0.9rem; border-radius: 6px; border: 1px solid #e8e2dd; background: ${paginaActualResenas === 1 ? '#f5efe8' : '#ffffff'}; color: ${paginaActualResenas === 1 ? '#a89a8c' : '#4a3b32'}; font-size: 0.75rem; font-weight: 600; cursor: ${paginaActualResenas === 1 ? 'not-allowed' : 'pointer'};">
+                    ← Anterior
+                </button>
+                <span style="font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 600; color: #8c7a6b; text-transform: uppercase; letter-spacing: 0.5px;">
+                    Página ${paginaActualResenas} de ${totalPaginas}
+                </span>
+                <button type="button" onclick="cambiarPaginaResenas(1)" ${paginaActualResenas === totalPaginas ? 'disabled' : ''} class="btn-paginador-modal" style="padding: 0.4rem 0.9rem; border-radius: 6px; border: 1px solid #e8e2dd; background: ${paginaActualResenas === totalPaginas ? '#f5efe8' : '#ffffff'}; color: ${paginaActualResenas === totalPaginas ? '#a89a8c' : '#4a3b32'}; font-size: 0.75rem; font-weight: 600; cursor: ${paginaActualResenas === totalPaginas ? 'not-allowed' : 'pointer'};">
+                    Siguiente →
+                </button>
+            </div>
+        `;
+        contenedor.insertAdjacentHTML('beforeend', paginadorHTML);
+    }
+};
+
+window.cambiarPaginaResenas = function(direccion) {
+    const totalPaginas = Math.ceil(resenasActuales.length / LIMITE_RESENAS_POR_PAGINA);
+    paginaActualResenas += direccion;
+    if (paginaActualResenas < 1) paginaActualResenas = 1;
+    if (paginaActualResenas > totalPaginas) paginaActualResenas = totalPaginas;
+    renderizarPaginaResenas();
 };
 
 window.cerrarModalResenas = function() {
     const modal = document.getElementById('modal-resenas');
     if (modal) {
         modal.style.setProperty('display', 'none', 'important');
+        modal.classList.remove('is-open');
     }
 };
-
-// Cerrar al hacer clic fuera de la caja blanca o presionando Escape
-document.addEventListener('DOMContentLoaded', () => {
-    const modal = document.getElementById('modal-resenas');
-    if (modal) {
-        modal.style.setProperty('display', 'none', 'important');
-
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                modal.style.setProperty('display', 'none', 'important');
-            }
-        });
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                modal.style.setProperty('display', 'none', 'important');
-            }
-        });
-    }
-});

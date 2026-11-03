@@ -1,7 +1,7 @@
 "use strict";
 
 // 👇 Cambia este número cada vez que modifiques este archivo para forzar la actualización en los navegadores
-const CACHE_KEY = "syncrostyle-cache-v2"; 
+const CACHE_KEY = "syncrostyle-cache-v4"; 
 const IGNORED_PATHS = ['/api/', '/livewire/', '/_inertia/'];
 const OFFLINE_URL = "/offline.html";
 
