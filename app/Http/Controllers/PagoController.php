@@ -26,7 +26,7 @@ class PagoController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
-        return view('recepcion.verificar-pagos', compact('pagos'));
+        return view('compartidas.verificar-pago', compact('pagos'));
     }
 
     /**

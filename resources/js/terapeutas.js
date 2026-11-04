@@ -529,10 +529,66 @@ window.sincronizarEspecialidades = function() {
 window.validarContrasenas = function() {
     const pass = document.getElementById('password');
     const confirm = document.getElementById('password_confirmation');
+    const emailInput = document.getElementById('email');
+    
+    const errorPassDiv = document.getElementById('error-password');
+    const errorEmailDiv = document.getElementById('error-email');
+
+    // Limpiar errores previos
+    if (pass) pass.classList.remove('input-error');
+    if (confirm) confirm.classList.remove('input-error');
+    if (emailInput) emailInput.classList.remove('input-error');
+    
+    if (errorPassDiv) {
+        errorPassDiv.style.display = 'none';
+        errorPassDiv.textContent = '';
+    }
+    if (errorEmailDiv) {
+        errorEmailDiv.style.display = 'none';
+        errorEmailDiv.textContent = '';
+    }
+
+    // 1. Validación de formato básico de correo (opcional en cliente)
+    if (emailInput && emailInput.value.trim() !== '') {
+        const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!regexEmail.test(emailInput.value.trim())) {
+            emailInput.classList.add('input-error');
+            if (errorEmailDiv) {
+                errorEmailDiv.textContent = '⚠️ Ingresa una dirección de correo electrónico válida.';
+                errorEmailDiv.style.display = 'flex';
+            }
+            emailInput.focus();
+            return false;
+        }
+    }
+
+    // Si no hay campos de contraseña obligatorios (ej. modo edición donde se ocultan)
     if (!pass || !confirm) return true;
     if (pass.value === '' && confirm.value === '') return true;
-    if (pass.value !== confirm.value) { alert('❌ Las contraseñas no coinciden.'); pass.focus(); return false; }
-    if (pass.value.length > 0 && pass.value.length < 8) { alert('❌ La contraseña debe tener al menos 8 caracteres.'); pass.focus(); return false; }
+
+    // 2. Validación de longitud mínima de contraseña
+    if (pass.value.length > 0 && pass.value.length < 8) {
+        pass.classList.add('input-error');
+        if (errorPassDiv) {
+            errorPassDiv.textContent = '⚠️ La contraseña debe tener al menos 8 caracteres.';
+            errorPassDiv.style.display = 'flex';
+        }
+        pass.focus();
+        return false;
+    }
+
+    // 3. Validación de coincidencia de contraseñas
+    if (pass.value !== confirm.value) {
+        pass.classList.add('input-error');
+        confirm.classList.add('input-error');
+        if (errorPassDiv) {
+            errorPassDiv.textContent = '⚠️ Las contraseñas no coinciden.';
+            errorPassDiv.style.display = 'flex';
+        }
+        confirm.focus();
+        return false;
+    }
+
     return true;
 };
 

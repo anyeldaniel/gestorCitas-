@@ -948,3 +948,167 @@
     .modulo-vista .celda-monto { font-size: 1rem; }
     .modulo-vista .btn-autorizar { padding: 0 0.75rem; font-size: 0.65rem; }
 }
+
+/* ==========================================================================
+   MODAL DE CONFIRMACIÓN - CENTRADO 
+   Corrigiendo los errores de renderizado donde se veía feíto al confirmar la cita de pago, ahora se ve centrado y con un diseño más limpio. Aprendan niños.
+   ========================================================================== */
+dialog.modal-contenedor-alerta-critica {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    border: none;
+    border-radius: 16px;
+    padding: 0;
+    background: #ffffff !important; /* Forzamos un blanco sólido absoluto */
+    color: var(--text-main);
+    max-width: 440px;
+    width: 90%;
+    max-height: 90vh;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35); /* Sombra más sólida para destacar */
+    animation: fadeInModal 0.3s var(--ease-zen) forwards;
+    z-index: 99999;
+}
+
+dialog.modal-contenedor-alerta-critica::backdrop {
+    background: rgba(30, 25, 20, 0.75); /* Oscurecemos más el fondo trasero para que resalte el modal */
+    backdrop-filter: blur(5px);
+}
+
+.cuerpo-alerta-centrado {
+    background: #ffffff !important; /* Aseguramos blanco sólido también en el contenedor interno */
+    padding: 2rem 2.25rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    border-radius: 16px;
+}
+
+.icono-alerta-advertencia {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    line-height: 1;
+}
+
+.titulo-alerta-critica {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0 0 0.5rem 0;
+    letter-spacing: -0.01em;
+}
+
+.mensaje-alerta-descripcion {
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    color: var(--text-soft);
+    margin: 0 0 1.5rem 0;
+    line-height: 1.5;
+}
+
+.textarea-motivo {
+    width: 100%;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    color: var(--text-main);
+    background: var(--bg-soft);
+    margin-bottom: 1.5rem;
+    resize: vertical;
+    outline: none;
+    transition: var(--transition);
+}
+
+.textarea-motivo::placeholder {
+    color: var(--text-light);
+}
+
+.textarea-motivo:focus {
+    border-color: var(--primary-brown);
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(139, 94, 60, 0.1);
+}
+
+.pie-alerta-botones {
+    display: flex;
+    gap: 0.75rem;
+    width: 100%;
+    justify-content: flex-end;
+}
+
+.btn-cancelar-alerta, 
+.btn-confirmar-accion {
+    flex: 1;
+    height: 42px;
+    padding: 0 1.25rem;
+    border-radius: 50px;
+    font-family: var(--font-ui);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    border: none;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-cancelar-alerta {
+    background: var(--bg-soft);
+    color: var(--text-soft);
+    border: 1px solid var(--border-color);
+}
+
+.btn-cancelar-alerta:hover {
+    background: var(--border-light);
+    color: var(--text-main);
+}
+
+.btn-confirmar-accion {
+    background: var(--primary-brown-ink);
+    color: #ffffff;
+}
+
+.btn-confirmar-accion:hover {
+    background: var(--primary-brown-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Modificadores de color para los botones dinámicos de acción */
+.btn-accion-autorizar {
+    background: var(--color-ok) !important;
+}
+.btn-accion-autorizar:hover {
+    background: #006256 !important;
+    box-shadow: 0 6px 14px rgba(0, 121, 107, 0.25) !important;
+}
+
+.btn-accion-rechazar {
+    background: var(--color-danger) !important;
+}
+.btn-accion-rechazar:hover {
+    background: #a52828 !important;
+    box-shadow: 0 6px 14px rgba(197, 48, 48, 0.25) !important;
+}
+
+.hidden {
+    display: none !important;
+}
+
+@keyframes fadeInModal {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-12px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
