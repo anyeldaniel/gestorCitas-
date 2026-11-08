@@ -46,7 +46,7 @@
             @error('email') <span class="error-texto">{{ $message }}</span> @enderror
 
             <!-- Contenedor del reCAPTCHA -->
-            <div class="g-recaptcha" data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}" style="margin-top: 5px; display: flex; justify-content: center;"></div>
+            <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}" style="margin-top: 5px; display: flex; justify-content: center;"></div>
             @error('captcha') <span class="error-texto" style="text-align: center;">{{ $message }}</span> @enderror
 
             <button type="submit" class="button-aceptar">ENVIAR ENLACE</button>

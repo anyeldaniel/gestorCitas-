@@ -5,12 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Cita;
 use App\Models\User;
-// Mailable que contiene el asunto y el contenido del aviso de confirmación.
-use App\Mail\CitaConfirmada;
 use Carbon\Carbon;
 use App\Services\WeatherService;
 use App\Services\NotificacionService;
-// Facade de Laravel que entrega el correo al transporte configurado.
 use Illuminate\Support\Facades\Mail;
 use App\Mail\CitaCancelada;
 use Illuminate\Support\Facades\Log; // <-- Agregado para manejar los logs de error
@@ -186,20 +183,21 @@ class AgendaController extends Controller
             ], 422);
         }
 
-        // Guarda el estado previo para detectar si esta petición realmente confirma la cita.
-        $estadoAnterior = $cita->estado;
+        // Sin el visto bueno del pago, no damos la cita por confirmada.
+        if ($request->estado === 'confirmada' && !$cita->pagos()->where('estado_pago', 'aprobado')->exists())
+             {
+            return response()->json([
+                'ok'      => false,
+                'mensaje' => 'Primero hay que autorizar el pago para confirmar esta cita.',
+            ], 422);
+        }
+
         // Asigna a la cita el nuevo estado validado que llegó desde la agenda.
         $cita->estado = $request->estado;
         // Persiste el cambio de estado en la base de datos.
         $cita->save();
 
         NotificacionService::cambioEstado($cita, $request->estado);
-
-        // Envía el aviso solo al cambiar a confirmada, evitando repetirlo si ya lo estaba.
-        if ($request->estado === 'confirmada' && $estadoAnterior !== 'confirmada') {
-            // Envía el Mailable a la dirección de correo del cliente de la cita.
-            Mail::to($cita->cliente->correo)->send(new CitaConfirmada($cita));
-        }
 
         return response()->json([
             'ok'       => true,

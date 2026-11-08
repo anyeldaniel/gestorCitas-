@@ -45,6 +45,8 @@
             <label for="email">Correo Electrónico</label>
             <input type="email" id="email" name="email" required value="{{ old('email') }}" placeholder="ejemplo@thebeautyroom.com">
             <small style="color: #64748b; font-size: 0.8rem;">Debe ser un correo válido y no estar registrado previamente.</small>
+            <!-- 🛑 Contenedor dinámico para error de correo -->
+            <div id="error-email" class="mensaje-error-campo" style="display: none;"></div>
         </fieldset>
 
         <!-- ESPECIALIDADES -->
@@ -68,7 +70,7 @@
         </fieldset>
 
         <!-- CONTRASEÑA -->
-        <section id="campo-password" class="grupo-seguridad-modal">
+<section id="campo-password" class="grupo-seguridad-modal">
             <fieldset class="campo-formulario campo-password-contenedor">
                 <label for="password">Contraseña de Acceso</label>
                 <div class="input-icono-wrapper">
@@ -93,6 +95,8 @@
                         </svg>
                     </button>
                 </div>
+                <!-- 🛑 Contenedor dinámico unificado debajo de confirmación de contraseña -->
+                <div id="error-password" class="mensaje-error-campo" style="display: none;"></div>
             </fieldset>
         </section>
 

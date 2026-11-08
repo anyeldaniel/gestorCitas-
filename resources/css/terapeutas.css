@@ -1887,3 +1887,30 @@ dialog[open] .cuerpo-alerta-centrado {
     }
 }
 }
+
+/* --- Alertas de Error en Inputs del Modal --- */
+.input-error {
+    border-color: #c53030 !important;
+    background-color: #fdf2f2 !important;
+}
+
+.input-error:focus {
+    box-shadow: 0 0 0 3px rgba(197, 48, 48, 0.15) !important;
+}
+
+.mensaje-error-campo {
+    font-family: var(--font-body, 'Inter', sans-serif);
+    font-size: 0.75rem;
+    color: #c53030;
+    margin-top: 0.35rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    animation: fadeInError 0.2s ease-in-out;
+}
+
+@keyframes fadeInError {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}

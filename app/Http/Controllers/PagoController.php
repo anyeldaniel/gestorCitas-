@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Cita;
 use App\Models\Pago;
 use App\Models\User;
+use App\Mail\CitaConfirmada;
 use App\Mail\CitaPendienteConfirmacion;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -26,7 +27,7 @@ class PagoController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
-        return view('recepcion.verificar-pagos', compact('pagos'));
+        return view('compartidas.verificar-pago', compact('pagos'));
     }
 
     /**
@@ -42,12 +43,31 @@ class PagoController extends Controller
      */
     public function aprobarPago(int $id): RedirectResponse
     {
-        $pago = Pago::findOrFail($id);
+        // Revisamos el pago y dejamos la cita lista en el mismo paso, sin medias tintas.
+        $citaConfirmada = DB::transaction(function () use ($id) {
+            $pago = Pago::with(['cita.cliente', 'cita.servicio'])
+                ->lockForUpdate()
+                ->findOrFail($id);
 
-        DB::transaction(function () use ($pago) {
+            // Si ya lo habían revisado, no repetimos la confirmación ni mandamos otro correo.
+            if ($pago->estado_pago !== 'revision') {
+                return null;
+            }
+
             $pago->update(['estado_pago' => 'aprobado']);
-            $pago->cita->update(['estado' => 'confirmada']);
+            $cita = $pago->cita;
+            $cita->update(['estado' => 'confirmada']);
+
+            return $cita;
         });
+
+        // Si ya estaba revisado, avisamos y no volvemos a hacer el proceso.
+        if (!$citaConfirmada) {
+            return back()->with('success', 'Este pago ya había sido revisado.');
+        }
+
+        // El correo sale después de guardar los cambios, para avisar que la cita ya quedó confirmada.
+        Mail::to($citaConfirmada->cliente->correo)->send(new CitaConfirmada($citaConfirmada));
 
         return back()->with('success', 'Pago aprobado y cita confirmada exitosamente.');
     }
@@ -158,55 +178,46 @@ class PagoController extends Controller
             $request->validate([
                 'banco'    => 'required|string',
                 'telefono' => 'required|string',
-                'token'    => 'required|string|size:6',
+                'token'    => 'required|digits:6',
             ]);
 
-            $resultado = $this->simularApiC2P(
-                $request->banco,
-                $request->telefono,
-                $request->token,
-            );
 
-            if ($resultado['status'] !== 'aprobado') {
-                return back()->withErrors([
-                    'pago_fallido' => 'Transacción C2P rechazada: ' . $resultado['mensaje'],
-                ]);
-            }
+            // Antes se simulaba la respuesta del banco; ahora recepción revisa el pago manualmente.
+            // $resultado = $this->simularApiC2P($request->banco, $request->telefono, $request->token);
+            // if ($resultado['status'] !== 'aprobado') {
+            //     return back()->withErrors([
+            //         'pago_fallido' => 'Transacción C2P rechazada: ' . $resultado['mensaje'],
+            //     ]);
+            // }
+            // $estadoPago = 'aprobado';
 
-            $estadoPago = 'aprobado';
+
+
         } elseif ($data['metodo_pago'] === 'transferencia') {
             $request->validate(['referencia' => 'required|string|min:4']);
-            $estadoPago = 'revision';
-        } else {
-            $estadoPago = 'revision';
         }
 
-        DB::transaction(function () use ($request, $cita, $data, $estadoPago) {
+        // El numerito queda anotado, pero todavía falta que recepción dé el visto bueno.
+        DB::transaction(function () use ($request, $cita, $data) {
             Pago::create([
                 'cita_id'          => $cita->id,
                 'monto_anticipado' => $data['monto'],
                 'metodo_pago'      => $data['metodo_pago'],
                 'banco_origen'     => $request->banco ?? null,
-                'referencia'       => $request->referencia
-                    ?? ($data['metodo_pago'] === 'c2p' ? 'C2P-AUTO' : null),
+                'referencia'       => $data['metodo_pago'] === 'c2p'
+                    ? $request->token
+                    : ($request->referencia ?? null),
                 'telefono_pago'    => $request->telefono ?? null,
-                'estado_pago'      => $estadoPago,
+                'estado_pago'      => 'revision',
             ]);
-
-            if ($estadoPago === 'aprobado') {
-                $cita->update(['estado' => 'pendiente']); // La cita se mantiene pendiente hasta que la recepción la confirme
-            }
         });
-
-        // Aclara que aprobar el pago C2P no cambia el estado de confirmación de la cita.
-        $mensaje = $estadoPago === 'aprobado'
-            ? 'Pago C2P aprobado. Tu cita está pendiente de confirmación por el equipo.'
-            : 'Datos enviados. La recepción verificará tu pago en breve.';
 
         // Envía el aviso una vez guardado el pago correctamente.
         Mail::to($cita->cliente->correo)->send(new CitaPendienteConfirmacion($cita));
 
-        return redirect()->route('clientes.reserva')->with('success', $mensaje);
+        return redirect()
+            ->route('clientes.reserva')
+            ->with('success', 'Datos enviados. La recepción verificará tu pago en breve.');
     }
 
     public function procesar(Request $request, int $citaId): RedirectResponse
@@ -216,12 +227,13 @@ class PagoController extends Controller
         return $this->procesarPago($request);
     }
 
-    private function simularApiC2P(string $banco, string $telefono, string $token): array
-    {
-        if ($token === '123456') {
-            return ['status' => 'aprobado', 'mensaje' => 'Operación exitosa'];
-        }
-
-        return ['status' => 'rechazado', 'mensaje' => 'Fondos insuficientes o token inválido'];
-    }
+    // Esta era solo una prueba local; no confirmaba el pago con el banco.
+    // private function simularApiC2P(string $banco, string $telefono, string $token): array
+    // {
+    //     if ($token === '123456') {
+    //         return ['status' => 'aprobado', 'mensaje' => 'Operación exitosa'];
+    //     }
+    //
+    //     return ['status' => 'rechazado', 'mensaje' => 'Fondos insuficientes o token inválido'];
+    // }
 }

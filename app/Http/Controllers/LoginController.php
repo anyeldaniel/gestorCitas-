@@ -9,6 +9,7 @@ use App\Http\Requests\RegisterUserRequest;
 use App\Models\User;
 use App\Mail\CuentaCreada;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class LoginController extends Controller
 {
@@ -28,14 +29,19 @@ class LoginController extends Controller
         }
 
         // Se envía el código secreto a Google para verificar que sea un humano real.
-        $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
-            'secret' => env('RECAPTCHA_SECRET_KEY'),
+        $response = Http::asForm()->timeout(10)->post('https://www.google.com/recaptcha/api/siteverify', [
+            'secret' => config('services.recaptcha.secret_key'),
             'response' => $request->input('g-recaptcha-response'),
             'remoteip' => $request->ip(),
         ]);
 
         // Si Google rechaza el código (es un bot o el tiempo expiró).
-        if (!$response->json('success')) {
+        if (!$response->successful() || $response->json('success') !== true) {
+            Log::warning('Google rechazó la verificación reCAPTCHA durante el registro.', [
+                'error_codes' => $response->json('error-codes', []),
+                'http_status' => $response->status(),
+            ]);
+
             return back()
                 ->withErrors(['captcha' => 'La validación del CAPTCHA falló. Intenta de nuevo.'])
                 ->withInput();

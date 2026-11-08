@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class PasswordController extends Controller
 {
@@ -20,14 +21,19 @@ class PasswordController extends Controller
         }
 
         // 2. Enviamos el código secreto a Google para verificar que sea un humano real
-        $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
-            'secret' => env('RECAPTCHA_SECRET_KEY'),
+        $response = Http::asForm()->timeout(10)->post('https://www.google.com/recaptcha/api/siteverify', [
+            'secret' => config('services.recaptcha.secret_key'),
             'response' => $request->input('g-recaptcha-response'),
             'remoteip' => $request->ip(),
         ]);
 
         // 3. Si Google rechaza el código (es un bot o el tiempo expiró)
-        if (!$response->json('success')) {
+        if (!$response->successful() || $response->json('success') !== true) {
+            Log::warning('Google rechazó la verificación reCAPTCHA durante la recuperación de contraseña.', [
+                'error_codes' => $response->json('error-codes', []),
+                'http_status' => $response->status(),
+            ]);
+
             return back()
                 ->withErrors(['captcha' => 'La validación del CAPTCHA falló. Intenta de nuevo.'])
                 ->withInput();

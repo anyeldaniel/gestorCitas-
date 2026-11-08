@@ -163,7 +163,7 @@
 
                 <!-- reCAPTCHA CENTRADO -->
                 <div class="caja-recaptcha">
-                    <div class="g-recaptcha" data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}"></div>
+                    <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
                 </div>
                 @error('captcha') <span class="error-texto">{{ $message }}</span> @enderror
 
