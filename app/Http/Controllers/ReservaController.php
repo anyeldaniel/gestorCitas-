@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Cita;
 use App\Models\Servicio;
 use App\Models\User;
+use App\Services\NotificacionService;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Log; // <-- Agregado para manejar errores silenciosos
 
@@ -121,6 +122,9 @@ class ReservaController extends Controller
                 'trabajador_id' => $especialistaId
             ]);
         }
+
+        // Guardar notificaciones para admin, recepción y todos los trabajadores asignados.
+        NotificacionService::citaNueva($cita);
 
         // ==========================================
         // ENVÍO DE NOTIFICACIONES PUSH (NUEVO)
