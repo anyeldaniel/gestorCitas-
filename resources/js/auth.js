@@ -256,6 +256,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // 6. LÓGICA DE RESET PASSWORD (ESTADO DE LA NUEVA CLAVE)
     // =============================================
     const resetPasswordInput = document.getElementById('password');
+    const resetPasswordConfirmationInput = document.getElementById('password_confirmation');
+    const resetPasswordForm = document.getElementById('reset-password-form');
+    let isResetPasswordValid = false;
     
     if (resetPasswordInput && document.getElementById('length-req')) {
         resetPasswordInput.addEventListener('input', function() {
@@ -272,7 +275,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const hasLetters = /[a-zA-Z]/.test(pwd);
             const hasNumbers = /[0-9]/.test(pwd);
             const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(pwd);
-            const isLongEnough = pwd.length >= 8;
+            const isLengthValid = pwd.length >= 8 && pwd.length <= 20;
 
             const updateRequirement = (element, isValid, text) => {
                 if (!element) return;
@@ -280,11 +283,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 element.innerHTML = isValid ? `✓ ${text}` : `✗ ${text}`;
             };
 
-            updateRequirement(reqLength, isLongEnough, 'Mínimo 8 caracteres');
+            updateRequirement(reqLength, isLengthValid, 'Entre 8 y 20 caracteres');
             updateRequirement(reqAlpha, (hasLetters && hasNumbers), 'Alfanumérica (letras y números)');
             updateRequirement(reqSpecial, hasSpecial, 'Un carácter especial (@, $, !, %, etc.)');
 
-            if (isLongEnough && hasLetters && hasNumbers && hasSpecial) {
+            isResetPasswordValid = isLengthValid && hasLetters && hasNumbers && hasSpecial;
+
+            if (isResetPasswordValid) {
                 if (strengthText) {
                     strengthText.textContent = 'Estado: Contraseña Muy Segura';
                     strengthText.style.color = '#198754';
@@ -294,6 +299,24 @@ document.addEventListener('DOMContentLoaded', function () {
                     strengthText.textContent = 'Estado: Contraseña Poco Segura';
                     strengthText.style.color = '#dc3545';
                 }
+            }
+        });
+    }
+
+    if (resetPasswordForm) {
+        resetPasswordForm.addEventListener('submit', function (event) {
+            if (!isResetPasswordValid) {
+                event.preventDefault();
+                if (resetPasswordInput) resetPasswordInput.focus();
+                return;
+            }
+
+            if (
+                !resetPasswordConfirmationInput ||
+                resetPasswordConfirmationInput.value !== resetPasswordInput.value
+            ) {
+                event.preventDefault();
+                if (resetPasswordConfirmationInput) resetPasswordConfirmationInput.focus();
             }
         });
     }

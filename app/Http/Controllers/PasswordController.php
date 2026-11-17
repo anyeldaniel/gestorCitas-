@@ -66,15 +66,27 @@ class PasswordController extends Controller
         $request->validate([
             'token' => 'required',
             'email' => 'required|email',
-            'password' => 'required|confirmed|min:8',
-            'password_confirmation' => 'required',
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'max:20',
+                'regex:/[a-zA-Z]/',
+                'regex:/[0-9]/',
+                'regex:/[!@#$%^&*(),.?":{}|<>]/',
+                'confirmed',
+            ],
+            'password_confirmation' => 'required|string|min:8|max:20|same:password',
         ], [
             'email.required' => 'El correo es obligatorio.',
             'email.email' => 'El correo electrónico debe ser una dirección de correo válida.',
             'password.required' => 'La contraseña es obligatoria.',
-            'password.confirmed' => 'Las contraseñas no coinciden.',
             'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.max' => 'La contraseña no puede tener más de 20 caracteres.',
+            'password.regex' => 'La contraseña debe incluir letras, números y un carácter especial.',
+            'password.confirmed' => 'Las contraseñas no coinciden.',
             'password_confirmation.required' => 'La confirmación de la contraseña es obligatoria.',
+            'password_confirmation.same' => 'Las contraseñas no coinciden.',
         ]);
 
         $email = $request->input('email');

@@ -15,10 +15,21 @@
     // MODIFICADO: separar todas las citas próximas y conservar la primera para los consejos.
     $citasPendientes = $citas->whereIn('estado', ['pendiente', 'confirmada'])->sortBy('fecha');
     $proximaCita = $citasPendientes->first();
-    $historialCitas = $citas->where('estado', 'completada')->sortByDesc('fecha');
+
+    // MODIFICADO PARA PAGINAR DE 6 EN 6
+    $historialColeccion = $citas->where('estado', 'completada')->sortByDesc('fecha');
+    $paginaActual = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage() ?: 1;
+    $porPagina = 6;
+    $historialPaginado = new \Illuminate\Pagination\LengthAwarePaginator(
+        $historialColeccion->forPage($paginaActual, $porPagina),
+        $historialColeccion->count(),
+        $porPagina,
+        $paginaActual,
+        ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath()]
+    );
     
     $totalPendiente = $citas->whereIn('estado', ['pendiente', 'confirmada'])->sum('monto_total'); 
-    $visitasRealizadas = $historialCitas->count();
+    $visitasRealizadas = $historialColeccion->count();
 
     // ==========================================
     // LÓGICA DINÁMICA DE TIPS Y DESCRIPCIÓN
@@ -293,7 +304,7 @@
         @endforelse
     </section>
 
-    <!-- HISTORIAL -->
+<!-- HISTORIAL -->
     <section class="historial-section">
         <header class="section-header">
             <div class="section-title">
@@ -304,7 +315,7 @@
         </header>
 
         <div class="historial-grid">
-            @forelse($historialCitas as $cita)
+            @forelse($historialPaginado as $cita)
                 @php 
                     $fechaHist = \Carbon\Carbon::parse($cita->fecha); 
                     $yaCalifico = \App\Models\Resena::where('user_id', auth()->id())->where('cita_id', $cita->id)->exists();
@@ -339,6 +350,32 @@
             @empty
                 <p class="empty-state">Aún no tienes visitas registradas.</p>
             @endforelse
+
+            {{-- PAGINADOR DE 6 EN 6 --}}
+            @if($historialPaginado->hasPages())
+                <div class="historial-pagination-container">
+                    <div class="historial-pagination-info">
+                        Mostrando del {{ $historialPaginado->firstItem() ?? 0 }} al {{ $historialPaginado->lastItem() ?? 0 }} de {{ $historialPaginado->total() }} rituales
+                    </div>
+                    <div class="historial-pagination-buttons">
+                        {{-- Botón Anterior --}}
+                        @if ($historialPaginado->onFirstPage())
+                            <button type="button" class="btn-paginacion disabled" disabled>← Anterior</button>
+                        @else
+                            <a href="{{ $historialPaginado->previousPageUrl() }}" class="btn-paginacion">← Anterior</a>
+                        @endif
+
+                        <span class="paginacion-numeros">Página {{ $historialPaginado->currentPage() }} de {{ $historialPaginado->lastPage() }}</span>
+
+                        {{-- Botón Siguiente --}}
+                        @if ($historialPaginado->hasMorePages())
+                            <a href="{{ $historialPaginado->nextPageUrl() }}" class="btn-paginacion">Siguiente →</a>
+                        @else
+                            <button type="button" class="btn-paginacion disabled" disabled>Siguiente →</button>
+                        @endif
+                    </div>
+                </div>
+            @endif
         </div>
     </section>
 
