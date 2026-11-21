@@ -22,6 +22,49 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     const form = document.getElementById('form-terapeuta');
+    const passwordInput = document.getElementById('password');
+    const passwordConfirmationInput = document.getElementById('password_confirmation');
+
+    const actualizarRequisitosEspecialista = () => {
+        if (!passwordInput) return true;
+
+        const pwd = passwordInput.value;
+        const isLongEnough = pwd.length >= 8 && pwd.length <= 20;
+        const hasLetters = /[a-zA-Z]/.test(pwd);
+        const hasNumbers = /[0-9]/.test(pwd);
+        const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(pwd);
+        const passwordsMatch = pwd !== '' && pwd === passwordConfirmationInput?.value;
+        const feedbackBox = document.getElementById('password-feedback-especialista');
+        const strengthText = document.getElementById('especialista-strength-text');
+
+        if (feedbackBox) feedbackBox.style.display = pwd.length > 0 ? 'block' : 'none';
+
+        const updateRequirement = (elementId, isValid, text) => {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            element.style.color = isValid ? '#198754' : '#dc3545';
+            element.innerHTML = isValid ? `✓ ${text}` : `✗ ${text}`;
+        };
+
+        updateRequirement('especialista-length-req', isLongEnough, 'Entre 8 y 20 caracteres');
+        updateRequirement('especialista-alpha-req', hasLetters && hasNumbers, 'Alfanumérica (letras y números)');
+        updateRequirement('especialista-special-req', hasSpecial, 'Un carácter especial (@, $, !, %, etc.)');
+
+        const isValid = isLongEnough && hasLetters && hasNumbers && hasSpecial;
+        if (strengthText) {
+            strengthText.textContent = isValid ? 'Estado: Contraseña Muy Segura' : 'Estado: Contraseña Poco Segura';
+            strengthText.style.color = isValid ? '#198754' : '#dc3545';
+        }
+
+        if (passwordConfirmationInput && passwordConfirmationInput.value) {
+            passwordConfirmationInput.style.border = passwordsMatch ? '' : '2px solid #dc3545';
+        }
+        return isValid && passwordsMatch;
+    };
+
+    if (passwordInput) passwordInput.addEventListener('input', actualizarRequisitosEspecialista);
+    if (passwordConfirmationInput) passwordConfirmationInput.addEventListener('input', actualizarRequisitosEspecialista);
+
     if (form) {
         form.addEventListener('submit', function(e) {
             sincronizarEspecialidades();
@@ -566,11 +609,25 @@ window.validarContrasenas = function() {
     if (!pass || !confirm) return true;
     if (pass.value === '' && confirm.value === '') return true;
 
-    // 2. Validación de longitud mínima de contraseña
-    if (pass.value.length > 0 && pass.value.length < 8) {
+    // 2. Validación completa de contraseña
+    const hasLetters = /[a-zA-Z]/.test(pass.value);
+    const hasNumbers = /[0-9]/.test(pass.value);
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(pass.value);
+
+    if (pass.value.length > 0 && (pass.value.length < 8 || pass.value.length > 20)) {
         pass.classList.add('input-error');
         if (errorPassDiv) {
-            errorPassDiv.textContent = '⚠️ La contraseña debe tener al menos 8 caracteres.';
+            errorPassDiv.textContent = '⚠️ La contraseña debe tener entre 8 y 20 caracteres.';
+            errorPassDiv.style.display = 'flex';
+        }
+        pass.focus();
+        return false;
+    }
+
+    if (pass.value.length > 0 && (!hasLetters || !hasNumbers || !hasSpecial)) {
+        pass.classList.add('input-error');
+        if (errorPassDiv) {
+            errorPassDiv.textContent = '⚠️ Incluye letras, números y un carácter especial.';
             errorPassDiv.style.display = 'flex';
         }
         pass.focus();

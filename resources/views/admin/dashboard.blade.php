@@ -255,7 +255,7 @@
                 <fieldset class="campo-formulario campo-password-contenedor">
                     <label for="recep_password">Contraseña</label>
                     <div class="input-icono-wrapper">
-                        <input type="password" id="recep_password" name="password" minlength="8" placeholder="Mínimo 8 caracteres">
+                        <input type="password" id="recep_password" name="password" minlength="8" maxlength="20" placeholder="Mínimo 8 caracteres">
                         <button type="button" class="btn-alternar-password" onclick="alternarVisibilidad('recep_password', this)" aria-label="Mostrar contraseña">
                             <svg class="svg-ojo" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
@@ -267,7 +267,7 @@
                 <fieldset class="campo-formulario campo-password-contenedor">
                     <label for="recep_password_confirmation">Confirmar</label>
                     <div class="input-icono-wrapper">
-                        <input type="password" id="recep_password_confirmation" name="password_confirmation" minlength="8" placeholder="Repita la contraseña">
+                        <input type="password" id="recep_password_confirmation" name="password_confirmation" minlength="8" maxlength="20" placeholder="Repita la contraseña">
                         <button type="button" class="btn-alternar-password" onclick="alternarVisibilidad('recep_password_confirmation', this)" aria-label="Mostrar contraseña">
                             <svg class="svg-ojo" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
@@ -277,6 +277,12 @@
                     </div>
                 </fieldset>
             </div>
+            <div id="password-feedback-recepcionista" class="feedback-total" style="display: none;">
+                <span id="recepcionista-length-req"></span><br>
+                <span id="recepcionista-alpha-req"></span><br>
+                <span id="recepcionista-special-req"></span>
+            </div>
+            <div id="recepcionista-strength-text"></div>
 
             <footer class="modal-acciones">
                 <button type="button" class="btn-zen btn-secundario" onclick="document.getElementById('modal-recepcionista').close()">Cancelar</button>

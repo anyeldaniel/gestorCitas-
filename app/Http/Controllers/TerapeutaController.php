@@ -60,7 +60,16 @@ class TerapeutaController extends Controller
             'telefono'       => 'nullable|string|max:20',
             'descripcion'    => 'nullable|string',
             'especialidades' => 'nullable|string',
-            'password'       => 'required|string|min:8|confirmed',
+            'password'       => [
+                'required',
+                'string',
+                'min:8',
+                'max:20',
+                'regex:/[a-zA-Z]/',
+                'regex:/[0-9]/',
+                'regex:/[!@#$%^&*(),.?":{}|<>]/',
+                'confirmed',
+            ],
             'foto'           => 'nullable|image|max:2048',
         ]);
 
@@ -96,7 +105,16 @@ class TerapeutaController extends Controller
             'telefono'       => 'nullable|string|max:20',
             'descripcion'    => 'nullable|string',
             'especialidades' => 'nullable|string',
-            'password'       => 'nullable|string|min:8|confirmed',
+            'password'       => [
+                'nullable',
+                'string',
+                'min:8',
+                'max:20',
+                'regex:/[a-zA-Z]/',
+                'regex:/[0-9]/',
+                'regex:/[!@#$%^&*(),.?":{}|<>]/',
+                'confirmed',
+            ],
             'foto'           => 'nullable|image|max:2048',
         ]);
 

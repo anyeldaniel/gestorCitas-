@@ -40,6 +40,49 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- VALIDACIÓN DEL FORMULARIO RECEPCIONISTA ---
+    const recepPasswordInput = document.getElementById('recep_password');
+    const recepPasswordConfirmationInput = document.getElementById('recep_password_confirmation');
+
+    const actualizarRequisitosRecepcionista = () => {
+        if (!recepPasswordInput) return true;
+
+        const pwd = recepPasswordInput.value;
+        const isLongEnough = pwd.length >= 8 && pwd.length <= 20;
+        const hasLetters = /[a-zA-Z]/.test(pwd);
+        const hasNumbers = /[0-9]/.test(pwd);
+        const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(pwd);
+        const passwordsMatch = pwd !== '' && pwd === recepPasswordConfirmationInput?.value;
+        const feedbackBox = document.getElementById('password-feedback-recepcionista');
+        const strengthText = document.getElementById('recepcionista-strength-text');
+
+        if (feedbackBox) feedbackBox.style.display = pwd.length > 0 ? 'block' : 'none';
+
+        const updateRequirement = (elementId, isValid, text) => {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            element.style.color = isValid ? '#198754' : '#dc3545';
+            element.innerHTML = isValid ? `✓ ${text}` : `✗ ${text}`;
+        };
+
+        updateRequirement('recepcionista-length-req', isLongEnough, 'Entre 8 y 20 caracteres');
+        updateRequirement('recepcionista-alpha-req', hasLetters && hasNumbers, 'Alfanumérica (letras y números)');
+        updateRequirement('recepcionista-special-req', hasSpecial, 'Un carácter especial (@, $, !, %, etc.)');
+
+        const isValid = isLongEnough && hasLetters && hasNumbers && hasSpecial;
+        if (strengthText) {
+            strengthText.textContent = isValid ? 'Estado: Contraseña Muy Segura' : 'Estado: Contraseña Poco Segura';
+            strengthText.style.color = isValid ? '#198754' : '#dc3545';
+        }
+
+        if (recepPasswordConfirmationInput && recepPasswordConfirmationInput.value) {
+            recepPasswordConfirmationInput.style.border = passwordsMatch ? '' : '2px solid #dc3545';
+        }
+        return isValid && passwordsMatch;
+    };
+
+    if (recepPasswordInput) recepPasswordInput.addEventListener('input', actualizarRequisitosRecepcionista);
+    if (recepPasswordConfirmationInput) recepPasswordConfirmationInput.addEventListener('input', actualizarRequisitosRecepcionista);
+
     if (formRecepcionista) {
         formRecepcionista.addEventListener("submit", (e) => {
             const pass = document.getElementById('recep_password');
@@ -47,12 +90,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (pass && pass.value) {
                 if (pass.value !== passConf.value) {
-                    alert("🚨 Las contraseñas no coinciden.");
+                    alert("Las contraseñas no coinciden.");
                     e.preventDefault();
                     return false;
                 }
-                if (pass.value.length < 8) {
-                    alert("🚨 La contraseña debe tener al menos 8 caracteres.");
+                if (!actualizarRequisitosRecepcionista()) {
+                    alert("La contraseña debe tener entre 8 y 20 caracteres e incluir letras, números y un carácter especial.");
                     e.preventDefault();
                     return false;
                 }
