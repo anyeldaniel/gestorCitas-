@@ -83,20 +83,69 @@ document.addEventListener("DOMContentLoaded", () => {
     if (recepPasswordInput) recepPasswordInput.addEventListener('input', actualizarRequisitosRecepcionista);
     if (recepPasswordConfirmationInput) recepPasswordConfirmationInput.addEventListener('input', actualizarRequisitosRecepcionista);
 
+// Función auxiliar para alertas estéticas dentro de modales <dialog>
+    const mostrarAlertaRecepcionista = (titulo, mensaje, campoEnfocar = null) => {
+        const modalRecep = document.getElementById('modal-recepcionista');
+        const estabaAbierto = modalRecep && modalRecep.open;
+
+        if (typeof Swal !== 'undefined') {
+            // Cerramos temporalmente el <dialog> nativo para que no tape el SweetAlert2
+            if (estabaAbierto) modalRecep.close();
+
+            Swal.fire({
+                icon: 'warning',
+                title: titulo,
+                text: mensaje,
+                confirmButtonText: 'ACEPTAR',
+                customClass: {
+                    popup: 'tbr-dash-popup',
+                    title: 'tbr-dash-title',
+                    htmlContainer: 'tbr-dash-text',
+                    confirmButton: 'tbr-dash-btn'
+                },
+                buttonsStyling: false
+            }).then(() => {
+                // Reabrimos el modal de recepcionista y enfocamos el input con error
+                if (estabaAbierto) modalRecep.showModal();
+                if (campoEnfocar) campoEnfocar.focus();
+            });
+        } else {
+            alert(mensaje);
+            if (campoEnfocar) campoEnfocar.focus();
+        }
+    };
+
     if (formRecepcionista) {
         formRecepcionista.addEventListener("submit", (e) => {
             const pass = document.getElementById('recep_password');
             const passConf = document.getElementById('recep_password_confirmation');
 
             if (pass && pass.value) {
-                if (pass.value !== passConf.value) {
-                    alert("Las contraseñas no coinciden.");
+                if (!actualizarRequisitosRecepcionista() && pass.value === passConf.value) {
                     e.preventDefault();
+                    mostrarAlertaRecepcionista(
+                        'Atención',
+                        'Tu contraseña no cumple con los criterios de seguridad',
+                        pass
+                    );
+                    return false;
+                }
+                if (pass.value !== passConf.value) {
+                    e.preventDefault();
+                    mostrarAlertaRecepcionista(
+                        'Atención',
+                        'Tus contraseñas no coinciden',
+                        passConf
+                    );
                     return false;
                 }
                 if (!actualizarRequisitosRecepcionista()) {
-                    alert("La contraseña debe tener entre 8 y 20 caracteres e incluir letras, números y un carácter especial.");
                     e.preventDefault();
+                    mostrarAlertaRecepcionista(
+                        'Atención',
+                        'Tu contraseña no cumple con los criterios de seguridad',
+                        pass
+                    );
                     return false;
                 }
             }

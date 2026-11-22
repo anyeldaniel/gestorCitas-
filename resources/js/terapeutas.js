@@ -568,6 +568,35 @@ window.sincronizarEspecialidades = function() {
     const hidden = document.getElementById('especialidades_hidden');
     if (hidden) hidden.value = lista.join(',');
 };
+//Aquí estoy modificando las alertas para que ya no se vean feas, agregué una función para mostrar alertas de manera más bonita y amigable, usando SweetAlert si está disponible, o un alert normal como fallback. :D att. Andrés
+window.mostrarAlertaTerapeuta = function(titulo, mensaje, campoEnfocar = null) {
+    const modalTerapeuta = document.getElementById('modal-terapeuta');
+    const estabaAbierto = modalTerapeuta && modalTerapeuta.open;
+
+    if (typeof Swal !== 'undefined') {
+        if (estabaAbierto) modalTerapeuta.close();
+
+        Swal.fire({
+            icon: 'warning',
+            title: titulo,
+            text: mensaje,
+            confirmButtonText: 'ACEPTAR',
+            customClass: {
+                popup: 'tbr-dash-popup',
+                title: 'tbr-dash-title',
+                htmlContainer: 'tbr-dash-text',
+                confirmButton: 'tbr-dash-btn'
+            },
+            buttonsStyling: false
+        }).then(() => {
+            if (estabaAbierto) modalTerapeuta.showModal();
+            if (campoEnfocar) campoEnfocar.focus();
+        });
+    } else {
+        alert(mensaje);
+        if (campoEnfocar) campoEnfocar.focus();
+    }
+};
 
 window.validarContrasenas = function() {
     const pass = document.getElementById('password');
@@ -591,21 +620,21 @@ window.validarContrasenas = function() {
         errorEmailDiv.textContent = '';
     }
 
-    // 1. Validación de formato básico de correo (opcional en cliente)
+    // 1. Validación de formato básico de correo
     if (emailInput && emailInput.value.trim() !== '') {
         const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!regexEmail.test(emailInput.value.trim())) {
             emailInput.classList.add('input-error');
-            if (errorEmailDiv) {
-                errorEmailDiv.textContent = '⚠️ Ingresa una dirección de correo electrónico válida.';
-                errorEmailDiv.style.display = 'flex';
-            }
-            emailInput.focus();
+            window.mostrarAlertaTerapeuta(
+                'Correo inválido',
+                'Ingresa una dirección de correo electrónico válida.',
+                emailInput
+            );
             return false;
         }
     }
 
-    // Si no hay campos de contraseña obligatorios (ej. modo edición donde se ocultan)
+    // Si no hay campos de contraseña obligatorios (ej. modo edición)
     if (!pass || !confirm) return true;
     if (pass.value === '' && confirm.value === '') return true;
 
@@ -616,21 +645,21 @@ window.validarContrasenas = function() {
 
     if (pass.value.length > 0 && (pass.value.length < 8 || pass.value.length > 20)) {
         pass.classList.add('input-error');
-        if (errorPassDiv) {
-            errorPassDiv.textContent = '⚠️ La contraseña debe tener entre 8 y 20 caracteres.';
-            errorPassDiv.style.display = 'flex';
-        }
-        pass.focus();
+        window.mostrarAlertaTerapeuta(
+            'Atención',
+            'Tu contraseña no cumple con los criterios de seguridad',
+            pass
+        );
         return false;
     }
 
     if (pass.value.length > 0 && (!hasLetters || !hasNumbers || !hasSpecial)) {
         pass.classList.add('input-error');
-        if (errorPassDiv) {
-            errorPassDiv.textContent = '⚠️ Incluye letras, números y un carácter especial.';
-            errorPassDiv.style.display = 'flex';
-        }
-        pass.focus();
+        window.mostrarAlertaTerapeuta(
+            'Atención',
+            'Tu contraseña no cumple con los criterios de seguridad',
+            pass
+        );
         return false;
     }
 
@@ -638,11 +667,11 @@ window.validarContrasenas = function() {
     if (pass.value !== confirm.value) {
         pass.classList.add('input-error');
         confirm.classList.add('input-error');
-        if (errorPassDiv) {
-            errorPassDiv.textContent = '⚠️ Las contraseñas no coinciden.';
-            errorPassDiv.style.display = 'flex';
-        }
-        confirm.focus();
+        window.mostrarAlertaTerapeuta(
+            'Atención',
+            'Tus contraseñas no coinciden',
+            confirm
+        );
         return false;
     }
 

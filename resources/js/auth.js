@@ -39,6 +39,30 @@ document.addEventListener('DOMContentLoaded', function () {
         lucide.createIcons();
     }
 
+    // Función auxiliar para alertas para errores en contraseña
+    const mostrarAlertaTBR = (titulo, mensaje, campoEnfocar = null) => {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'warning',
+                title: titulo,
+                text: mensaje,
+                confirmButtonText: 'ACEPTAR',
+                customClass: {
+                    popup: 'tbr-alert-popup',
+                    title: 'tbr-alert-title',
+                    htmlContainer: 'tbr-alert-text',
+                    confirmButton: 'tbr-alert-btn'
+                },
+                buttonsStyling: false
+            }).then(() => {
+                if (campoEnfocar) campoEnfocar.focus();
+            });
+        } else {
+            alert(mensaje);
+            if (campoEnfocar) campoEnfocar.focus();
+        }
+    };
+
     // =============================================
     // 1. TOGGLE ENTRE PANEL LOGIN / REGISTRO
     // =============================================
@@ -155,10 +179,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (emailValue === '' || !emailRegex.test(emailValue)) {
                 event.preventDefault();
-                if (emailInput) {
-                    emailInput.style.border = '2px solid #dc3545';
-                    emailInput.focus();
-                }
+                if (emailInput) emailInput.style.border = '2px solid #dc3545';
+                mostrarAlertaTBR('Correo inválido', 'Por favor ingresa un correo electrónico válido.', emailInput);
                 return;
             } else if (emailInput) {
                 emailInput.style.border = '';
@@ -166,9 +188,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (!isPasswordValid) {
                 event.preventDefault();
-                if (passwordInput) passwordInput.focus();
+                mostrarAlertaTBR(
+                    'Atención',
+                    'Tu contraseña no cumple con los criterios de seguridad',
+                    passwordInput
+                );
                 return; 
             }
+
+            const regConfirmInput = registerForm.querySelector('#confirm-password, input[name="confirmPassword"]');
+                if (regConfirmInput && regConfirmInput.value !== passwordInput.value) {
+                    event.preventDefault();
+                    mostrarAlertaTBR(
+                        'Atención',
+                        'Tus contraseñas no coinciden',
+                        regConfirmInput
+                    );
+                    return;
+                }
         });
     }
     
@@ -180,6 +217,8 @@ document.addEventListener('DOMContentLoaded', function () {
         // 5a. Loading al enviar el registro
         if (registerForm) {
             registerForm.addEventListener('submit', function () {
+                if (event.defaultPrevented) return;
+
                 setTimeout(() => {
                     Swal.fire({
                         title: 'Creando tu cuenta...',
@@ -303,11 +342,15 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    if (resetPasswordForm) {
+if (resetPasswordForm) {
         resetPasswordForm.addEventListener('submit', function (event) {
             if (!isResetPasswordValid) {
                 event.preventDefault();
-                if (resetPasswordInput) resetPasswordInput.focus();
+                mostrarAlertaTBR(
+                    'Atención',
+                    'Tu contraseña no cumple con los criterios de seguridad',
+                    resetPasswordInput
+                );
                 return;
             }
 
@@ -316,7 +359,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 resetPasswordConfirmationInput.value !== resetPasswordInput.value
             ) {
                 event.preventDefault();
-                if (resetPasswordConfirmationInput) resetPasswordConfirmationInput.focus();
+                mostrarAlertaTBR(
+                    'Atención',
+                    'Tus contraseñas no coinciden',
+                    resetPasswordConfirmationInput
+                );
+                return;
             }
         });
     }
