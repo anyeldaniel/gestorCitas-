@@ -144,6 +144,27 @@ public static function citaCancelada(Cita $cita, ?string $motivo = null): void
     );
 }
 
+/**
+ * Un trabajador canceló una cita con un pago aprobado y falta definir el reembolso.
+ */
+public static function reembolsoPorDefinir(Cita $cita): Collection
+{
+    $destinatarios = self::adminsYRecepcion();
+
+    self::crearPara(
+        $destinatarios,
+        'reembolso_por_definir',
+        'Reembolso pendiente de definir',
+        "El trabajador canceló la cita de "
+            . ($cita->cliente->nombre ?? 'un cliente')
+            . ' y se debe indicar el importe del reembolso. Motivo: '
+            . $cita->motivo_cancelacion,
+        ['cita_id' => $cita->id, 'motivo' => $cita->motivo_cancelacion]
+    );
+
+    return $destinatarios;
+}
+
    /**
  * Cambio de estado genérico → cliente + TODOS los trabajadores asignados.
  */

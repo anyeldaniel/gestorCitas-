@@ -1137,6 +1137,26 @@ dialog.modal-contenedor-alerta-critica::backdrop {
     box-shadow: 0 0 0 3px rgba(139, 94, 60, 0.1);
 }
 
+.modal-contenedor-alerta-critica .hidden {
+    display: none !important;
+}
+
+.textarea-motivo input[type="number"] {
+    display: block;
+    width: 100%;
+    margin-top: 0.5rem;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--text-main);
+}
+
+.campo-reembolso-pago {
+    display: block;
+    margin-top: 0.75rem;
+}
+
 .pie-alerta-botones {
     display: flex;
     gap: 0.85rem;

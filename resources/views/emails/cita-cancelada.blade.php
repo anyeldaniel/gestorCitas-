@@ -22,6 +22,22 @@
             {{-- Explica al cliente el motivo que se registró al cancelar la cita. --}}
             <p><strong>Motivo de cancelación:</strong> {{ $motivo }}</p>
         @endif
+        @if($montoReembolso > 0 && $reembolsoPorDefinir)
+            <p>
+                Se te reembolsará un importe de <strong>${{ number_format($montoReembolso, 2) }}</strong>.
+                El monto adicional aún está por definirse; te informaremos cuando quede confirmado.
+            </p>
+        @elseif($montoReembolso > 0)
+            <p>
+                Se te reembolsará <strong>${{ number_format($montoReembolso, 2) }}</strong>.
+                El reembolso está pendiente de procesarse.
+            </p>
+        @elseif($reembolsoPorDefinir)
+            <p>
+                Se gestionará un reembolso por tu pago. El importe está pendiente de definición
+                y te informaremos cuando quede confirmado.
+            </p>
+        @endif
         {{-- Indica que puede comunicarse con el negocio si necesita más información. --}}
         <p>Si tienes dudas, comunícate con The Beauty Room.</p>
         {{-- Identifica al negocio que envía el aviso. --}}

@@ -152,7 +152,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/agenda', [RecepcionController::class, 'agenda'])->name('recepcion.agenda');
         Route::post('/cita/{id}/actualizar', [AgendaController::class, 'updateStatus'])->name('cita.update');
         Route::post('/aprobar-pago/{id}', [PagoController::class, 'aprobarPago'])->name('recepcion.aprobar.pago');
-        Route::post('/rechazar-pago/{id}', [PagoController::class, 'rechazarPago'])->name('recepcion.rechazar.pago'); // Ruta para rechazar un pago agregada :D
+        Route::post('/rechazar-pago/{id}', [PagoController::class, 'rechazarPago'])->name('recepcion.rechazar.pago');
+        Route::post('/definir-reembolso/{id}', [PagoController::class, 'definirReembolso'])->name('recepcion.definir.reembolso');
     });
 
 

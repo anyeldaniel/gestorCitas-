@@ -346,6 +346,16 @@
                 @else
                     <ul class="lista-citas">
                         @foreach($citas as $cita)
+                            @php
+                                $pagosAprobados = $cita->pagos
+                                    ->where('estado_pago', 'aprobado')
+                                    ->where('estado_reembolso', '!=', 'pendiente')
+                                    ->map(fn ($pago) => [
+                                        'id' => $pago->id,
+                                        'monto' => $pago->monto_anticipado,
+                                    ])
+                                    ->values();
+                            @endphp
                             <li class="tarjeta-cita {{ $cita->claseEstado() }}" data-cita-id="{{ $cita->id }}">
                                 <div class="cita-hora">
                                     <time datetime="{{ \Carbon\Carbon::parse($cita->fecha->toDateString() . ' ' . $cita->hora)->toIso8601String() }}">
@@ -397,6 +407,8 @@
                                         <!-- 🔥 AQUÍ SE AGREGA data-url -->
                                         <button type="button" class="btn-declinar" data-declinar data-cita="{{ $cita->id }}"
                                                 data-url="{{ route('agenda.cita.cancelar', $cita->id) }}"
+                                                data-puede-definir-reembolso="{{ $puedeGestionar ? '1' : '0' }}"
+                                                data-pagos-aprobados='@json($pagosAprobados)'
                                                 data-cliente="{{ $cita->cliente->nombre ?? 'Cliente' }}"
                                                 data-servicio="{{ $cita->servicio->nombre_servicio ?? 'Servicio' }}"
                                                 data-fecha="{{ \Carbon\Carbon::parse($cita->fecha)->locale('es')->translatedFormat('d \d\e F') }}"
@@ -496,6 +508,15 @@
                 <textarea name="motivo" rows="4" required minlength="5" maxlength="500" placeholder="Ej. Tengo una emergencia personal y no podré llegar a tiempo."></textarea>
                 <small class="ayuda-modal">Administración recibirá tu explicación y se encargará de contactar a la clienta para reprogramar.</small>
             </label>
+
+            <section id="campos-reembolso-cita" class="campo-modal" hidden>
+                <span class="label-modal">Importe que se reembolsará</span>
+                <p class="ayuda-modal">Indica el importe para cada pago aprobado.</p>
+                <div id="lista-reembolsos-cita"></div>
+            </section>
+            <p id="aviso-reembolso-pendiente" class="ayuda-modal" hidden>
+                Como trabajador, no necesitas definir el importe. Administración y recepción recibirán una notificación.
+            </p>
 
             <footer class="modal-pie">
                 <button type="button" class="btn-secundario" data-close-modal>Conservar cita</button>

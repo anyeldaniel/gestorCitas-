@@ -26,10 +26,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnConfirmar = document.getElementById('btn-modal-confirmar');
     const btnCancelar = document.getElementById('btn-modal-cancelar');
     const btnCerrarX = document.getElementById('btn-modal-cerrar-x');
+    const camposReembolso = document.getElementById('campos-reembolso-pago');
+    const listaReembolsos = document.getElementById('lista-reembolsos-pago');
+    const campoMontoReembolso = document.getElementById('campo-monto-reembolso');
+    const inputMontoReembolso = document.getElementById('monto-reembolso');
 
     // Estado de la aplicación
     let accionActual = '';
     let filaActual = null;
+    let pagosAprobadosActuales = [];
 
     // =====================================================================
     // 1. Lógica de Filtrado (Tabs, Búsqueda y Fecha)
@@ -79,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // =====================================================================
     // 2. Lógica del Modal (Abrir y Cerrar)
     // =====================================================================
-    document.querySelectorAll('.btn-autorizar').forEach(boton => {
+    document.querySelectorAll('.btn-autorizar:not(.btn-definir-reembolso)').forEach(boton => {
         boton.addEventListener('click', (e) => {
             accionActual = 'autorizar';
             filaActual = e.target.closest('tr');
@@ -90,6 +95,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.btn-rechazar').forEach(boton => {
         boton.addEventListener('click', (e) => {
             accionActual = 'rechazar';
+            filaActual = e.target.closest('tr');
+            abrirModal();
+        });
+    });
+
+    document.querySelectorAll('.btn-definir-reembolso').forEach(boton => {
+        boton.addEventListener('click', (e) => {
+            accionActual = 'definir_reembolso';
             filaActual = e.target.closest('tr');
             abrirModal();
         });
@@ -117,7 +130,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modalTextarea) {
             modalTextarea.classList.add('hidden');
             modalTextarea.value = '';
+            modalTextarea.required = false;
         }
+        camposReembolso.classList.add('hidden');
+        listaReembolsos.replaceChildren();
+        campoMontoReembolso.classList.add('hidden');
+        inputMontoReembolso.required = false;
+        inputMontoReembolso.value = '';
 
         if (accionActual === 'autorizar') {
             if (modalKicker) modalKicker.textContent = 'CONFIRMAR TRANSACCIÓN';
@@ -125,12 +144,38 @@ document.addEventListener('DOMContentLoaded', () => {
             modalMensaje.textContent = 'La reserva del cliente quedará confirmada al aprobar este pago.';
             btnConfirmar.textContent = 'Autorizar pago';
             btnConfirmar.className = 'btn-confirmar-accion btn-accion-autorizar';
-        } else {
+        } else if (accionActual === 'rechazar') {
             if (modalKicker) modalKicker.textContent = 'GESTIONAR PAGO';
             modalTitulo.textContent = '¿Quieres rechazar pago?';
-            modalMensaje.textContent = 'El pago se marcará como rechazado y no se validará la reserva.';
+            modalMensaje.textContent = 'El pago será rechazado y la cita se cancelará. Escribe el motivo.';
             btnConfirmar.textContent = 'Rechazar pago';
             btnConfirmar.className = 'btn-confirmar-accion btn-accion-rechazar';
+
+            modalTextarea.classList.remove('hidden');
+            modalTextarea.required = true;
+            pagosAprobadosActuales = JSON.parse(filaActual.dataset.pagosAprobados || '[]');
+            if (pagosAprobadosActuales.length) {
+                listaReembolsos.innerHTML = pagosAprobadosActuales.map(pago => `
+                    <label class="campo-reembolso-pago">
+                        Pago #${pago.id} (máximo $${Number(pago.monto).toFixed(2)})
+                        <input type="number" name="reembolsos[${pago.id}]" min="0.01"
+                               max="${Number(pago.monto).toFixed(2)}" step="0.01" required>
+                    </label>
+                `).join('');
+                camposReembolso.classList.remove('hidden');
+            }
+        } else {
+            if (modalKicker) modalKicker.textContent = 'GESTIONAR REEMBOLSO';
+            modalTitulo.textContent = 'Define el importe del reembolso';
+            modalMensaje.textContent = 'El trabajador canceló la cita. Indica cuánto se reembolsará al cliente.';
+            btnConfirmar.textContent = 'Guardar importe';
+            btnConfirmar.className = 'btn-confirmar-accion btn-accion-autorizar';
+
+            inputMontoReembolso.max = Number(
+                filaActual.querySelector('.btn-definir-reembolso').dataset.max
+            ).toFixed(2);
+            campoMontoReembolso.classList.remove('hidden');
+            inputMontoReembolso.required = true;
         }
 
         modal.showModal();
@@ -162,40 +207,63 @@ document.addEventListener('DOMContentLoaded', () => {
     // 3. Confirmar Acción (Fetch al Backend)
     // =====================================================================
     if (btnConfirmar) {
-        btnConfirmar.addEventListener('click', () => {
+        btnConfirmar.addEventListener('click', async () => {
             if (!filaActual) return;
 
             const urlBase = accionActual === 'autorizar'
                 ? filaActual.querySelector('.btn-autorizar').dataset.url
-                : filaActual.querySelector('.btn-rechazar').dataset.url;
+                : accionActual === 'rechazar'
+                    ? filaActual.querySelector('.btn-rechazar').dataset.url
+                    : filaActual.querySelector('.btn-definir-reembolso').dataset.url;
 
             const token = document.querySelector('meta[name="csrf-token"]').content;
+            const body = {};
+
+            if (accionActual === 'rechazar') {
+                if (!modalTextarea.reportValidity()) return;
+                body.motivo = modalTextarea.value.trim();
+                body.reembolsos = {};
+                listaReembolsos.querySelectorAll('input[name^="reembolsos["]').forEach(input => {
+                    const id = input.name.match(/^reembolsos\[(\d+)\]$/)[1];
+                    body.reembolsos[id] = input.value;
+                });
+            } else if (accionActual === 'definir_reembolso') {
+                if (!inputMontoReembolso.reportValidity()) return;
+                body.monto_reembolso = inputMontoReembolso.value;
+            }
 
             btnConfirmar.textContent = 'Procesando...';
             btnConfirmar.disabled = true;
 
-            fetch(urlBase, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': token,
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({})
-            })
-            .then(res => {
+            try {
+                const res = await fetch(urlBase, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': token,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                });
+
                 if (res.ok) {
                     window.location.reload();
-                } else {
-                    alert('Ocurrió un error al procesar la transacción.');
-                    btnConfirmar.textContent = accionActual === 'autorizar' ? 'Autorizar pago' : 'Rechazar pago';
-                    btnConfirmar.disabled = false;
+                    return;
                 }
-            })
-            .catch(() => {
+
+                const data = await res.json();
+                const error = data.message
+                    || Object.values(data.errors || {}).flat()[0]
+                    || 'Ocurrió un error al procesar la transacción.';
+                alert(error);
+                btnConfirmar.textContent = accionActual === 'autorizar'
+                    ? 'Autorizar pago'
+                    : accionActual === 'rechazar' ? 'Rechazar pago' : 'Guardar importe';
+            } catch (error) {
                 alert('Error de conexión.');
+            } finally {
                 btnConfirmar.disabled = false;
-            });
+            }
         });
     }
 
@@ -206,6 +274,9 @@ document.addEventListener('DOMContentLoaded', () => {
             modalTextarea.value = '';
             modalTextarea.style.borderColor = '';
         }
+        pagosAprobadosActuales = [];
+        camposReembolso.classList.add('hidden');
+        campoMontoReembolso.classList.add('hidden');
         if (btnConfirmar) {
             btnConfirmar.disabled = false;
         }

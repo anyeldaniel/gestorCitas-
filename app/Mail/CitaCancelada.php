@@ -13,9 +13,18 @@ class CitaCancelada extends Mailable
 {
     use Queueable, SerializesModels;
 
-    // Conserva los datos de la cita y el motivo para mostrarlos en el correo.
+    public float $montoReembolso;
+    public bool $reembolsoPorDefinir;
+
     public function __construct(public Cita $cita, public ?string $motivo = null)
     {
+        $this->cita->loadMissing('pagos');
+
+        $this->montoReembolso = (float) $this->cita->pagos
+            ->where('estado_reembolso', 'pendiente')
+            ->sum('monto_reembolso');
+        $this->reembolsoPorDefinir = $this->cita->pagos
+            ->contains('estado_reembolso', 'por_definir');
     }
 
     // Define el asunto que se verá en la bandeja del cliente.

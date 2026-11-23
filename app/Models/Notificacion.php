@@ -39,6 +39,7 @@ class Notificacion extends Model
             'cita_nueva'      => 'calendar-plus',
             'cita_confirmada' => 'check-circle-2',
             'cita_cancelada'  => 'x-circle',
+            'reembolso_por_definir' => 'circle-dollar-sign',
             'cita_en_curso'   => 'play-circle',
             'cita_completada' => 'check-check',
             default           => 'bell',
@@ -49,6 +50,7 @@ class Notificacion extends Model
     {
         return match ($this->tipo) {
             'cita_cancelada'           => 'rojo',
+            'reembolso_por_definir'    => 'rojo',
             'cita_confirmada',
             'cita_completada'          => 'verde',
             'cita_en_curso'            => 'azul',

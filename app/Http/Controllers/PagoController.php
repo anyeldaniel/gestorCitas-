@@ -6,12 +6,20 @@ use App\Models\Cita;
 use App\Models\Pago;
 use App\Models\User;
 use App\Mail\CitaConfirmada;
+use App\Mail\CitaCancelada;
 use App\Mail\CitaPendienteConfirmacion;
+use App\Mail\ReembolsoDefinido;
+use App\Mail\ReembolsoPorDefinir;
+use App\Notifications\CitaCanceladaNotification;
+use App\Services\CancelacionCitaService;
+use App\Services\NotificacionService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class PagoController extends Controller
@@ -23,7 +31,9 @@ class PagoController extends Controller
      */
     public function index(): View
     {
-        $pagos = Pago::with(['cita.cliente', 'cita.servicio'])
+        abort_unless(in_array(auth()->user()->rol, ['admin', 'recepcion']), 403);
+
+        $pagos = Pago::with(['cita.cliente', 'cita.servicio', 'cita.pagos'])
             ->orderByDesc('created_at')
             ->get();
 
@@ -43,22 +53,29 @@ class PagoController extends Controller
      */
     public function aprobarPago(int $id): RedirectResponse
     {
+        abort_unless(in_array(auth()->user()->rol, ['admin', 'recepcion']), 403);
+
         // Revisamos el pago y dejamos la cita lista en el mismo paso, sin medias tintas.
         $citaConfirmada = DB::transaction(function () use ($id) {
-            $pago = Pago::with(['cita.cliente', 'cita.servicio'])
-                ->lockForUpdate()
-                ->findOrFail($id);
+            $pago = Pago::query()->findOrFail($id);
+            $cita = Cita::query()->lockForUpdate()->findOrFail($pago->cita_id);
+            $pago = Pago::query()->lockForUpdate()->findOrFail($id);
 
             // Si ya lo habían revisado, no repetimos la confirmación ni mandamos otro correo.
             if ($pago->estado_pago !== 'revision') {
                 return null;
             }
 
+            if ($cita->estaCancelada()) {
+                throw ValidationException::withMessages([
+                    'pago' => 'No se puede aprobar un pago de una cita cancelada.',
+                ]);
+            }
+
             $pago->update(['estado_pago' => 'aprobado']);
-            $cita = $pago->cita;
             $cita->update(['estado' => 'confirmada']);
 
-            return $cita;
+            return $cita->load(['cliente', 'servicio']);
         });
 
         // Si ya estaba revisado, avisamos y no volvemos a hacer el proceso.
@@ -70,6 +87,92 @@ class PagoController extends Controller
         Mail::to($citaConfirmada->cliente->correo)->send(new CitaConfirmada($citaConfirmada));
 
         return back()->with('success', 'Pago aprobado y cita confirmada exitosamente.');
+    }
+
+    public function rechazarPago(
+        Request $request,
+        int $id,
+        CancelacionCitaService $cancelacionCita
+    ): JsonResponse {
+        abort_unless(in_array($request->user()->rol, ['admin', 'recepcion']), 403);
+
+        $data = $request->validate([
+            'motivo' => 'required|string|min:5|max:500',
+            'reembolsos' => 'sometimes|array',
+            'reembolsos.*' => 'required|numeric|decimal:0,2|min:0.01',
+        ]);
+
+        $resultado = $cancelacionCita->rechazarPago(
+            $id,
+            $request->user(),
+            $data['motivo'],
+            $data['reembolsos'] ?? []
+        );
+        $cita = $resultado['cita'];
+
+        if ($resultado['recien_cancelada']) {
+            NotificacionService::citaCancelada($cita, $data['motivo']);
+            Mail::to($cita->cliente->correo)->send(new CitaCancelada($cita, $data['motivo']));
+
+            try {
+                $cita->cliente?->notify(new CitaCanceladaNotification($cita));
+            } catch (\Exception $e) {
+                report($e);
+            }
+        }
+
+        if ($resultado['reembolso_por_definir'] && $resultado['recien_cancelada']) {
+            $destinatarios = NotificacionService::reembolsoPorDefinir($cita);
+            foreach ($destinatarios as $destinatario) {
+                Mail::to($destinatario->correo)->send(new ReembolsoPorDefinir($cita));
+            }
+        }
+
+        return response()->json([
+            'ok' => true,
+            'mensaje' => $resultado['recien_cancelada']
+                ? 'Pago rechazado y cita cancelada.'
+                : 'Pago rechazado. La cita ya estaba cancelada.',
+        ]);
+    }
+
+    public function definirReembolso(Request $request, int $id): JsonResponse
+    {
+        abort_unless(in_array($request->user()->rol, ['admin', 'recepcion']), 403);
+
+        $data = $request->validate([
+            'monto_reembolso' => 'required|numeric|decimal:0,2|min:0.01',
+        ]);
+
+        $pago = DB::transaction(function () use ($id, $data) {
+            $pago = Pago::query()->lockForUpdate()->findOrFail($id);
+
+            if ($pago->estado_reembolso !== 'por_definir') {
+                throw ValidationException::withMessages([
+                    'pago' => 'Este reembolso ya fue definido o no requiere definición.',
+                ]);
+            }
+
+            if ((float) $data['monto_reembolso'] > (float) $pago->monto_anticipado) {
+                throw ValidationException::withMessages([
+                    'monto_reembolso' => 'El importe no puede superar el pago aprobado.',
+                ]);
+            }
+
+            $pago->update([
+                'estado_reembolso' => 'pendiente',
+                'monto_reembolso' => $data['monto_reembolso'],
+            ]);
+
+            return $pago->load(['cita.cliente', 'cita.servicio']);
+        });
+
+        Mail::to($pago->cita->cliente->correo)->send(new ReembolsoDefinido($pago));
+
+        return response()->json([
+            'ok' => true,
+            'mensaje' => 'Importe de reembolso registrado y notificado al cliente por correo.',
+        ]);
     }
 
     /**
