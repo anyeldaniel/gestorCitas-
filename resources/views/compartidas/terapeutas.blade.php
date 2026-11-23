@@ -34,6 +34,16 @@
                     &times;
                 </button>
             </div>
+            <!-- Agrego el ordenamiento para filtrar búsqueda -->
+            <div class="terapeutas-orden">
+                <label for="orden-terapeutas" class="terapeutas-orden-label">Ordenar:</label>
+                <select id="orden-terapeutas" class="terapeutas-orden-select" aria-label="Ordenar terapeutas">
+                    <option value="defecto">Principal / Por defecto</option>
+                    <option value="alfabetico-asc">Nombre (A → Z)</option>
+                    <option value="alfabetico-desc">Nombre (Z → A)</option>
+                    <option value="rating-desc">Mejor calificación (★)</option>
+                </select>
+            </div>
 
             <!-- Botón Registrar (solo admin) -->
             @if(auth()->check() && auth()->user()->rol === 'admin')
@@ -61,12 +71,42 @@
         <small>Prueba con otro nombre o especialidad.</small>
     </div>
 
+    @php
+        $usuarioActual = auth()->user();
+        $esFichaPropia = function ($item) use ($usuarioActual) {
+            if (!$usuarioActual || $usuarioActual->rol !== 'trabajador') {
+                return false;
+            }
+            $itemCorreo = $item->correo ?? $item->email ?? null;
+            $userCorreo = $usuarioActual->email ?? $usuarioActual->correo ?? null;
+
+            return (isset($item->user_id) && (int) $item->user_id === (int) $usuarioActual->id)
+                || (isset($item->usuario_id) && (int) $item->usuario_id === (int) $usuarioActual->id)
+                || (!empty($itemCorreo) && !empty($userCorreo) && strtolower(trim($itemCorreo)) === strtolower(trim($userCorreo)))
+                || ((int) $item->id === (int) $usuarioActual->id);
+        };
+
+        if ($terapeutas instanceof \Illuminate\Support\Collection) {
+            $terapeutasOrdenados = $terapeutas->sortByDesc(fn($t) => $esFichaPropia($t) ? 1 : 0)->values();
+        } elseif (is_array($terapeutas)) {
+            $terapeutasOrdenados = $terapeutas;
+            usort($terapeutasOrdenados, fn($a, $b) => ($esFichaPropia($b) ? 1 : 0) <=> ($esFichaPropia($a) ? 1 : 0));
+        } else {
+            $terapeutasOrdenados = $terapeutas;
+        }
+    @endphp
+
     <!-- GRID DE TERAPEUTAS -->
     <main class="grid-terapeutas">
-        @forelse($terapeutas as $terapeuta)
-        <article class="tarjeta-terapeuta"
+        @forelse($terapeutasOrdenados as $terapeuta)
+        @php $esMiFicha = $esFichaPropia($terapeuta); @endphp
+            <article class="tarjeta-terapeuta"
                  data-id="{{ $terapeuta->id }}"
-                 data-especialidades="{{ $terapeuta->especialidades ?? '' }}">
+                 data-nombre="{{ $terapeuta->nombre }}"
+                 data-especialidades="{{ $terapeuta->especialidades ?? '' }}"
+                 data-promedio="{{ $terapeuta->promedio ?? 0 }}"
+                 data-propio="{{ $esMiFicha ? '1' : '0' }}"
+                 data-orden-inicial="{{ $loop->index }}">
           <!-- FOTO / PLACEHOLDER -->
           <figure class="terapeuta-foto-contenedor">
              @if($terapeuta->foto && file_exists(public_path('storage/' . $terapeuta->foto)))
@@ -92,7 +132,12 @@
                     @endif
                 </span>
 
-                <h2 class="terapeuta-nombre">{{ $terapeuta->nombre }}</h2>
+                <h2 class="terapeuta-nombre">
+                    {{ $terapeuta->nombre }}
+                    @if($esMiFicha)
+                        <span style="font-family: 'Inter', sans-serif; font-size: 0.78rem; font-weight: 600; color: #8b5e3c; letter-spacing: 0.04em;">(Yo)</span>
+                    @endif
+                </h2>
 
                 @php
                     $promedio = $terapeuta->promedio ?? 0;
@@ -170,6 +215,13 @@
         </div>
         @endforelse
     </main>
+    <!-- PAGINADOR DE TERAPEUTAS (12 POR PÁGINA) -->
+    <nav id="paginador-terapeutas" class="paginador-terapeutas" aria-label="Paginación de terapeutas" hidden>
+        <button type="button" id="pag-terapeutas-prev" class="pag-terapeutas-btn">← Anterior</button>
+        <div id="pag-terapeutas-numeros" class="pag-terapeutas-numeros"></div>
+        <span id="pag-terapeutas-info" class="pag-terapeutas-info">Página 1 de 1</span>
+        <button type="button" id="pag-terapeutas-next" class="pag-terapeutas-btn">Siguiente →</button>
+    </nav>
 
     <!-- MODAL COMPARTIDO -->
     @include('compartidas.modal-terapeuta', ['userRole' => $userRole ?? null])

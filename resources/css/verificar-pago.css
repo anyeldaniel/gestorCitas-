@@ -957,74 +957,178 @@ dialog.modal-contenedor-alerta-critica {
     position: fixed;
     inset: 0;
     margin: auto;
-    border: none;
+    border: 1px solid var(--border-light);
     border-radius: 16px;
     padding: 0;
-    background: #ffffff !important; /* Forzamos un blanco sólido absoluto */
+    background: #ffffff;
     color: var(--text-main);
-    max-width: 440px;
-    width: 90%;
+    max-width: 540px;
+    width: 92%;
     max-height: 90vh;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35); /* Sombra más sólida para destacar */
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
     animation: fadeInModal 0.3s var(--ease-zen) forwards;
     z-index: 99999;
 }
 
 dialog.modal-contenedor-alerta-critica::backdrop {
-    background: rgba(30, 25, 20, 0.75); /* Oscurecemos más el fondo trasero para que resalte el modal */
-    backdrop-filter: blur(5px);
+    background: rgba(30, 25, 20, 0.72);
+    backdrop-filter: blur(4px);
 }
 
-.cuerpo-alerta-centrado {
-    background: #ffffff !important; /* Aseguramos blanco sólido también en el contenedor interno */
-    padding: 2rem 2.25rem;
+.modal-pago-card {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
-    border-radius: 16px;
+    background: #ffffff;
+    font-family: var(--font-body);
 }
 
-.icono-alerta-advertencia {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-    line-height: 1;
+.modal-pago-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.5rem 1.75rem 1.15rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.modal-pago-header__texto {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    text-align: left;
+}
+
+.modal-pago-kicker {
+    font-family: var(--font-ui);
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
 }
 
 .titulo-alerta-critica {
     font-family: var(--font-display);
-    font-size: 1.5rem;
+    font-size: 1.65rem;
     font-weight: 700;
     color: var(--text-main);
-    margin: 0 0 0.5rem 0;
+    margin: 0;
     letter-spacing: -0.01em;
+    line-height: 1.2;
+}
+
+.modal-pago-cerrar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    background: #ffffff;
+    color: var(--text-muted);
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.modal-pago-cerrar:hover {
+    background: var(--bg-soft);
+    color: var(--primary-brown);
+}
+
+.modal-pago-body {
+    padding: 1.35rem 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    text-align: left;
+}
+
+.modal-pago-resumen {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.85rem;
+    padding: 0.9rem 1.1rem;
+    border-radius: 12px;
+    background: #fbf7f2;
+    border: 1px solid #f2e8dc;
+}
+
+.modal-pago-resumen__info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.modal-pago-resumen__info strong {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-main);
+    line-height: 1.3;
+}
+
+.modal-pago-resumen__info span {
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: var(--text-muted);
+    line-height: 1.35;
+}
+
+.modal-pago-resumen__meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.15rem;
+    flex-shrink: 0;
+}
+
+.modal-pago-resumen__meta strong {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--primary-brown);
+    line-height: 1.2;
+}
+
+.modal-pago-resumen__meta span {
+    font-family: var(--font-body);
+    font-size: 0.76rem;
+    font-weight: 400;
+    color: var(--text-muted);
+    line-height: 1.3;
 }
 
 .mensaje-alerta-descripcion {
     font-family: var(--font-body);
-    font-size: 0.92rem;
+    font-size: 0.85rem;
+    font-weight: 400;
     color: var(--text-soft);
-    margin: 0 0 1.5rem 0;
-    line-height: 1.5;
+    margin: 0;
+    line-height: 1.45;
 }
 
 .textarea-motivo {
     width: 100%;
     border: 1px solid var(--border-color);
     border-radius: 10px;
-    padding: 0.75rem 1rem;
+    padding: 0.9rem 1rem;
     font-family: var(--font-body);
-    font-size: 0.88rem;
+    font-size: 0.9rem;
     color: var(--text-main);
     background: var(--bg-soft);
-    margin-bottom: 1.5rem;
     resize: vertical;
+    min-height: 110px;
     outline: none;
-    transition: var(--transition);
-}
-
-.textarea-motivo::placeholder {
-    color: var(--text-light);
+    transition: border 0.2s ease, background 0.2s ease;
 }
 
 .textarea-motivo:focus {
@@ -1035,70 +1139,68 @@ dialog.modal-contenedor-alerta-critica::backdrop {
 
 .pie-alerta-botones {
     display: flex;
-    gap: 0.75rem;
+    gap: 0.85rem;
     width: 100%;
-    justify-content: flex-end;
+    justify-content: center;
+    align-items: center;
+    padding: 1.1rem 1.75rem;
+    background: #8b5e3c;
 }
 
-.btn-cancelar-alerta, 
+.btn-cancelar-alerta,
 .btn-confirmar-accion {
-    flex: 1;
-    height: 42px;
-    padding: 0 1.25rem;
-    border-radius: 50px;
+    height: 40px;
+    padding: 0 1.5rem;
+    border-radius: 10px;
     font-family: var(--font-ui);
-    font-size: 0.78rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
     cursor: pointer;
     border: none;
     transition: var(--transition);
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    white-space: nowrap;
 }
 
 .btn-cancelar-alerta {
-    background: var(--bg-soft);
-    color: var(--text-soft);
-    border: 1px solid var(--border-color);
+    background: #ffffff;
+    color: #3d2c1e;
 }
 
 .btn-cancelar-alerta:hover {
-    background: var(--border-light);
-    color: var(--text-main);
+    background: #f5efe8;
 }
 
 .btn-confirmar-accion {
-    background: var(--primary-brown-ink);
+    background: #6d4a2f;
     color: #ffffff;
 }
 
 .btn-confirmar-accion:hover {
-    background: var(--primary-brown-dark);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    background: #583b24;
+    transform: translateY(-1px);
 }
 
-/* Modificadores de color para los botones dinámicos de acción */
 .btn-accion-autorizar {
-    background: var(--color-ok) !important;
+    background: #00796b;
 }
+
 .btn-accion-autorizar:hover {
-    background: #006256 !important;
-    box-shadow: 0 6px 14px rgba(0, 121, 107, 0.25) !important;
+    background: #006256;
 }
 
 .btn-accion-rechazar {
-    background: var(--color-danger) !important;
-}
-.btn-accion-rechazar:hover {
-    background: #a52828 !important;
-    box-shadow: 0 6px 14px rgba(197, 48, 48, 0.25) !important;
+    background: #6d4a2f;
 }
 
-.hidden {
+.btn-accion-rechazar:hover {
+    background: #583b24;
+}
+
+.modulo-vista .hidden {
     display: none !important;
 }
 

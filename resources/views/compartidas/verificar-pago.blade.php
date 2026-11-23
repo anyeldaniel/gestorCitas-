@@ -219,18 +219,37 @@
 
 <!-- Modal de Confirmación (Fuera del main para semántica correcta) -->
 <dialog id="modal-confirmacion" class="modal-contenedor-alerta-critica">
-    <article class="cuerpo-alerta-centrado">
-        <figure class="icono-alerta-advertencia">⚠️</figure>
-        <h3 id="modal-titulo" class="titulo-alerta-critica">Confirmar Acción</h3>
-        <p id="modal-mensaje" class="mensaje-alerta-descripcion"></p>
-        
-        <textarea id="motivo-rechazo" class="textarea-motivo hidden" rows="3" placeholder="Escribe el motivo del rechazo aquí..."></textarea>
-        
+    <div class="modal-pago-card">
+        <header class="modal-pago-header">
+            <div class="modal-pago-header__texto">
+                <span id="modal-kicker" class="modal-pago-kicker">VERIFICACIÓN DE PAGO</span>
+                <h3 id="modal-titulo" class="titulo-alerta-critica">¿Quieres rechazar pago?</h3>
+            </div>
+            <button type="button" id="btn-modal-cerrar-x" class="modal-pago-cerrar" aria-label="Cerrar modal">&times;</button>
+        </header>
+
+        <div class="modal-pago-body">
+            <div id="modal-resumen-pago" class="modal-pago-resumen">
+                <div class="modal-pago-resumen__info">
+                    <strong id="modal-pago-cliente">Cliente</strong>
+                    <span id="modal-pago-detalle">Método · Referencia</span>
+                </div>
+                <div class="modal-pago-resumen__meta">
+                    <strong id="modal-pago-monto">$0.00</strong>
+                    <span id="modal-pago-fecha">Fecha</span>
+                </div>
+            </div>
+
+            <p id="modal-mensaje" class="mensaje-alerta-descripcion"></p>
+
+            <textarea id="motivo-rechazo" class="textarea-motivo hidden" rows="3" placeholder="Escribe el motivo del rechazo aquí..."></textarea>
+        </div>
+
         <footer class="pie-alerta-botones">
             <button type="button" id="btn-modal-cancelar" class="btn-cancelar-alerta">Cancelar</button>
-            <button type="button" id="btn-modal-confirmar" class="btn-confirmar-accion">Confirmar</button>
+            <button type="button" id="btn-modal-confirmar" class="btn-confirmar-accion">Rechazar pago</button>
         </footer>
-    </article>
+    </div>
 </dialog>
 @endsection
 

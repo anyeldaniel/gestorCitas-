@@ -291,10 +291,9 @@
         </form>
     </dialog>
 
-    <!-- MODAL CONFIRMACIÓN -->
+<!-- MODAL CONFIRMACIÓN -->
     <dialog id="modal-confirmacion-custom" class="modal-contenedor-alerta-critica">
         <article class="cuerpo-alerta-centrado">
-            <figure class="icono-alerta-advertencia">⚠️</figure>
             <h3 id="confirm-alerta-titulo" class="titulo-alerta-critica">¿Confirmar acción?</h3>
             <p id="confirm-alerta-mensaje" class="mensaje-alerta-descripcion"></p>
 

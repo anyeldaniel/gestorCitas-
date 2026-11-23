@@ -12,14 +12,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputBusqueda = document.getElementById('input-busqueda-pagos');
     const inputFecha = document.getElementById('input-fecha-pagos');
     const footerContador = document.getElementById('footer-contador');
-    
+
     // Referencias del Modal
     const modal = document.getElementById('modal-confirmacion');
+    const modalKicker = document.getElementById('modal-kicker');
     const modalTitulo = document.getElementById('modal-titulo');
     const modalMensaje = document.getElementById('modal-mensaje');
     const modalTextarea = document.getElementById('motivo-rechazo');
+    const modalCliente = document.getElementById('modal-pago-cliente');
+    const modalDetalle = document.getElementById('modal-pago-detalle');
+    const modalMonto = document.getElementById('modal-pago-monto');
+    const modalFecha = document.getElementById('modal-pago-fecha');
     const btnConfirmar = document.getElementById('btn-modal-confirmar');
     const btnCancelar = document.getElementById('btn-modal-cancelar');
+    const btnCerrarX = document.getElementById('btn-modal-cerrar-x');
 
     // Estado de la aplicación
     let accionActual = '';
@@ -57,7 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Event Listeners para filtros
     if (tabs.length) {
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
@@ -90,42 +95,65 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    function poblarResumenFila() {
+        if (!filaActual) return;
+        const cliente = filaActual.querySelector('.cliente-info strong')?.textContent.trim() || 'Cliente';
+        const banco = filaActual.querySelector('.celda-banco strong')?.textContent.trim() || '';
+        const ref = filaActual.querySelector('.celda-referencia code')?.textContent.trim() || '';
+        const monto = filaActual.querySelector('.celda-monto')?.textContent.trim() || '$0.00';
+        const fecha = filaActual.querySelector('.celda-fecha strong')?.textContent.trim() || '';
+        const hora = filaActual.querySelector('.celda-fecha span')?.textContent.trim() || '';
+
+        if (modalCliente) modalCliente.textContent = cliente;
+        if (modalDetalle) modalDetalle.textContent = [banco, ref].filter(Boolean).join(' · ');
+        if (modalMonto) modalMonto.textContent = monto;
+        if (modalFecha) modalFecha.textContent = [fecha, hora].filter(Boolean).join(' · ');
+    }
+
     function abrirModal() {
         if (!modal) return;
+        poblarResumenFila();
+
+        if (modalTextarea) {
+            modalTextarea.classList.add('hidden');
+            modalTextarea.value = '';
+        }
 
         if (accionActual === 'autorizar') {
-            modalTitulo.textContent = '¿Autorizar esta transacción?';
-            modalMensaje.textContent = 'La reserva del cliente se marcará como confirmada automáticamente. Esta acción no se puede deshacer.';
-            modalTextarea.classList.add('hidden');
+            if (modalKicker) modalKicker.textContent = 'CONFIRMAR TRANSACCIÓN';
+            modalTitulo.textContent = '¿Quieres autorizar pago?';
+            modalMensaje.textContent = 'La reserva del cliente quedará confirmada al aprobar este pago.';
             btnConfirmar.textContent = 'Autorizar pago';
             btnConfirmar.className = 'btn-confirmar-accion btn-accion-autorizar';
         } else {
-            modalTitulo.textContent = '¿Rechazar esta transacción?';
-            modalMensaje.textContent = 'Indica el motivo del rechazo. Este mensaje será visible para el cliente.';
-            modalTextarea.classList.remove('hidden');
-            modalTextarea.value = '';
+            if (modalKicker) modalKicker.textContent = 'GESTIONAR PAGO';
+            modalTitulo.textContent = '¿Quieres rechazar pago?';
+            modalMensaje.textContent = 'El pago se marcará como rechazado y no se validará la reserva.';
             btnConfirmar.textContent = 'Rechazar pago';
             btnConfirmar.className = 'btn-confirmar-accion btn-accion-rechazar';
-            setTimeout(() => modalTextarea.focus(), 100);
         }
 
         modal.showModal();
     }
 
-    if (btnCancelar && modal) {
-        btnCancelar.addEventListener('click', () => {
-            modal.close();
-            resetEstado();
-        });
+    function cerrarModalPago() {
+        if (!modal) return;
+        modal.close();
+        resetEstado();
+    }
+
+    if (btnCancelar) {
+        btnCancelar.addEventListener('click', cerrarModalPago);
+    }
+
+    if (btnCerrarX) {
+        btnCerrarX.addEventListener('click', cerrarModalPago);
     }
 
     if (modal) {
         modal.addEventListener('click', (e) => {
-            const rect = modal.getBoundingClientRect();
-            const fuera = e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom;
-            if (fuera) {
-                modal.close();
-                resetEstado();
+            if (e.target === modal) {
+                cerrarModalPago();
             }
         });
     }
@@ -135,19 +163,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // =====================================================================
     if (btnConfirmar) {
         btnConfirmar.addEventListener('click', () => {
-            if (accionActual === 'rechazar' && (!modalTextarea.value.trim())) {
-                modalTextarea.style.borderColor = 'var(--color-danger)';
-                modalTextarea.focus();
-                return;
-            }
-
             if (!filaActual) return;
 
-            // Obtenemos la URL real desde el botón original (data-url)
-            const urlBase = accionActual === 'autorizar' 
-                ? filaActual.querySelector('.btn-autorizar').dataset.url 
+            const urlBase = accionActual === 'autorizar'
+                ? filaActual.querySelector('.btn-autorizar').dataset.url
                 : filaActual.querySelector('.btn-rechazar').dataset.url;
-                
+
             const token = document.querySelector('meta[name="csrf-token"]').content;
 
             btnConfirmar.textContent = 'Procesando...';
@@ -160,11 +181,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     'X-CSRF-TOKEN': token,
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify({ motivo: modalTextarea.value })
+                body: JSON.stringify({})
             })
             .then(res => {
                 if (res.ok) {
-                    window.location.reload(); // Recarga para actualizar contadores
+                    window.location.reload();
                 } else {
                     alert('Ocurrió un error al procesar la transacción.');
                     btnConfirmar.textContent = accionActual === 'autorizar' ? 'Autorizar pago' : 'Rechazar pago';

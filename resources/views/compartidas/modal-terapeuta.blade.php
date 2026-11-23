@@ -166,10 +166,16 @@
 
 <dialog id="modal-confirmacion-custom" class="modal-contenedor-alerta-critica">
     <article class="cuerpo-alerta-centrado">
-        <figure class="icono-alerta-advertencia">⚠️</figure>
+        <div class="icono-alerta-dinamico" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 9v4" />
+                <path d="M12 17h.01" />
+                <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+            </svg>
+        </div>
         <h3 id="confirm-alerta-titulo" class="titulo-alerta-critica">¿Confirmar acción?</h3>
         <p id="confirm-alerta-mensaje" class="mensaje-alerta-descripcion"></p>
-        
+
         <footer class="pie-alerta-botones">
             <button type="button" id="btn-confirm-cancelar" class="btn-cancelar-alerta">Cancelar</button>
             <button type="button" id="btn-confirm-aceptar" class="btn-aceptar-eliminar">Eliminar permanentemente</button>

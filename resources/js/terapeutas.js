@@ -108,17 +108,28 @@ function getBaseUrl() {
     return baseUrl;
 }
 
+//cambié la función del buscador para los terapeutas, para que el paginador pueda funcionar correctamente y no se rompa al filtrar, además de que ahora respeta el orden inicial de los terapeutas y los ordena correctamente según el criterio seleccionado. 
 function initBuscadorTerapeutas() {
     const input       = document.getElementById('buscador-terapeutas');
+    const selectOrden = document.getElementById('orden-terapeutas');
     const limpiarBtn  = document.getElementById('buscador-limpiar');
     const resultados  = document.getElementById('buscador-resultados');
     const sinResult   = document.getElementById('buscador-sin-resultados');
     const grid        = document.querySelector('.grid-terapeutas');
 
-    if (!input || !grid) return;
+    const paginador   = document.getElementById('paginador-terapeutas');
+    const btnPrev     = document.getElementById('pag-terapeutas-prev');
+    const btnNext     = document.getElementById('pag-terapeutas-next');
+    const numsCont    = document.getElementById('pag-terapeutas-numeros');
+    const infoPag     = document.getElementById('pag-terapeutas-info');
+
+    if (!grid) return;
 
     const tarjetas = Array.from(grid.querySelectorAll('.tarjeta-terapeuta'));
     if (tarjetas.length === 0) return;
+
+    const ITEMS_POR_PAGINA = 12;
+    let paginaActual = 1;
 
     function normalizar(texto) {
         return (texto || '')
@@ -130,48 +141,40 @@ function initBuscadorTerapeutas() {
     }
 
     const datosTarjetas = tarjetas.map(tarjeta => {
-        const nombre = tarjeta.querySelector('.terapeuta-nombre')?.textContent || '';
+        const nombre = (tarjeta.dataset.nombre || tarjeta.querySelector('.terapeuta-nombre')?.textContent || '')
+            .replace(/\(Yo\)/gi, '')
+            .trim();
         const especialidades = tarjeta.dataset.especialidades || '';
+        const promedio = parseFloat(tarjeta.dataset.promedio || 0);
+        const esPropio = tarjeta.dataset.propio === '1' ? 1 : 0;
+        const ordenInicial = parseInt(tarjeta.dataset.ordenInicial || 0, 10);
         const buscar = normalizar(`${nombre} ${especialidades}`);
-        return { tarjeta, buscar, nombre, especialidades };
+        return { tarjeta, buscar, nombre, especialidades, promedio, esPropio, ordenInicial };
     });
 
-    function aplicarFiltro(termino) {
-        const q = normalizar(termino);
-        let visibles = 0;
+    function obtenerOrdenadas(criterio) {
+        const copia = [...datosTarjetas];
 
-        datosTarjetas.forEach(({ tarjeta, buscar }) => {
-            const coincide = q === '' || buscar.includes(q);
-            if (coincide) {
-                tarjeta.classList.remove('is-hidden');
-                visibles++;
-            } else {
-                tarjeta.classList.add('is-hidden');
+        copia.sort((a, b) => {
+            if (criterio === 'defecto' && a.esPropio !== b.esPropio) {
+                return b.esPropio - a.esPropio;
+            }
+
+            switch (criterio) {
+                case 'alfabetico-asc':
+                    return a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' });
+                case 'alfabetico-desc':
+                    return b.nombre.localeCompare(a.nombre, 'es', { sensitivity: 'base' });
+                case 'rating-desc':
+                    if (b.promedio !== a.promedio) return b.promedio - a.promedio;
+                    return a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' });
+                case 'defecto':
+                default:
+                    return a.ordenInicial - b.ordenInicial;
             }
         });
 
-        if (limpiarBtn) {
-            limpiarBtn.hidden = (q === '');
-        }
-
-        if (resultados) {
-            if (q === '') {
-                resultados.hidden = true;
-                resultados.innerHTML = '';
-            } else {
-                resultados.hidden = false;
-                const total = datosTarjetas.length;
-                if (visibles === 0) {
-                    resultados.innerHTML = `Sin resultados para <strong>"${escaparHTML(termino)}"</strong>`;
-                } else {
-                    resultados.innerHTML = `Mostrando <strong>${visibles}</strong> de <strong>${total}</strong> especialistas`;
-                }
-            }
-        }
-
-        if (sinResult) {
-            sinResult.hidden = (visibles !== 0);
-        }
+        return copia;
     }
 
     function escaparHTML(str) {
@@ -180,27 +183,156 @@ function initBuscadorTerapeutas() {
         return div.innerHTML;
     }
 
-    input.addEventListener('input', (e) => {
-        aplicarFiltro(e.target.value);
-    });
+    function renderizarBotonesPagina(totalPaginas) {
+        if (!numsCont) return;
+        numsCont.innerHTML = '';
 
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            input.value = '';
-            aplicarFiltro('');
-            input.blur();
+        for (let i = 1; i <= totalPaginas; i++) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'pag-terapeutas-num' + (i === paginaActual ? ' is-active' : '');
+            btn.textContent = i;
+            btn.setAttribute('aria-label', `Ir a la página ${i}`);
+            btn.addEventListener('click', () => {
+                paginaActual = i;
+                actualizarVista(false);
+                grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+            numsCont.appendChild(btn);
         }
-    });
+    }
 
-    if (limpiarBtn) {
-        limpiarBtn.addEventListener('click', () => {
-            input.value = '';
-            aplicarFiltro('');
-            input.focus();
+    function actualizarVista(reiniciarPagina = true) {
+        if (reiniciarPagina) {
+            paginaActual = 1;
+        }
+
+        const termino = input ? input.value : '';
+        const q = normalizar(termino);
+        const criterio = selectOrden ? selectOrden.value : 'defecto';
+        const filtroActivo = q !== '' || criterio !== 'defecto';
+
+        const ordenadas = obtenerOrdenadas(criterio);
+
+        ordenadas.forEach(({ tarjeta }) => {
+            grid.appendChild(tarjeta);
+        });
+
+        const coincidencias = ordenadas.filter(({ buscar }) => q === '' || buscar.includes(q));
+        const noCoinciden = ordenadas.filter(({ buscar }) => q !== '' && !buscar.includes(q));
+
+        noCoinciden.forEach(({ tarjeta }) => {
+            tarjeta.classList.add('is-hidden');
+        });
+
+        const totalCoincidencias = coincidencias.length;
+        const totalPaginas = Math.max(1, Math.ceil(totalCoincidencias / ITEMS_POR_PAGINA));
+
+        if (paginaActual > totalPaginas) paginaActual = totalPaginas;
+        if (paginaActual < 1) paginaActual = 1;
+
+        const inicio = (paginaActual - 1) * ITEMS_POR_PAGINA;
+        const fin = inicio + ITEMS_POR_PAGINA;
+
+        coincidencias.forEach(({ tarjeta }, idx) => {
+            const enPagina = idx >= inicio && idx < fin;
+            tarjeta.classList.toggle('is-hidden', !enPagina);
+        });
+
+        if (limpiarBtn) {
+            limpiarBtn.hidden = !filtroActivo;
+        }
+
+        if (resultados) {
+            if (!filtroActivo) {
+                resultados.hidden = true;
+                resultados.innerHTML = '';
+            } else {
+                resultados.hidden = false;
+                const total = datosTarjetas.length;
+                if (totalCoincidencias === 0) {
+                    resultados.innerHTML = `Sin resultados para <strong>"${escaparHTML(termino)}"</strong>`;
+                } else if (q !== '') {
+                    resultados.innerHTML = `Mostrando <strong>${totalCoincidencias}</strong> de <strong>${total}</strong> especialistas para <strong>"${escaparHTML(termino)}"</strong>`;
+                } else {
+                    resultados.innerHTML = `Mostrando <strong>${totalCoincidencias}</strong> especialistas ordenados`;
+                }
+            }
+        }
+
+        if (sinResult) {
+            sinResult.hidden = (totalCoincidencias !== 0);
+        }
+
+        if (paginador) {
+            if (totalCoincidencias > ITEMS_POR_PAGINA) {
+                paginador.hidden = false;
+                if (infoPag) {
+                    infoPag.textContent = `Página ${paginaActual} de ${totalPaginas}`;
+                }
+                if (btnPrev) {
+                    btnPrev.disabled = (paginaActual <= 1);
+                }
+                if (btnNext) {
+                    btnNext.disabled = (paginaActual >= totalPaginas);
+                }
+                renderizarBotonesPagina(totalPaginas);
+            } else {
+                paginador.hidden = true;
+            }
+        }
+    }
+
+    if (input) {
+        input.addEventListener('input', () => actualizarVista(true));
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                input.value = '';
+                actualizarVista(true);
+                input.blur();
+            }
         });
     }
 
-    aplicarFiltro('');
+    if (selectOrden) {
+        selectOrden.addEventListener('change', () => actualizarVista(true));
+    }
+
+    if (limpiarBtn) {
+        limpiarBtn.addEventListener('click', () => {
+            if (input) input.value = '';
+            if (selectOrden) selectOrden.value = 'defecto';
+            actualizarVista(true);
+            if (input) input.focus();
+        });
+    }
+
+    if (btnPrev) {
+        btnPrev.addEventListener('click', () => {
+            if (paginaActual > 1) {
+                paginaActual--;
+                actualizarVista(false);
+                grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    }
+
+    if (btnNext) {
+        btnNext.addEventListener('click', () => {
+            const termino = input ? input.value : '';
+            const q = normalizar(termino);
+            const totalCoincidencias = datosTarjetas.filter(({ buscar }) => q === '' || buscar.includes(q)).length;
+            const totalPaginas = Math.max(1, Math.ceil(totalCoincidencias / ITEMS_POR_PAGINA));
+
+            if (paginaActual < totalPaginas) {
+                paginaActual++;
+                actualizarVista(false);
+                grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    }
+
+    actualizarVista(true);
 }
 
 function renderizarEstrellas() {
@@ -257,7 +389,12 @@ window.verTerapeutaDetalle = function(id) {
     if (!tarjeta) { alert('Terapeuta no encontrado'); return; }
 
     const nombre = tarjeta.querySelector('.terapeuta-nombre')?.textContent.trim() || 'Sin nombre';
-    const especialidades = tarjeta.querySelector('.contenedor-tags-especialidades .tag-especialidad')?.textContent.trim() || 'Sin especialidad';
+    //Aquí estoy cambiando la forma en que se obtienen las especialidades para que sea más robusta y no dependa de un solo lugar, buscando primero en el dataset y luego en el contenido de la tarjeta. :D
+    const especialidades = (
+        tarjeta.dataset.especialidades ||
+        tarjeta.querySelector('.tag-especialidad')?.textContent ||
+        ''
+    ).trim();
     const foto = tarjeta.querySelector('img')?.src || null;
     const telefono = tarjeta.querySelector('.terapeuta-telefono')?.textContent.trim() || 'No disponible';
     const email = tarjeta.querySelector('.terapeuta-email')?.textContent.trim() || 'No disponible';
@@ -270,9 +407,10 @@ window.verTerapeutaDetalle = function(id) {
         document.getElementById('view-terapeuta-email').textContent = email;
         document.getElementById('view-terapeuta-descripcion').textContent = descripcion;
 
+        //Con esto me aseguro de que las especialidades se muestren correctamente, incluso si no hay ninguna registrada, mostrando un mensaje amigable en ese caso. Att: Andrés
         const espContainer = document.getElementById('view-terapeuta-especialidades');
-        if (especialidades && especialidades !== 'Sin especialidad') {
-            const espArray = especialidades.split(',').map(e => e.trim());
+        if (especialidades && especialidades !== 'Sin especialidad' && especialidades !== 'Especialista en Bienestar') {
+            const espArray = especialidades.split(',').map(e => e.trim()).filter(Boolean);
             espContainer.innerHTML = espArray.map(esp => `<span class="badge">${esp}</span>`).join('');
         } else {
             espContainer.innerHTML = '<span style="color: var(--gris-texto); font-size: 0.85rem;">Sin especialidades registradas</span>';

@@ -54,7 +54,7 @@
                         <a href="{{ route('agenda') }}" class="nav-item">Agenda</a>
                     @endif
 
-                    @if($isAdmin || $isRecepcionista || $isCliente)
+                    @if($isAdmin || $isRecepcionista || $isTrabajador || $isCliente)
                         <a href="{{ url('/terapeutas') }}" class="nav-item">Terapeutas</a>
                     @endif
 
@@ -124,7 +124,7 @@
                     @if($isAdmin || $isRecepcionista || $isTrabajador)
                         <a href="{{ route('agenda') }}" class="text-white text-lg font-medium border-b border-white/20 pb-2">Agenda</a>
                     @endif
-                    @if($isAdmin || $isRecepcionista || $isCliente)
+                    @if($isAdmin || $isRecepcionista || $isTrabajador || $isCliente)
                         <a href="{{ url('/terapeutas') }}" class="text-white text-lg font-medium border-b border-white/20 pb-2">Terapeutas</a>
                     @endif
                     @if($isAdmin)
