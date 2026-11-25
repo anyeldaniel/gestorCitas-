@@ -922,15 +922,23 @@ window.verResenasTerapeuta = function(btn) {
 window.renderizarPaginaResenas = function() {
     const contenedor = document.getElementById('lista-resenas');
     if (!contenedor) return;
-    contenedor.innerHTML = '';
+    contenedor.textContent = '';
 
     if (resenasActuales.length === 0) {
-        contenedor.innerHTML = `
-            <div style="text-align: center; padding: 2.5rem 1rem; color: #8c7a6b;">
-                <p style="font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; margin: 0;">Este especialista aún no cuenta con opiniones registradas.</p>
-                <small style="font-size: 0.8rem; color: #a89a8c; display: block; margin-top: 0.4rem;">¡Sé el primero en calificar su servicio!</small>
-            </div>
-        `;
+        const vacio = document.createElement('div');
+        vacio.style.cssText = 'text-align: center; padding: 2.5rem 1rem; color: #8c7a6b;';
+
+        const mensaje = document.createElement('p');
+        mensaje.style.cssText = "font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; margin: 0;";
+        mensaje.textContent = 'Este especialista aún no cuenta con opiniones registradas.';
+
+        const invitacion = document.createElement('small');
+        invitacion.style.cssText = 'font-size: 0.8rem; color: #a89a8c; display: block; margin-top: 0.4rem;';
+        invitacion.textContent = '¡Sé el primero en calificar su servicio!';
+
+        vacio.appendChild(mensaje);
+        vacio.appendChild(invitacion);
+        contenedor.appendChild(vacio);
         return;
     }
 
@@ -947,45 +955,77 @@ window.renderizarPaginaResenas = function() {
 
     // Renderizar las reseñas de la página actual
     resenasPagina.forEach(resena => {
-        let estrellasHTML = '';
         const puntuacion = parseInt(resena.puntuacion || 0);
+        const tarjeta = document.createElement('div');
+        tarjeta.className = 'resena-item-card';
+        tarjeta.style.cssText = 'border-bottom: 1px solid #efe9e1; padding-bottom: 1.25rem;';
+
+        const cabecera = document.createElement('div');
+        cabecera.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;';
+
+        const estrellas = document.createElement('div');
+        estrellas.style.cssText = 'color: #f5b301; font-size: 0.95rem; letter-spacing: 2px;';
         for (let i = 1; i <= 5; i++) {
-            estrellasHTML += i <= puntuacion ? '★' : '<span style="color: #d1c7bd;">★</span>';
+            if (i <= puntuacion) {
+                estrellas.appendChild(document.createTextNode('★'));
+            } else {
+                const estrella = document.createElement('span');
+                estrella.style.color = '#d1c7bd';
+                estrella.textContent = '★';
+                estrellas.appendChild(estrella);
+            }
         }
 
-        const htmlResena = `
-            <div class="resena-item-card" style="border-bottom: 1px solid #efe9e1; padding-bottom: 1.25rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-                    <div style="color: #f5b301; font-size: 0.95rem; letter-spacing: 2px;">${estrellasHTML}</div>
-                    <span style="font-family: 'Inter', sans-serif; font-size: 0.72rem; color: #a89a8c; font-weight: 500;">${resena.fecha}</span>
-                </div>
-                <p style="font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-style: italic; color: #3d2c1e; margin: 0 0 0.5rem 0; line-height: 1.4;">
-                    "${resena.comentario}"
-                </p>
-                <span style="font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 700; color: #8b5e3c; text-transform: uppercase; letter-spacing: 0.5px;">
-                    ${resena.cliente}
-                </span>
-            </div>
-        `;
-        contenedor.insertAdjacentHTML('beforeend', htmlResena);
+        const fecha = document.createElement('span');
+        fecha.style.cssText = "font-family: 'Inter', sans-serif; font-size: 0.72rem; color: #a89a8c; font-weight: 500;";
+        fecha.textContent = resena.fecha ?? '';
+        cabecera.appendChild(estrellas);
+        cabecera.appendChild(fecha);
+
+        const comentario = document.createElement('p');
+        comentario.style.cssText = "font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-style: italic; color: #3d2c1e; margin: 0 0 0.5rem 0; line-height: 1.4;";
+        comentario.textContent = `"${resena.comentario ?? ''}"`;
+
+        const cliente = document.createElement('span');
+        cliente.style.cssText = "font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 700; color: #8b5e3c; text-transform: uppercase; letter-spacing: 0.5px;";
+        cliente.textContent = resena.cliente ?? '';
+
+        tarjeta.appendChild(cabecera);
+        tarjeta.appendChild(comentario);
+        tarjeta.appendChild(cliente);
+        contenedor.appendChild(tarjeta);
     });
 
     // Agregar barra de paginación si hay más de una página
     if (totalPaginas > 1) {
-        const paginadorHTML = `
-            <div class="modal-paginador-container" style="display: flex; align-items: center; justify-content: space-between; padding-top: 1rem; border-top: 1px solid #efe9e1; margin-top: auto;">
-                <button type="button" onclick="cambiarPaginaResenas(-1)" ${paginaActualResenas === 1 ? 'disabled' : ''} class="btn-paginador-modal" style="padding: 0.4rem 0.9rem; border-radius: 6px; border: 1px solid #e8e2dd; background: ${paginaActualResenas === 1 ? '#f5efe8' : '#ffffff'}; color: ${paginaActualResenas === 1 ? '#a89a8c' : '#4a3b32'}; font-size: 0.75rem; font-weight: 600; cursor: ${paginaActualResenas === 1 ? 'not-allowed' : 'pointer'};">
-                    ← Anterior
-                </button>
-                <span style="font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 600; color: #8c7a6b; text-transform: uppercase; letter-spacing: 0.5px;">
-                    Página ${paginaActualResenas} de ${totalPaginas}
-                </span>
-                <button type="button" onclick="cambiarPaginaResenas(1)" ${paginaActualResenas === totalPaginas ? 'disabled' : ''} class="btn-paginador-modal" style="padding: 0.4rem 0.9rem; border-radius: 6px; border: 1px solid #e8e2dd; background: ${paginaActualResenas === totalPaginas ? '#f5efe8' : '#ffffff'}; color: ${paginaActualResenas === totalPaginas ? '#a89a8c' : '#4a3b32'}; font-size: 0.75rem; font-weight: 600; cursor: ${paginaActualResenas === totalPaginas ? 'not-allowed' : 'pointer'};">
-                    Siguiente →
-                </button>
-            </div>
-        `;
-        contenedor.insertAdjacentHTML('beforeend', paginadorHTML);
+        const paginador = document.createElement('div');
+        paginador.className = 'modal-paginador-container';
+        paginador.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding-top: 1rem; border-top: 1px solid #efe9e1; margin-top: auto;';
+
+        const anterior = document.createElement('button');
+        anterior.type = 'button';
+        anterior.className = 'btn-paginador-modal';
+        anterior.disabled = paginaActualResenas === 1;
+        anterior.style.cssText = `padding: 0.4rem 0.9rem; border-radius: 6px; border: 1px solid #e8e2dd; background: ${paginaActualResenas === 1 ? '#f5efe8' : '#ffffff'}; color: ${paginaActualResenas === 1 ? '#a89a8c' : '#4a3b32'}; font-size: 0.75rem; font-weight: 600; cursor: ${paginaActualResenas === 1 ? 'not-allowed' : 'pointer'};`;
+        anterior.textContent = '← Anterior';
+        anterior.addEventListener('click', () => window.cambiarPaginaResenas(-1));
+
+        const pagina = document.createElement('span');
+        pagina.style.cssText = "font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 600; color: #8c7a6b; text-transform: uppercase; letter-spacing: 0.5px;";
+        pagina.textContent = `Página ${paginaActualResenas} de ${totalPaginas}`;
+
+        const siguiente = document.createElement('button');
+        siguiente.type = 'button';
+        siguiente.className = 'btn-paginador-modal';
+        siguiente.disabled = paginaActualResenas === totalPaginas;
+        siguiente.style.cssText = `padding: 0.4rem 0.9rem; border-radius: 6px; border: 1px solid #e8e2dd; background: ${paginaActualResenas === totalPaginas ? '#f5efe8' : '#ffffff'}; color: ${paginaActualResenas === totalPaginas ? '#a89a8c' : '#4a3b32'}; font-size: 0.75rem; font-weight: 600; cursor: ${paginaActualResenas === totalPaginas ? 'not-allowed' : 'pointer'};`;
+        siguiente.textContent = 'Siguiente →';
+        siguiente.addEventListener('click', () => window.cambiarPaginaResenas(1));
+
+        paginador.appendChild(anterior);
+        paginador.appendChild(pagina);
+        paginador.appendChild(siguiente);
+        contenedor.appendChild(paginador);
     }
 };
 

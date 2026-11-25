@@ -40,24 +40,48 @@ async function cargarWidget(suffix) {
         // 👆 FIN DEL NUEVO CÓDIGO 👆
 
         if (!data.items.length) {
-            lista.innerHTML = '<li class="notif-vacio">Sin notificaciones por ahora</li>';
+            const vacio = document.createElement('li');
+            vacio.className = 'notif-vacio';
+            vacio.textContent = 'Sin notificaciones por ahora';
+            lista.textContent = '';
+            lista.appendChild(vacio);
             return;
         }
 
-        lista.innerHTML = data.items.map(n => `
-            <li class="notif-item ${n.leida ? 'leida' : 'nueva'}" data-id="${n.id}">
-                <div class="notif-icono-wrapper ${n.color || 'gris'}">
-                    <i data-lucide="${n.icono}"></i>
-                </div>
-                <div class="notif-contenido">
-                    <div class="notif-cabecera">
-                        <strong>${n.titulo}</strong>
-                        <span class="notif-tiempo">${n.hace}</span>
-                    </div>
-                    <p class="notif-mensaje">${n.mensaje}</p>
-                </div>
-            </li>
-        `).join('');
+        lista.textContent = '';
+        data.items.forEach(n => {
+            const item = document.createElement('li');
+            item.className = `notif-item ${n.leida ? 'leida' : 'nueva'}`;
+            item.dataset.id = n.id;
+
+            const iconoWrapper = document.createElement('div');
+            iconoWrapper.className = `notif-icono-wrapper ${n.color || 'gris'}`;
+            const icono = document.createElement('i');
+            icono.setAttribute('data-lucide', n.icono);
+            iconoWrapper.appendChild(icono);
+
+            const contenido = document.createElement('div');
+            contenido.className = 'notif-contenido';
+            const cabecera = document.createElement('div');
+            cabecera.className = 'notif-cabecera';
+
+            const titulo = document.createElement('strong');
+            titulo.textContent = n.titulo;
+            const tiempo = document.createElement('span');
+            tiempo.className = 'notif-tiempo';
+            tiempo.textContent = n.hace;
+            cabecera.appendChild(titulo);
+            cabecera.appendChild(tiempo);
+
+            const mensaje = document.createElement('p');
+            mensaje.className = 'notif-mensaje';
+            mensaje.textContent = n.mensaje;
+            contenido.appendChild(cabecera);
+            contenido.appendChild(mensaje);
+            item.appendChild(iconoWrapper);
+            item.appendChild(contenido);
+            lista.appendChild(item);
+        });
 
         if (window.lucide) window.lucide.createIcons();
     } catch (e) {

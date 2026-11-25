@@ -78,7 +78,7 @@ public static function citaNueva(Cita $cita): void
         ->unique('id')
         ->values();
 
-    $clienteNombre = $cita->cliente->nombre ?? 'un cliente';
+    $clienteNombre = strip_tags($cita->cliente->nombre ?? 'un cliente');
 
     self::crearPara(
         $destinatarios,

@@ -17,6 +17,7 @@ class ResenaController extends Controller
         ]);
 
         $cita = Cita::findOrFail($request->cita_id);
+        $comentario = $request->input('comentario');
 
         // La validación anterior consultaba user_id, pero citas almacena al cliente en cliente_id.
         // voy a dejar esto comentado por si acaso y se valida con el campo real de la tabla.
@@ -43,7 +44,7 @@ class ResenaController extends Controller
             'terapeuta_id' => $cita->trabajador_id, // En tu BD se llama trabajador_id
             'cita_id'      => $cita->id,
             'puntuacion'   => $request->puntuacion,
-            'comentario'   => $request->comentario,
+            'comentario'   => $comentario === null ? null : strip_tags($comentario),
         ]);
 
         return back()->with('success', '¡Gracias por tu calificación!');

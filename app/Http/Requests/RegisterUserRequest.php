@@ -23,7 +23,7 @@ class RegisterUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'username'     => 'required|string|max:100|min:3 ',
+            'username'     => ['required', 'string', 'max:100', 'min:3', 'regex:/^[\pL\s\-\'.]+$/u'],
             'email'    => 'required|string|email|max:255|unique:usuarios,correo',
             'telefono' => 'required|digits_between:7,20',
             'password' => [
@@ -46,6 +46,7 @@ class RegisterUserRequest extends FormRequest
                 'username.required' => 'El nombre de usuario es obligatorio.',
                 'username.max'      => 'El nombre de usuario no puede tener más de 100 caracteres.',
                 'username.min'      => 'El nombre de usuario debe tener al menos 3 caracteres.',
+                'username.regex'    => 'El nombre solo puede contener letras, espacios, guiones, apóstrofes y puntos.',
 
                 'email.required' => 'El correo electrónico es obligatorio.',
                 'email.email'    => 'El correo electrónico debe ser una dirección válida.',
