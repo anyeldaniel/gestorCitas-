@@ -326,7 +326,7 @@ class PagoController extends Controller
                     ->where('fecha', $reserva['fecha'])
                     ->where('hora', $reserva['hora'])
                     ->where('trabajador_id', $reserva['trabajador_id'])
-                    ->whereIn('estado', ['pendiente', 'confirmada', 'revision'])
+                    ->whereIn('estado', ['pendiente', 'confirmada','en curso', 'revision'])
                     ->lockForUpdate()
                     ->first();
 

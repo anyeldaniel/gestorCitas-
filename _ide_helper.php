@@ -23360,6 +23360,96 @@ namespace Illuminate\Support\Facades {
             }
     }
 
+namespace Foxws\Pwa\Facades {
+    /**
+     * @see \Foxws\Pwa\Pwa
+     */
+    class Pwa {
+        /**
+         * @static
+         */
+        public static function basePath($path = '')
+        {
+            return \Foxws\Pwa\Pwa::basePath($path);
+        }
+
+        /**
+         * @static
+         */
+        public static function destinationPath($path)
+        {
+            return \Foxws\Pwa\Pwa::destinationPath($path);
+        }
+
+        /**
+         * @static
+         */
+        public static function ignorePaths()
+        {
+            return \Foxws\Pwa\Pwa::ignorePaths();
+        }
+
+        /**
+         * @static
+         */
+        public static function themeColor()
+        {
+            return \Foxws\Pwa\Pwa::themeColor();
+        }
+
+        /**
+         * @static
+         */
+        public static function appleTouchIcon()
+        {
+            return \Foxws\Pwa\Pwa::appleTouchIcon();
+        }
+
+        /**
+         * The manifest URL, suffixed with the file's last-modified time so
+         * browsers and intermediate caches refetch it after every pwa:generate
+         * run instead of serving a stale copy indefinitely.
+         *
+         * @static
+         */
+        public static function manifestUrl()
+        {
+            return \Foxws\Pwa\Pwa::manifestUrl();
+        }
+
+        /**
+         * The service worker URL, suffixed with the file's last-modified time.
+         *
+         * `updateViaCache: "none"` should already keep browsers from caching
+         * this script, but some proxies/CDNs cache it anyway, so this guards
+         * against that by changing the URL after every pwa:generate run.
+         *
+         * @static
+         */
+        public static function swUrl()
+        {
+            return \Foxws\Pwa\Pwa::swUrl();
+        }
+
+        /**
+         * @static
+         */
+        public static function debug()
+        {
+            return \Foxws\Pwa\Pwa::debug();
+        }
+
+        /**
+         * @static
+         */
+        public static function updateInterval()
+        {
+            return \Foxws\Pwa\Pwa::updateInterval();
+        }
+
+            }
+    }
+
 namespace Illuminate\Http {
     /**
      */
@@ -28496,6 +28586,7 @@ namespace  {
     class Validator extends \Illuminate\Support\Facades\Validator {}
     class View extends \Illuminate\Support\Facades\View {}
     class Vite extends \Illuminate\Support\Facades\Vite {}
+    class Pwa extends \Foxws\Pwa\Facades\Pwa {}
 }
 
 

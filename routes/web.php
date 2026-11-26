@@ -24,11 +24,11 @@ Route::get('/', [LoginController::class, 'index']);
 Route::get('/login', [LoginController::class, 'index'])->name('login');
 Route::get('/login-view', [LoginController::class, 'index'])->name('login.view');
 Route::view('/Registro', 'auth.Registro')->name('registro.view');
-Route::post('/login', [LoginController::class, 'login'])->name('login.post');
-Route::post('/registrado', [LoginController::class, 'RegistroController'])->name('registro.create');
+Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:5,1')->name('login.post');
+Route::post('/registrado', [LoginController::class, 'RegistroController'])->middleware('throttle:5,1')->name('registro.create');
 
 Route::view('/olvide-contrasena', 'auth.password.request')->name('passwordRequest.view');
-Route::post('/olvide-contrasena', [PasswordController::class, 'VerifiCorreo'])->name('password.email');
+Route::post('/olvide-contrasena', [PasswordController::class, 'VerifiCorreo'])->middleware('throttle:5,1')->name('password.email');
 
 Route::get('/reset-password/{token}', function ($token) {
     return view('auth.password.reset', ['token' => $token]);
@@ -38,7 +38,7 @@ Route::get('/reset-password', function () {
     return redirect()->route('passwordRequest.view');
 });
 
-Route::post('/reset-password', [PasswordController::class, 'resetPassword'])->name('password.update');
+Route::post('/reset-password', [PasswordController::class, 'resetPassword'])->middleware('throttle:5,1')->name('password.update');
 
 // Catálogos de consulta pública.
 Route::get('/catalogo', [ServicioController::class, 'index'])->name('catalogo');

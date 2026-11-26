@@ -47,15 +47,16 @@ class ReservaController extends Controller
      */
     public function store(Request $request)
     {
-        // 1. VALIDACIÓN ORIGINAL DE TU SISTEMA
+        // VALIDACIÓN ORIGINAL DE TU SISTEMA
         $request->validate([
-            'servicios'                     => 'required|array|min:1',
-            'servicios.*'                   => 'exists:servicios,id',
-            'trabajadores_por_servicio'     => 'required|array',
-            'trabajadores_por_servicio.*'   => 'integer|exists:usuarios,id',
-            'fecha'                         => 'required|date', //'required|date|after_or_equal:today',
-            'hora'                          => 'required',
-        ]);
+        'servicios'                     => 'required|array|min:1',
+        'servicios.*'                   => 'exists:servicios,id',
+        'trabajadores_por_servicio'     => 'required|array',
+        'trabajadores_por_servicio.*'   => 'integer|exists:usuarios,id,rol,trabajador',
+        'trabajador_id_alternativo'     => 'nullable|integer|exists:usuarios,id,rol,trabajador',
+        'fecha'                         => 'required|date|after_or_equal:today',
+        'hora'                          => 'required',
+]);
 
         // Servicios seleccionados
         $servicios = Servicio::whereIn('id', $request->servicios)->get();
@@ -73,7 +74,7 @@ class ReservaController extends Controller
         $primerEspecialistaId = reset($trabajadoresArray);
         $primerServicioId = $servicios->first()->id;
 
-        // 2. SISTEMA ANTI-CHOQUES (OVERLAPPING)
+        // SISTEMA ANTI-CHOQUES (OVERLAPPING)
         $citaOcupada = Cita::where('fecha', $request->fecha)
             ->where('hora', $request->hora)
             ->where('trabajador_id', $primerEspecialistaId)
@@ -135,7 +136,11 @@ class ReservaController extends Controller
     {
         $servicio = Servicio::find($id);
         if (!$servicio) {
-            return response()->json([]);
+            return response()->json(
+        $servicio->especialistas()
+        ->where('rol', 'trabajador')
+        ->get(['usuarios.id', 'usuarios.nombre', 'usuarios.foto', 'usuarios.descripcion'])
+);
         }
         return response()->json($servicio->especialistas);
     }

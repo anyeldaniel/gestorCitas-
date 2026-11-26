@@ -49,4 +49,42 @@ class ResenaController extends Controller
 
         return back()->with('success', '¡Gracias por tu calificación!');
     }
+
+    public function update(Request $request, Resena $resena)
+    {
+        // Protección anti-IDOR: solo el dueño de la reseña puede editarla
+        abort_unless(
+            (int) $resena->user_id === (int) auth()->id(),
+            403,
+            'No tienes permiso para editar esta reseña.'
+        );
+
+        $request->validate([
+            'puntuacion' => 'required|integer|min:1|max:5',
+            'comentario' => 'nullable|string|max:500',
+        ]);
+
+        $comentario = $request->input('comentario');
+
+        $resena->update([
+            'puntuacion' => $request->puntuacion,
+            'comentario' => $comentario === null ? null : strip_tags($comentario),
+        ]);
+
+        return back()->with('success', 'Tu reseña fue actualizada correctamente.');
+    }
+
+    public function destroy(Resena $resena)
+    {
+        // Protección anti-IDOR: solo el dueño de la reseña puede eliminarla
+        abort_unless(
+            (int) $resena->user_id === (int) auth()->id(),
+            403,
+            'No tienes permiso para eliminar esta reseña.'
+        );
+
+        $resena->delete();
+
+        return back()->with('success', 'Tu reseña fue eliminada.');
+    }
 }
