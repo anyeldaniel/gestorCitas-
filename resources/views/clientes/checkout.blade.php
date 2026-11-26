@@ -36,7 +36,6 @@
 
     <form action="{{ route('checkout.procesar') }}" method="POST" id="form-pago">
         @csrf
-        <input type="hidden" name="cita_id" value="{{ $cita->id }}">
         <input type="hidden" name="monto" id="input-monto" value="{{ $montoAbono }}">
         <input type="hidden" id="monto-abono-data" value="{{ $montoAbono }}">
         <input type="hidden" id="monto-total-data" value="{{ $montoTotal }}">

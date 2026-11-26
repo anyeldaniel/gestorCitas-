@@ -107,6 +107,12 @@
             <div class="paso-footer"><span class="numero-footer">04</span><div><strong>Tus datos</strong><small>Para enviarte la confirmación</small></div></div>
             
             {{-- INICIO DEL BLOQUE DE VALIDACIÓN DE SUPERPOSICIÓN DE CITAS --}}
+            @if(session('error'))
+                <div role="alert" style="background: #FCF3E3; color: #8A6D3B; padding: 15px; border-radius: 8px; font-size: 13px; width: 100%;">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             @error('hora')
                 <div style="background: #FADBD8; color: #900C3F; padding: 15px; border-radius: 8px; font-size: 13px; width: 100%;">
                     <strong>¡Horario no disponible!</strong> {{ $message }}

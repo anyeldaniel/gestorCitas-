@@ -345,7 +345,7 @@
                         </div>
 
                         @if(!$estaPagado && $enRevision == 0)
-                            <a href="{{ route('checkout.view', ['cita_id' => $cita->id]) }}" class="btn-completar-pago">
+                            <a href="{{ route('checkout.view') }}" class="btn-completar-pago">
                                 COMPLETAR PAGO <span>→</span>
                             </a>
                         @endif

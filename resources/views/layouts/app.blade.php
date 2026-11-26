@@ -21,7 +21,7 @@
 
     @stack('styles')
 </head>
-{{-- 👇 DATOS INYECTADOS DE FORMA SEGURA PARA EL JAVASCRIPT 👇 --}}
+{{--  DATOS INYECTADOS DE FORMA SEGURA PARA EL JAVASCRIPT  --}}
 <body 
     data-auth="{{ auth()->check() ? 'true' : 'false' }}"
     data-route-push="{{ route('push.subscribe') }}"
@@ -42,7 +42,7 @@
 
     <header id="main-header">
         <div class="max-w-7xl mx-auto flex justify-between items-center px-8">
-            <a href="{{ route('agenda') }}" class="flex items-center gap-2 text-white mr-auto">
+            <a href="{{ auth()->check() ? ($isAdmin ? route('admin.dashboard') : (($isRecepcionista || $isTrabajador) ? route('agenda') : ($isCliente ? route('catalogo') : url('/')))) : url('/') }}" class="flex items-center gap-2 text-white mr-auto">
                 <i data-lucide="sparkles" class="w-8 h-8"></i>
                 <span class="brand-title">THE BEAUTY ROOM</span>
             </a>

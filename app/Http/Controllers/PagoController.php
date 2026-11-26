@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cita;
 use App\Models\Pago;
+use App\Models\Servicio;
 use App\Models\User;
 use App\Mail\CitaConfirmada;
 use App\Mail\CitaCancelada;
@@ -69,6 +70,16 @@ class PagoController extends Controller
             if ($cita->estaCancelada()) {
                 throw ValidationException::withMessages([
                     'pago' => 'No se puede aprobar un pago de una cita cancelada.',
+                ]);
+            }
+
+            $montoAbonoEsperado = $this->calcularMontoAbono($cita->load('servicio'));
+            $montoAbonoRegistradoEnCentimos = (int) round((float) $pago->monto_anticipado * 100);
+            $montoAbonoEsperadoEnCentimos = (int) round($montoAbonoEsperado * 100);
+
+            if ($montoAbonoRegistradoEnCentimos !== $montoAbonoEsperadoEnCentimos) {
+                throw ValidationException::withMessages([
+                    'pago' => 'No se puede aprobar el pago porque el monto del abono no coincide con el esperado.',
                 ]);
             }
 
@@ -178,64 +189,50 @@ class PagoController extends Controller
     /**
      * Mostrar la pantalla de cobro al cliente.
      */
-    public function checkout(int $cita_id): View|RedirectResponse
+    public function checkout(): View|RedirectResponse
     {
-        $cita = Cita::with(['servicios', 'trabajador', 'servicio'])->findOrFail($cita_id);
+        $reserva = session('reserva_pendiente');
+        if (!$this->reservaPerteneceAlUsuario($reserva, (int) auth()->id())) {
+            session()->forget('reserva_pendiente');
 
-        // Seguridad: solo el dueño de la cita puede pagarla
-        if ($cita->cliente_id !== auth()->id()) {
-            abort(403, 'No puedes pagar esta cita.');
+            return redirect()->route('clientes.reserva')->with(
+                'error',
+                'No hay una selección de cita pendiente. Selecciona una cita antes de continuar al pago.'
+            );
         }
 
-        // Si ya fue procesada, redirigir al listado
-        if ($cita->estado !== 'pendiente') {
-            return redirect()
-                ->route('clientes.reserva')
-                ->withErrors(['error' => 'Esta cita ya fue procesada.']);
+        $servicios = $this->serviciosDeReserva($reserva);
+        $servicioPrincipal = $servicios->firstWhere('id', $reserva['servicio_id']);
+        $trabajadoresIds = array_values(array_unique(array_map(
+            'intval',
+            $reserva['trabajadores_por_servicio']
+        )));
+        $trabajadores = User::whereIn('id', $trabajadoresIds)->get()->keyBy('id');
+
+        if (!$servicioPrincipal || $servicios->count() !== count($reserva['trabajadores_por_servicio'])
+            || $trabajadores->count() !== count($trabajadoresIds)) {
+            session()->forget('reserva_pendiente');
+
+            return redirect()->route('clientes.reserva')->with(
+                'error',
+                'La selección de la cita ya no está disponible. Vuelve a elegir los servicios y horarios.'
+            );
         }
 
-        // ---- Lógica para Múltiples Servicios y Especialistas ----
-        $especialistasIds = [];
-
-        if ($cita->relationLoaded('servicios') && $cita->servicios->isNotEmpty()) {
-            $servicios = $cita->servicios;
-            $nombreServicio = $servicios->pluck('nombre_servicio')->join(' + ');
-            $duracionTotal = $servicios->sum('duracion_minutos');
-            
-            // Recopilar los IDs de los especialistas desde la tabla pivote
-            foreach ($servicios as $s) {
-                if (isset($s->pivot->trabajador_id) && $s->pivot->trabajador_id) {
-                    $especialistasIds[] = $s->pivot->trabajador_id;
-                }
-            }
-        } else {
-            $servicios = collect([$cita->servicio]);
-            $nombreServicio = $cita->servicio->nombre_servicio ?? 'Servicio Spa';
-            $duracionTotal = $cita->servicio->duracion_minutos ?? 60;
-        }
-
-        // Si no se encontraron especialistas en el pivote, usamos el principal de la cita
-        if (empty($especialistasIds) && $cita->trabajador) {
-            $especialistasIds[] = $cita->trabajador->id;
-        }
-
-        // Buscamos los nombres de los especialistas en el modelo User
-        $especialistas = collect();
-        if (!empty($especialistasIds)) {
-            $especialistas = User::whereIn('id', array_unique($especialistasIds))->pluck('nombre');
-        }
-
-        // ---- Cálculos de montos ----
-        $porcentaje     = $cita->servicio->porcentaje_abono ?? 10;
-        $montoTotal     = (float) $cita->monto_total;
-        $montoAbono     = round($montoTotal * $porcentaje / 100, 2);
-        $montoRestante  = round($montoTotal - $montoAbono, 2);
-        $fecha          = Carbon::parse($cita->fecha);
-        $hora           = Carbon::parse($cita->hora)->format('h:i A');
-        $nombreServicio = $cita->servicio->nombre_servicio ?? 'Servicio Spa';
+        $especialistas = collect($reserva['trabajadores_por_servicio'])
+            ->map(fn ($trabajadorId) => $trabajadores->get((int) $trabajadorId)?->nombre)
+            ->filter()
+            ->values();
+        $nombreServicio = $servicioPrincipal->nombre_servicio ?? 'Servicio Spa';
+        $duracionTotal = $servicios->sum('duracion_minutos');
+        $porcentaje = $servicioPrincipal->porcentaje_abono ?? 10;
+        $montoTotal = (float) $servicios->sum('precio');
+        $montoAbono = $this->calcularMontoAbonoDesdeDatos($montoTotal, $servicioPrincipal);
+        $montoRestante = round($montoTotal - $montoAbono, 2);
+        $fecha = Carbon::parse($reserva['fecha']);
+        $hora = Carbon::parse($reserva['hora'])->format('h:i A');
 
         return view('clientes.checkout', compact(
-            'cita',
             'servicios',
             'nombreServicio',
             'duracionTotal',
@@ -254,28 +251,19 @@ class PagoController extends Controller
      */
     public function procesarPago(Request $request): RedirectResponse
     {
+        $reserva = session('reserva_pendiente');
+        if (!$this->reservaPerteneceAlUsuario($reserva, (int) auth()->id())) {
+            session()->forget('reserva_pendiente');
+
+            return redirect()->route('clientes.reserva')->with(
+                'error',
+                'La selección de la cita expiró o no es válida. Vuelve a seleccionar una cita.'
+            );
+        }
+
         $data = $request->validate([
-            'cita_id'     => 'required|exists:citas,id',
             'metodo_pago' => 'required|in:c2p,transferencia,divisas_efectivo',
-            'monto'       => 'required|numeric|min:1',
         ]);
-
-        // Carga el servicio y el cliente para guardar el pago y dirigirle el correo.
-        $cita = Cita::with(['servicio', 'cliente'])->findOrFail($data['cita_id']);
-
-        if ($cita->cliente_id !== auth()->id()) {
-            abort(403, 'No puedes pagar esta cita.');
-        }
-
-        $yaAprobado = Pago::where('cita_id', $cita->id)
-            ->where('estado_pago', 'aprobado')
-            ->exists();
-
-        if ($yaAprobado) {
-            return back()->withErrors([
-                'error' => 'Esta cita ya tiene un pago aprobado.',
-            ]);
-        }
 
         if ($data['metodo_pago'] === 'c2p') {
             $request->validate([
@@ -300,27 +288,162 @@ class PagoController extends Controller
             $request->validate(['referencia' => 'required|string|min:4']);
         }
 
-        // El numerito queda anotado, pero todavía falta que recepción dé el visto bueno.
-        DB::transaction(function () use ($request, $cita, $data) {
-            Pago::create([
-                'cita_id'          => $cita->id,
-                'monto_anticipado' => $data['monto'],
-                'metodo_pago'      => $data['metodo_pago'],
-                'banco_origen'     => $request->banco ?? null,
-                'referencia'       => $data['metodo_pago'] === 'c2p'
-                    ? $request->token
-                    : ($request->referencia ?? null),
-                'telefono_pago'    => $request->telefono ?? null,
-                'estado_pago'      => 'revision',
-            ]);
-        });
+        $servicios = $this->serviciosDeReserva($reserva);
+        $servicioPrincipal = $servicios->firstWhere('id', $reserva['servicio_id']);
+        $trabajadoresIds = array_values(array_unique(array_map(
+            'intval',
+            $reserva['trabajadores_por_servicio']
+        )));
+        $trabajadores = User::whereIn('id', $trabajadoresIds)->get()->keyBy('id');
 
-        // Envía el aviso una vez guardado el pago correctamente.
-        Mail::to($cita->cliente->correo)->send(new CitaPendienteConfirmacion($cita));
+        if (!$servicioPrincipal || $servicios->count() !== count($reserva['trabajadores_por_servicio'])
+            || $trabajadores->count() !== count($trabajadoresIds)) {
+            session()->forget('reserva_pendiente');
+
+            return redirect()->route('clientes.reserva')->with(
+                'error',
+                'La selección de la cita ya no está disponible. Vuelve a elegir los servicios y horarios.'
+            );
+        }
+
+        $montoTotal = (float) $servicios->sum('precio');
+        $montoAbono = $this->calcularMontoAbonoDesdeDatos($montoTotal, $servicioPrincipal);
+
+        try {
+            $cita = DB::transaction(function () use (
+                $request,
+                $reserva,
+                $data,
+                $montoTotal,
+                $montoAbono
+            ) {
+                User::query()
+                    ->whereKey($reserva['trabajador_id'])
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                $citaOcupada = Cita::query()
+                    ->where('fecha', $reserva['fecha'])
+                    ->where('hora', $reserva['hora'])
+                    ->where('trabajador_id', $reserva['trabajador_id'])
+                    ->whereIn('estado', ['pendiente', 'confirmada', 'revision'])
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($citaOcupada) {
+                    throw ValidationException::withMessages([
+                        'horario' => 'El horario seleccionado ya no está disponible. Elige otra fecha u hora.',
+                    ]);
+                }
+
+                $cita = Cita::create([
+                    'cliente_id'    => $reserva['cliente_id'],
+                    'trabajador_id' => $reserva['trabajador_id'],
+                    'servicio_id'   => $reserva['servicio_id'],
+                    'cabina_id'     => null,
+                    'monto_total'   => $montoTotal,
+                    'fecha'         => $reserva['fecha'],
+                    'hora'          => $reserva['hora'],
+                    'estado'        => 'pendiente',
+                ]);
+
+                $serviciosPorTrabajador = [];
+                foreach ($reserva['trabajadores_por_servicio'] as $servicioId => $trabajadorId) {
+                    $serviciosPorTrabajador[$servicioId] = [
+                        'trabajador_id' => $trabajadorId,
+                    ];
+                }
+                $cita->servicios()->attach($serviciosPorTrabajador);
+
+                Pago::create([
+                    'cita_id'          => $cita->id,
+                    'monto_anticipado' => $montoAbono,
+                    'metodo_pago'      => $data['metodo_pago'],
+                    'banco_origen'     => $request->banco ?? null,
+                    'referencia'       => $data['metodo_pago'] === 'c2p'
+                        ? $request->token
+                        : ($request->referencia ?? null),
+                    'telefono_pago'    => $request->telefono ?? null,
+                    'estado_pago'      => 'revision',
+                ]);
+
+                return $cita->load(['cliente', 'servicio']);
+            });
+        } catch (ValidationException $exception) {
+            if (!array_key_exists('horario', $exception->errors())) {
+                throw $exception;
+            }
+
+            session()->forget('reserva_pendiente');
+
+            return redirect()->route('clientes.reserva')->with(
+                'error',
+                $exception->errors()['horario'][0]
+            );
+        }
+
+        session()->forget('reserva_pendiente');
+
+        try {
+            NotificacionService::citaNueva($cita);
+        } catch (\Throwable $exception) {
+            report($exception);
+        }
+
+        try {
+            $cliente = $cita->cliente;
+            $cliente?->notify(new \App\Notifications\NuevaCitaNotification($cita));
+
+            $terapeutasNotificar = array_unique(array_values($reserva['trabajadores_por_servicio']));
+            foreach ($terapeutasNotificar as $terapeutaId) {
+                $terapeuta = User::find($terapeutaId);
+                $terapeuta?->notify(new \App\Notifications\NuevaCitaNotification($cita));
+            }
+        } catch (\Throwable $exception) {
+            report($exception);
+        }
+
+        try {
+            Mail::to($cita->cliente->correo)->send(new CitaPendienteConfirmacion($cita));
+        } catch (\Throwable $exception) {
+            report($exception);
+        }
 
         return redirect()
             ->route('clientes.reserva')
             ->with('success', 'Datos enviados. La recepción verificará tu pago en breve.');
+    }
+
+    private function calcularMontoAbono(Cita $cita): float
+    {
+        return $this->calcularMontoAbonoDesdeDatos((float) $cita->monto_total, $cita->servicio);
+    }
+
+    private function calcularMontoAbonoDesdeDatos(float $montoTotal, Servicio $servicio): float
+    {
+        $porcentaje = $servicio->porcentaje_abono ?? 10;
+
+        return round($montoTotal * $porcentaje / 100, 2);
+    }
+
+    private function reservaPerteneceAlUsuario(mixed $reserva, int $userId): bool
+    {
+        return is_array($reserva)
+            && (int) ($reserva['cliente_id'] ?? 0) === $userId
+            && !empty($reserva['trabajadores_por_servicio'])
+            && isset(
+                $reserva['fecha'],
+                $reserva['hora'],
+                $reserva['trabajador_id'],
+                $reserva['servicio_id']
+            );
+    }
+
+    private function serviciosDeReserva(array $reserva)
+    {
+        $servicioIds = array_map('intval', array_keys($reserva['trabajadores_por_servicio']));
+
+        return Servicio::query()->whereIn('id', $servicioIds)->get();
     }
 
     public function procesar(Request $request, int $citaId): RedirectResponse

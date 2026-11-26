@@ -85,11 +85,11 @@ Route::middleware(['auth', 'role:cliente'])->group(function () {
     Route::get('/reservas', [ReservaController::class, 'index'])->name('clientes.reserva');
     Route::post('/reservas', [ReservaController::class, 'store'])->name('clientes.reserva.store');
 
-    Route::get('/checkout/{cita_id}', [PagoController::class, 'checkout'])->name('checkout.view');
+    Route::get('/checkout', [PagoController::class, 'checkout'])->name('checkout.view');
     Route::post('/checkout/procesar', [PagoController::class, 'procesarPago'])->name('checkout.procesar');
 
-    Route::get('/pago/checkout/{cita}', [PagoController::class, 'checkout'])->name('pago.checkout');
-    Route::post('/pago/procesar/{cita}', [PagoController::class, 'procesar'])->name('pago.procesar');
+    Route::get('/pago/checkout', [PagoController::class, 'checkout'])->name('pago.checkout');
+    Route::post('/pago/procesar', [PagoController::class, 'procesarPago'])->name('pago.procesar');
 
     Route::get('/get-especialistas/{id}', [ReservaController::class, 'getEspecialistas']);
     Route::get('/especialistas-por-servicio/{id}', [ReservaController::class, 'getEspecialistas']);
