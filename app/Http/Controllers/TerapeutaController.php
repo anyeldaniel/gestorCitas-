@@ -18,9 +18,11 @@ class TerapeutaController extends Controller
      */
     public function index()
     {
-        // 1. Traemos a los trabajadores con sus reseñas
+        // 1. Traemos a los trabajadores con sus reseñas Y los datos del cliente que la escribió
         $terapeutas = User::where('rol', 'trabajador')
-            ->with('resenasRecibidas')
+            ->with(['resenasRecibidas' => function ($query) {
+                $query->with('cliente')->latest(); // Trae al cliente y ordena por fecha descendente
+            }])
             ->get()
             ->map(function ($terapeuta) {
                 // 2. Calcular promedio y total de reseñas
@@ -58,7 +60,16 @@ class TerapeutaController extends Controller
             'telefono'       => 'nullable|string|max:20',
             'descripcion'    => 'nullable|string',
             'especialidades' => 'nullable|string',
-            'password'       => 'required|string|min:8|confirmed',
+            'password'       => [
+                'required',
+                'string',
+                'min:8',
+                'max:20',
+                'regex:/[a-zA-Z]/',
+                'regex:/[0-9]/',
+                'regex:/[!@#$%^&*(),.?":{}|<>]/',
+                'confirmed',
+            ],
             'foto'           => 'nullable|image|max:2048',
         ]);
 
@@ -94,7 +105,16 @@ class TerapeutaController extends Controller
             'telefono'       => 'nullable|string|max:20',
             'descripcion'    => 'nullable|string',
             'especialidades' => 'nullable|string',
-            'password'       => 'nullable|string|min:8|confirmed',
+            'password'       => [
+                'nullable',
+                'string',
+                'min:8',
+                'max:20',
+                'regex:/[a-zA-Z]/',
+                'regex:/[0-9]/',
+                'regex:/[!@#$%^&*(),.?":{}|<>]/',
+                'confirmed',
+            ],
             'foto'           => 'nullable|image|max:2048',
         ]);
 

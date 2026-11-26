@@ -87,7 +87,17 @@ class AdminController extends Controller
             'email'          => 'required|string|email|max:255|unique:usuarios,correo',
             'telefono'       => 'required|string|min:7|max:20',
             'descripcion'    => 'nullable|string|max:500',
-            'password'       => 'required|string|min:8|confirmed',
+            'password'       => [
+                'required',
+                'string',
+                'min:8',
+                'max:20',
+                'regex:/[a-zA-Z]/',
+                'regex:/[0-9]/',
+                'regex:/[!@#$%^&*(),.?":{}|<>]/',
+                'confirmed',
+            ],
+            'password_confirmation' => 'required|string|min:8|max:20',
             'especialidades' => 'nullable|string',
             'foto'           => 'nullable|image|max:2048',
         ], [
@@ -99,7 +109,11 @@ class AdminController extends Controller
             'telefono.min'       => 'El teléfono debe tener al menos 7 caracteres.',
             'password.required'  => 'La contraseña es obligatoria.',
             'password.min'       => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.max'       => 'La contraseña no puede tener más de 20 caracteres.',
+            'password.regex'     => 'La contraseña debe incluir letras, números y un carácter especial.',
             'password.confirmed' => 'Las contraseñas no coinciden.',
+            'password_confirmation.required' => 'Debes confirmar la contraseña.',
+            'password_confirmation.same' => 'Las contraseñas no coinciden.',
             'foto.image'         => 'El archivo debe ser una imagen válida.',
             'foto.max'           => 'La imagen no debe superar los 2 MB.',
         ]);
@@ -143,7 +157,24 @@ class AdminController extends Controller
             'nombre'   => 'required|string|max:255',
             'email'    => 'required|email|unique:usuarios,correo',
             'telefono' => 'required|string',
-            'password' => 'required|min:8',
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'max:20',
+                'regex:/[a-zA-Z]/',
+                'regex:/[0-9]/',
+                'regex:/[!@#$%^&*(),.?":{}|<>]/',
+                'confirmed',
+            ],
+            'password_confirmation' => 'required|string|min:8|max:20',
+        ], [
+            'password.required' => 'La contraseña es obligatoria.',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.max' => 'La contraseña no puede tener más de 20 caracteres.',
+            'password.regex' => 'La contraseña debe incluir letras, números y un carácter especial.',
+            'password.confirmed' => 'Las contraseñas no coinciden.',
+            'password_confirmation.required' => 'Debes confirmar la contraseña.',
         ]);
 
         User::create([
@@ -176,7 +207,16 @@ class AdminController extends Controller
             'email'       => 'required|email|unique:usuarios,correo,' . $id,
             'telefono'    => 'required|string',
             'descripcion' => 'nullable|string',
-            'password'    => 'nullable|min:8|confirmed',
+            'password'    => [
+                'nullable',
+                'string',
+                'min:8',
+                'max:20',
+                'regex:/[a-zA-Z]/',
+                'regex:/[0-9]/',
+                'regex:/[!@#$%^&*(),.?":{}|<>]/',
+                'confirmed',
+            ],
             'foto'        => 'nullable|image|max:2048',
         ], [
             'foto.image' => 'El archivo debe ser una imagen válida.',
@@ -228,7 +268,16 @@ class AdminController extends Controller
             'nombre'   => 'required|string|max:255',
             'email'    => 'required|email|unique:usuarios,correo,' . $id,
             'telefono' => 'required|string',
-            'password' => 'nullable|min:8|confirmed',
+            'password' => [
+                'nullable',
+                'string',
+                'min:8',
+                'max:20',
+                'regex:/[a-zA-Z]/',
+                'regex:/[0-9]/',
+                'regex:/[!@#$%^&*(),.?":{}|<>]/',
+                'confirmed',
+            ],
         ]);
 
         $datosActualizar = [

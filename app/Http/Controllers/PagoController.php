@@ -5,10 +5,21 @@ namespace App\Http\Controllers;
 use App\Models\Cita;
 use App\Models\Pago;
 use App\Models\User;
+use App\Mail\CitaConfirmada;
+use App\Mail\CitaCancelada;
+use App\Mail\CitaPendienteConfirmacion;
+use App\Mail\ReembolsoDefinido;
+use App\Mail\ReembolsoPorDefinir;
+use App\Notifications\CitaCanceladaNotification;
+use App\Services\CancelacionCitaService;
+use App\Services\NotificacionService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class PagoController extends Controller
@@ -20,11 +31,13 @@ class PagoController extends Controller
      */
     public function index(): View
     {
-        $pagos = Pago::with(['cita.cliente', 'cita.servicio'])
+        abort_unless(in_array(auth()->user()->rol, ['admin', 'recepcion']), 403);
+
+        $pagos = Pago::with(['cita.cliente', 'cita.servicio', 'cita.pagos'])
             ->orderByDesc('created_at')
             ->get();
 
-        return view('recepcion.verificar-pagos', compact('pagos'));
+        return view('compartidas.verificar-pago', compact('pagos'));
     }
 
     /**
@@ -40,14 +53,126 @@ class PagoController extends Controller
      */
     public function aprobarPago(int $id): RedirectResponse
     {
-        $pago = Pago::findOrFail($id);
+        abort_unless(in_array(auth()->user()->rol, ['admin', 'recepcion']), 403);
 
-        DB::transaction(function () use ($pago) {
+        // Revisamos el pago y dejamos la cita lista en el mismo paso, sin medias tintas.
+        $citaConfirmada = DB::transaction(function () use ($id) {
+            $pago = Pago::query()->findOrFail($id);
+            $cita = Cita::query()->lockForUpdate()->findOrFail($pago->cita_id);
+            $pago = Pago::query()->lockForUpdate()->findOrFail($id);
+
+            // Si ya lo habían revisado, no repetimos la confirmación ni mandamos otro correo.
+            if ($pago->estado_pago !== 'revision') {
+                return null;
+            }
+
+            if ($cita->estaCancelada()) {
+                throw ValidationException::withMessages([
+                    'pago' => 'No se puede aprobar un pago de una cita cancelada.',
+                ]);
+            }
+
             $pago->update(['estado_pago' => 'aprobado']);
-            $pago->cita->update(['estado' => 'confirmada']);
+            $cita->update(['estado' => 'confirmada']);
+
+            return $cita->load(['cliente', 'servicio']);
         });
 
+        // Si ya estaba revisado, avisamos y no volvemos a hacer el proceso.
+        if (!$citaConfirmada) {
+            return back()->with('success', 'Este pago ya había sido revisado.');
+        }
+
+        // El correo sale después de guardar los cambios, para avisar que la cita ya quedó confirmada.
+        Mail::to($citaConfirmada->cliente->correo)->send(new CitaConfirmada($citaConfirmada));
+
         return back()->with('success', 'Pago aprobado y cita confirmada exitosamente.');
+    }
+
+    public function rechazarPago(
+        Request $request,
+        int $id,
+        CancelacionCitaService $cancelacionCita
+    ): JsonResponse {
+        abort_unless(in_array($request->user()->rol, ['admin', 'recepcion']), 403);
+
+        $data = $request->validate([
+            'motivo' => 'required|string|min:5|max:500',
+            'reembolsos' => 'sometimes|array',
+            'reembolsos.*' => 'required|numeric|decimal:0,2|min:0.01',
+        ]);
+
+        $resultado = $cancelacionCita->rechazarPago(
+            $id,
+            $request->user(),
+            $data['motivo'],
+            $data['reembolsos'] ?? []
+        );
+        $cita = $resultado['cita'];
+
+        if ($resultado['recien_cancelada']) {
+            NotificacionService::citaCancelada($cita, $data['motivo']);
+            Mail::to($cita->cliente->correo)->send(new CitaCancelada($cita, $data['motivo']));
+
+            try {
+                $cita->cliente?->notify(new CitaCanceladaNotification($cita));
+            } catch (\Exception $e) {
+                report($e);
+            }
+        }
+
+        if ($resultado['reembolso_por_definir'] && $resultado['recien_cancelada']) {
+            $destinatarios = NotificacionService::reembolsoPorDefinir($cita);
+            foreach ($destinatarios as $destinatario) {
+                Mail::to($destinatario->correo)->send(new ReembolsoPorDefinir($cita));
+            }
+        }
+
+        return response()->json([
+            'ok' => true,
+            'mensaje' => $resultado['recien_cancelada']
+                ? 'Pago rechazado y cita cancelada.'
+                : 'Pago rechazado. La cita ya estaba cancelada.',
+        ]);
+    }
+
+    public function definirReembolso(Request $request, int $id): JsonResponse
+    {
+        abort_unless(in_array($request->user()->rol, ['admin', 'recepcion']), 403);
+
+        $data = $request->validate([
+            'monto_reembolso' => 'required|numeric|decimal:0,2|min:0.01',
+        ]);
+
+        $pago = DB::transaction(function () use ($id, $data) {
+            $pago = Pago::query()->lockForUpdate()->findOrFail($id);
+
+            if ($pago->estado_reembolso !== 'por_definir') {
+                throw ValidationException::withMessages([
+                    'pago' => 'Este reembolso ya fue definido o no requiere definición.',
+                ]);
+            }
+
+            if ((float) $data['monto_reembolso'] > (float) $pago->monto_anticipado) {
+                throw ValidationException::withMessages([
+                    'monto_reembolso' => 'El importe no puede superar el pago aprobado.',
+                ]);
+            }
+
+            $pago->update([
+                'estado_reembolso' => 'pendiente',
+                'monto_reembolso' => $data['monto_reembolso'],
+            ]);
+
+            return $pago->load(['cita.cliente', 'cita.servicio']);
+        });
+
+        Mail::to($pago->cita->cliente->correo)->send(new ReembolsoDefinido($pago));
+
+        return response()->json([
+            'ok' => true,
+            'mensaje' => 'Importe de reembolso registrado y notificado al cliente por correo.',
+        ]);
     }
 
     /**
@@ -135,7 +260,8 @@ class PagoController extends Controller
             'monto'       => 'required|numeric|min:1',
         ]);
 
-        $cita = Cita::with('servicio')->findOrFail($data['cita_id']);
+        // Carga el servicio y el cliente para guardar el pago y dirigirle el correo.
+        $cita = Cita::with(['servicio', 'cliente'])->findOrFail($data['cita_id']);
 
         if ($cita->cliente_id !== auth()->id()) {
             abort(403, 'No puedes pagar esta cita.');
@@ -155,51 +281,46 @@ class PagoController extends Controller
             $request->validate([
                 'banco'    => 'required|string',
                 'telefono' => 'required|string',
-                'token'    => 'required|string|size:6',
+                'token'    => 'required|digits:6',
             ]);
 
-            $resultado = $this->simularApiC2P(
-                $request->banco,
-                $request->telefono,
-                $request->token,
-            );
 
-            if ($resultado['status'] !== 'aprobado') {
-                return back()->withErrors([
-                    'pago_fallido' => 'Transacción C2P rechazada: ' . $resultado['mensaje'],
-                ]);
-            }
+            // Antes se simulaba la respuesta del banco; ahora recepción revisa el pago manualmente.
+            // $resultado = $this->simularApiC2P($request->banco, $request->telefono, $request->token);
+            // if ($resultado['status'] !== 'aprobado') {
+            //     return back()->withErrors([
+            //         'pago_fallido' => 'Transacción C2P rechazada: ' . $resultado['mensaje'],
+            //     ]);
+            // }
+            // $estadoPago = 'aprobado';
 
-            $estadoPago = 'aprobado';
+
+
         } elseif ($data['metodo_pago'] === 'transferencia') {
             $request->validate(['referencia' => 'required|string|min:4']);
-            $estadoPago = 'revision';
-        } else {
-            $estadoPago = 'revision';
         }
 
-        DB::transaction(function () use ($request, $cita, $data, $estadoPago) {
+        // El numerito queda anotado, pero todavía falta que recepción dé el visto bueno.
+        DB::transaction(function () use ($request, $cita, $data) {
             Pago::create([
                 'cita_id'          => $cita->id,
                 'monto_anticipado' => $data['monto'],
                 'metodo_pago'      => $data['metodo_pago'],
                 'banco_origen'     => $request->banco ?? null,
-                'referencia'       => $request->referencia
-                    ?? ($data['metodo_pago'] === 'c2p' ? 'C2P-AUTO' : null),
+                'referencia'       => $data['metodo_pago'] === 'c2p'
+                    ? $request->token
+                    : ($request->referencia ?? null),
                 'telefono_pago'    => $request->telefono ?? null,
-                'estado_pago'      => $estadoPago,
+                'estado_pago'      => 'revision',
             ]);
-
-            if ($estadoPago === 'aprobado') {
-                $cita->update(['estado' => 'confirmada']);
-            }
         });
 
-        $mensaje = $estadoPago === 'aprobado'
-            ? 'Pago C2P aprobado. Tu cita está confirmada.'
-            : 'Datos enviados. La recepción verificará tu pago en breve.';
+        // Envía el aviso una vez guardado el pago correctamente.
+        Mail::to($cita->cliente->correo)->send(new CitaPendienteConfirmacion($cita));
 
-        return redirect()->route('clientes.reserva')->with('success', $mensaje);
+        return redirect()
+            ->route('clientes.reserva')
+            ->with('success', 'Datos enviados. La recepción verificará tu pago en breve.');
     }
 
     public function procesar(Request $request, int $citaId): RedirectResponse
@@ -209,12 +330,13 @@ class PagoController extends Controller
         return $this->procesarPago($request);
     }
 
-    private function simularApiC2P(string $banco, string $telefono, string $token): array
-    {
-        if ($token === '123456') {
-            return ['status' => 'aprobado', 'mensaje' => 'Operación exitosa'];
-        }
-
-        return ['status' => 'rechazado', 'mensaje' => 'Fondos insuficientes o token inválido'];
-    }
+    // Esta era solo una prueba local; no confirmaba el pago con el banco.
+    // private function simularApiC2P(string $banco, string $telefono, string $token): array
+    // {
+    //     if ($token === '123456') {
+    //         return ['status' => 'aprobado', 'mensaje' => 'Operación exitosa'];
+    //     }
+    //
+    //     return ['status' => 'rechazado', 'mensaje' => 'Fondos insuficientes o token inválido'];
+    // }
 }

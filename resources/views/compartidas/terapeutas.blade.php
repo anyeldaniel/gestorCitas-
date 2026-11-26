@@ -34,6 +34,16 @@
                     &times;
                 </button>
             </div>
+            <!-- Agrego el ordenamiento para filtrar búsqueda -->
+            <div class="terapeutas-orden">
+                <label for="orden-terapeutas" class="terapeutas-orden-label">Ordenar:</label>
+                <select id="orden-terapeutas" class="terapeutas-orden-select" aria-label="Ordenar terapeutas">
+                    <option value="defecto">Principal / Por defecto</option>
+                    <option value="alfabetico-asc">Nombre (A → Z)</option>
+                    <option value="alfabetico-desc">Nombre (Z → A)</option>
+                    <option value="rating-desc">Mejor calificación (★)</option>
+                </select>
+            </div>
 
             <!-- Botón Registrar (solo admin) -->
             @if(auth()->check() && auth()->user()->rol === 'admin')
@@ -61,12 +71,42 @@
         <small>Prueba con otro nombre o especialidad.</small>
     </div>
 
+    @php
+        $usuarioActual = auth()->user();
+        $esFichaPropia = function ($item) use ($usuarioActual) {
+            if (!$usuarioActual || $usuarioActual->rol !== 'trabajador') {
+                return false;
+            }
+            $itemCorreo = $item->correo ?? $item->email ?? null;
+            $userCorreo = $usuarioActual->email ?? $usuarioActual->correo ?? null;
+
+            return (isset($item->user_id) && (int) $item->user_id === (int) $usuarioActual->id)
+                || (isset($item->usuario_id) && (int) $item->usuario_id === (int) $usuarioActual->id)
+                || (!empty($itemCorreo) && !empty($userCorreo) && strtolower(trim($itemCorreo)) === strtolower(trim($userCorreo)))
+                || ((int) $item->id === (int) $usuarioActual->id);
+        };
+
+        if ($terapeutas instanceof \Illuminate\Support\Collection) {
+            $terapeutasOrdenados = $terapeutas->sortByDesc(fn($t) => $esFichaPropia($t) ? 1 : 0)->values();
+        } elseif (is_array($terapeutas)) {
+            $terapeutasOrdenados = $terapeutas;
+            usort($terapeutasOrdenados, fn($a, $b) => ($esFichaPropia($b) ? 1 : 0) <=> ($esFichaPropia($a) ? 1 : 0));
+        } else {
+            $terapeutasOrdenados = $terapeutas;
+        }
+    @endphp
+
     <!-- GRID DE TERAPEUTAS -->
     <main class="grid-terapeutas">
-        @forelse($terapeutas as $terapeuta)
-        <article class="tarjeta-terapeuta"
+        @forelse($terapeutasOrdenados as $terapeuta)
+        @php $esMiFicha = $esFichaPropia($terapeuta); @endphp
+            <article class="tarjeta-terapeuta"
                  data-id="{{ $terapeuta->id }}"
-                 data-especialidades="{{ $terapeuta->especialidades ?? '' }}">
+                 data-nombre="{{ $terapeuta->nombre }}"
+                 data-especialidades="{{ $terapeuta->especialidades ?? '' }}"
+                 data-promedio="{{ $terapeuta->promedio ?? 0 }}"
+                 data-propio="{{ $esMiFicha ? '1' : '0' }}"
+                 data-orden-inicial="{{ $loop->index }}">
           <!-- FOTO / PLACEHOLDER -->
           <figure class="terapeuta-foto-contenedor">
              @if($terapeuta->foto && file_exists(public_path('storage/' . $terapeuta->foto)))
@@ -92,7 +132,12 @@
                     @endif
                 </span>
 
-                <h2 class="terapeuta-nombre">{{ $terapeuta->nombre }}</h2>
+                <h2 class="terapeuta-nombre">
+                    {{ $terapeuta->nombre }}
+                    @if($esMiFicha)
+                        <span style="font-family: 'Inter', sans-serif; font-size: 0.78rem; font-weight: 600; color: #8b5e3c; letter-spacing: 0.04em;">(Yo)</span>
+                    @endif
+                </h2>
 
                 @php
                     $promedio = $terapeuta->promedio ?? 0;
@@ -130,6 +175,31 @@
                     <span class="flecha">→</span>
                 </button>
 
+                <!-- BOTÓN DE RESEÑAS -->
+                @php
+                    // Preparamos los datos en un array de PHP y lo convertimos a JSON
+                    $resenasData = $terapeuta->resenasRecibidas->map(function($r) {
+                        return [
+                            "puntuacion" => $r->puntuacion,
+                            "comentario" => $r->comentario ?? "Sin comentario.",
+                            "cliente" => $r->cliente->nombre ?? "Cliente Anónimo",
+                            "fecha" => $r->created_at->format("d M, Y")
+                        ];
+                    })->toJson(); 
+                @endphp
+
+                <button type="button" class="btn-zen" style="background: #f6f1ea; color: #3d2c1e; border: 1px solid #e8e2dd; margin-top: 0.5rem;" 
+                        data-id="{{ $terapeuta->id }}"
+                        data-nombre="{{ addslashes($terapeuta->nombre) }}"
+                        data-promedio="{{ $terapeuta->promedio }}"
+                        data-total="{{ $terapeuta->total_resenas }}"
+                        data-resenas="{{ $resenasData }}"
+                        onclick="verResenasTerapeuta(this)">
+                    Ver Reseñas
+                    <span class="flecha" style="color: #8b5e3c;">★</span>
+                </button>
+                <!-- FIN BOTÓN DE RESEÑAS -->
+
                 @if(auth()->check() && auth()->user()->rol === 'admin')
                 <div style="display:flex; gap:0.25rem; width:100%;">
                     <button type="button" class="btn-terapeuta-editar" style="flex:1;" onclick="editarTerapeuta({{ $terapeuta->id }})">Editar Info</button>
@@ -145,6 +215,13 @@
         </div>
         @endforelse
     </main>
+    <!-- PAGINADOR DE TERAPEUTAS (12 POR PÁGINA) -->
+    <nav id="paginador-terapeutas" class="paginador-terapeutas" aria-label="Paginación de terapeutas" hidden>
+        <button type="button" id="pag-terapeutas-prev" class="pag-terapeutas-btn">← Anterior</button>
+        <div id="pag-terapeutas-numeros" class="pag-terapeutas-numeros"></div>
+        <span id="pag-terapeutas-info" class="pag-terapeutas-info">Página 1 de 1</span>
+        <button type="button" id="pag-terapeutas-next" class="pag-terapeutas-btn">Siguiente →</button>
+    </nav>
 
     <!-- MODAL COMPARTIDO -->
     @include('compartidas.modal-terapeuta', ['userRole' => $userRole ?? null])
@@ -161,7 +238,31 @@
     </div>
 </dialog>
 
-</section>
+<!-- ========================================== -->
+<!-- MODAL DE RESEÑAS CON SOPORTE DE PAGINACIÓN -->
+<!-- ========================================== -->
+<div id="modal-resenas" style="display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; background-color: rgba(45, 42, 38, 0.75); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); z-index: 2147483647; align-items: center; justify-content: center; padding: 1rem; box-sizing: border-box; margin: 0; border: none;">
+    
+    <div style="background: #fbf8f5; width: 100%; max-width: 580px; max-height: 85vh; border-radius: 14px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; overflow: hidden; position: relative; border: 1px solid #efe9e1;">
+        
+        <!-- Cabecera -->
+        <div style="background-color: #8b5e3c; padding: 1.5rem 2rem; color: #ffffff; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-shrink: 0;">
+            <div style="display: flex; flex-direction: column; flex: 1; min-width: 0;">
+                <span style="font-family: 'Inter', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.35rem; color: rgba(255, 255, 255, 0.8);">OPINIONES VERIFICADAS</span>
+                <h2 id="resenas-titulo-terapeuta" style="font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 600; margin: 0; color: #ffffff; line-height: 1.2;">Reseñas</h2>
+            </div>
+            <button type="button" onclick="cerrarModalResenas()" style="background: rgba(255, 255, 255, 0.15); border: none; color: #ffffff; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;" aria-label="Cerrar modal">
+                ✕
+            </button>
+        </div>
+        
+        <!-- Cuerpo (Con Flex para que el paginador quede anclado abajo si hace falta) -->
+        <div id="lista-resenas" style="padding: 1.75rem 2rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem; flex: 1; box-sizing: border-box; background: #fbf8f5;">
+            <!-- Contenido dinámico inyectado por JS -->
+        </div>
+
+    </div>
+</div>
 @endsection
 
 @push('scripts')

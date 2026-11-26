@@ -4,7 +4,7 @@
 
 /* --- Base --- */
 body { 
-    @apply bg-[#fff9f0] text-[#2d2a26] font-sans antialiased flex flex-col min-h-screen; 
+    @apply bg-[#fff9f0] text-[#2d2a26] font-sans antialiased; 
     font-family: 'Instrument Sans', sans-serif; 
     /* Ajuste para evitar que el header fijo oculte el contenido */
     padding-top: 76px; 
@@ -60,7 +60,7 @@ body {
 }
 
 /* Ocultar elementos de móvil en escritorio */
-@media (min-width: 769px) {
+@media (min-width: 768px) {
     #hamburger-btn { @apply hidden; }
     #mobile-menu { @apply hidden; }
 }

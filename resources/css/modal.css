@@ -185,6 +185,7 @@
     margin: 0 0 1rem 0;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;  /* <-- CAMBIO: de 3 a 2 líneas */
     -webkit-box-orient: vertical;
     overflow: hidden;
     font-family: var(--font-body);

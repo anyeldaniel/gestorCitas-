@@ -12,11 +12,24 @@
 
 @section('content')
 @php
-    $proximaCita = $citas->whereIn('estado', ['pendiente', 'confirmada'])->sortBy('fecha')->first();
-    $historialCitas = $citas->where('estado', 'completada')->sortByDesc('fecha');
+    // MODIFICADO: separar todas las citas próximas y conservar la primera para los consejos.
+    $citasPendientes = $citas->whereIn('estado', ['pendiente', 'confirmada'])->sortBy('fecha');
+    $proximaCita = $citasPendientes->first();
+
+    // MODIFICADO PARA PAGINAR DE 6 EN 6
+    $historialColeccion = $citas->where('estado', 'completada')->sortByDesc('fecha');
+    $paginaActual = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage() ?: 1;
+    $porPagina = 6;
+    $historialPaginado = new \Illuminate\Pagination\LengthAwarePaginator(
+        $historialColeccion->forPage($paginaActual, $porPagina),
+        $historialColeccion->count(),
+        $porPagina,
+        $paginaActual,
+        ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath()]
+    );
     
     $totalPendiente = $citas->whereIn('estado', ['pendiente', 'confirmada'])->sum('monto_total'); 
-    $visitasRealizadas = $historialCitas->count();
+    $visitasRealizadas = $historialColeccion->count();
 
     // ==========================================
     // LÓGICA DINÁMICA DE TIPS Y DESCRIPCIÓN
@@ -63,7 +76,47 @@
 @endphp
 
 <main class="dashboard-wrapper">
-    
+    {{-- TARJETA CENTRAL DE ÉXITO (Gracias por tu reseña) --}}
+    @if(session('success'))
+        <div id="modal-exito-resena" style="position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 99999; display: flex; align-items: center; justify-content: center;">
+            <div style="background: #fff; padding: 2.5rem 2rem; border-radius: 16px; width: 90%; max-width: 380px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: relative;">
+                
+                <!-- Icono decorativo -->
+                <div style="width: 60px; height: 60px; background: #edf8f0; color: #245c32; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.2rem auto; font-size: 1.8rem; font-weight: bold;">
+                    ✓
+                </div>
+
+                <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; color: #1f1d1a; margin: 0 0 0.5rem 0;">
+                    ¡Muchas gracias!
+                </h3>
+                
+                <p style="font-size: 0.9rem; color: #666; margin: 0 0 1.8rem 0; line-height: 1.5;">
+                    {{ session('success') }}
+                </p>
+
+                <button type="button" onclick="document.getElementById('modal-exito-resena').style.display='none';" style="width: 100%; padding: 0.75rem; border-radius: 24px; border: none; background: #1f1d1a; color: #fff; font-weight: 600; font-size: 0.8rem; letter-spacing: 0.5px; cursor: pointer;">
+                    ACEPTAR
+                </button>
+            </div>
+        </div>
+    @endif
+
+    {{-- ERRORES DE VALIDACIÓN O GENERALES --}}
+    @if(session('error') || $errors->any())
+        <div role="alert" style="margin-bottom: 1.5rem; padding: 1rem; border: 1px solid #e5b3b3; border-radius: 8px; background: #fff1f1; color: #842626;">
+            @if(session('error'))
+                <p style="margin: 0;">{{ session('error') }}</p>
+            @endif
+            @if($errors->any())
+                <ul style="margin: 0; padding-left: 1.25rem;">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            @endif
+        </div>
+    @endif
+
     <!-- HERO & STATS -->
     <header class="hero-section">
         <section class="hero-text">
@@ -74,7 +127,7 @@
         
         <aside class="stats-box">
             <article class="stat-item">
-                <h2>{{ $proximaCita ? '01' : '00' }}</h2>
+                <h2>{{ str_pad($citasPendientes->count(), 2, '0', STR_PAD_LEFT) }}</h2>
                 <span>Próxima cita</span>
             </article>
             <hr class="stat-divider">
@@ -89,8 +142,8 @@
             </article>
         </aside>
     </header>
-
-    <!-- PRÓXIMA CITA -->
+<!--Acá estoy modificando el código para que se vea la próxima cita con paginadorr para mayor orden y claridad.-->
+<!-- PRÓXIMA CITA -->
     <section class="proxima-cita-section">
         <header class="section-header">
             <div class="section-title">
@@ -100,154 +153,226 @@
             <a href="{{ route('catalogo') }}" class="btn-nueva-reserva">Nueva reserva <span>+</span></a>
         </header>
 
-        @if($proximaCita)
-            @php
-                $fechaCarbon = \Carbon\Carbon::parse($proximaCita->fecha);
-                $totalPagado = $proximaCita->pagos->where('estado_pago', 'aprobado')->sum('monto_anticipado');
-                $enRevision = $proximaCita->pagos->where('estado_pago', 'revision')->sum('monto_anticipado');
-                $montoRestante = $proximaCita->monto_total - $totalPagado;
-                $estaPagado = $totalPagado >= $proximaCita->monto_total;
+        @if($citasPendientes->count() > 0)
+            <!-- BARRA DE FILTROS Y ORDENAMIENTO -->
+            <div class="reservas-controles-bar">
+                <div class="reservas-filtros-estado" role="group" aria-label="Filtrar reservas por estado">
+                    <button type="button" class="filtro-estado-btn is-active" data-filtro-estado="todos">
+                        Todas ({{ $citasPendientes->count() }})
+                    </button>
+                    <button type="button" class="filtro-estado-btn" data-filtro-estado="pendiente">
+                        Pendiente de pago
+                    </button>
+                    <button type="button" class="filtro-estado-btn" data-filtro-estado="pagado">
+                        Pagadas
+                    </button>
+                </div>
 
-                // NUEVAS VARIABLES PARA MULTI-SERVICIO
-                $nombresServicios = $proximaCita->servicios->pluck('nombre_servicio')->join(' + ');
-                $duracionTotal = $proximaCita->servicios->sum('duracion_minutos');
-            @endphp
-
-            <div class="cita-layout-grid">
-                
-                <!-- COLUMNA IZQUIERDA: TIPS DINÁMICOS -->
-                <aside class="tips-column">
-                    <article class="card-tip-bienestar">
-                        <span class="tip-label">PARA TI:</span>
-                        <h3 class="tip-title">Tip de bienestar</h3>
-                        <p class="tip-text">{{ $tipBienestar }}</p>
-                        <span class="tip-author">— Equipo The Beauty Room</span>
-                    </article>
-
-                    <article class="card-prepara-visita">
-                        <header class="prepara-header">
-                            <h4>Antes de venir</h4>
-                            <span>PREPARA TU VISITA</span>
-                        </header>
-                        <p class="prepara-desc">Pequeños detalles para que tu experiencia sea perfecta.</p>
-                        <div class="checklist">
-                            @foreach($tipsPreparacion as $index => $tip)
-                                <div class="check-item">
-                                    <input type="checkbox" id="prep-{{ $index }}" class="prep-checkbox">
-                                    <label for="prep-{{ $index }}">{{ $tip }}</label>
-                                </div>
-                            @endforeach
-                        </div>
-                    </article>
-                </aside>
-
-                <!-- COLUMNA CENTRO: TARJETA TICKET -->
-                <article class="cita-ticket">
-                    <div class="ticket-fecha">
-                        <span class="mes">{{ $fechaCarbon->translatedFormat('M') }}</span>
-                        <span class="dia">{{ $fechaCarbon->format('d') }}</span>
-                        <span class="dia-semana">{{ $fechaCarbon->translatedFormat('l') }}</span>
-                        <div class="ticket-anio">
-                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>
-                            {{ $fechaCarbon->format('Y') }}
-                        </div>
+                <div class="reservas-controles-derecha">
+                    <div class="reservas-orden-grupo">
+                        <label for="orden-proximas-citas">Ordenar por:</label>
+                        <select id="orden-proximas-citas" class="reservas-select">
+                            <option value="fecha-asc">Fecha (Más próxima)</option>
+                            <option value="fecha-desc">Fecha (Más lejana)</option>
+                            <option value="hora-asc">Hora (Más temprana)</option>
+                            <option value="hora-desc">Hora (Más tarde)</option>
+                            <option value="nombre-asc">Servicio (A → Z)</option>
+                            <option value="nombre-desc">Servicio (Z → A)</option>
+                        </select>
                     </div>
 
-                    <div class="ticket-detalles">
-                        @if($proximaCita->servicio->imagen)
-                            <div class="ticket-imagen-fondo">
-                                <img src="{{ asset('storage/' . $proximaCita->servicio->imagen) }}" alt="{{ $proximaCita->servicio->nombre_servicio }}">
-                            </div>
-                        @endif
+                    <div class="reservas-orden-grupo">
+                        <label for="por-pagina-proximas">Mostrar:</label>
+                        <select id="por-pagina-proximas" class="reservas-select">
+                            <option value="1" selected>1 ficha</option>
+                            <option value="2">2 fichas</option>
+                            <option value="3">3 fichas</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
 
-                        <div class="ticket-top">
-                            <span class="ticket-ref">RESERVA #BR-{{ $fechaCarbon->format('Ymd') }}{{ $proximaCita->id }}</span>
-                            <span class="badge {{ $estaPagado ? 'badge-pagado' : 'badge-pendiente' }}">
-                                {{ $estaPagado ? '✓ PAGADO' : '● PENDIENTE DE PAGO' }}
-                            </span>
+            <!-- MENSAJE SI UN FILTRO NO TIENE RESULTADOS -->
+            <div id="proximas-sin-resultados" class="empty-state" style="display: none; margin-bottom: 2rem;">
+                No hay reservas que coincidan con el filtro seleccionado.
+            </div>
+        @endif
+
+        <div id="lista-proximas-citas">
+            @forelse($citasPendientes as $cita)
+                @php
+                    $fechaCarbon = \Carbon\Carbon::parse($cita->fecha);
+                    $totalPagado = $cita->pagos->where('estado_pago', 'aprobado')->sum('monto_anticipado');
+                    $enRevision = $cita->pagos->where('estado_pago', 'revision')->sum('monto_anticipado');
+                    $montoRestante = $cita->monto_total - $totalPagado;
+                    $estaPagado = $totalPagado >= $cita->monto_total;
+
+                    $nombresServicios = $cita->servicios->pluck('nombre_servicio')->join(' + ');
+                    $tituloCita = $nombresServicios ?: ($cita->servicio->nombre_servicio ?? 'Tratamiento');
+                    $duracionTotal = $cita->servicios->sum('duracion_minutos');
+                    $hora24 = \Carbon\Carbon::parse($cita->hora)->format('H:i');
+                @endphp
+
+                <div class="cita-layout-grid"
+                     data-fecha="{{ $fechaCarbon->format('Y-m-d') }}"
+                     data-hora="{{ $hora24 }}"
+                     data-nombre="{{ mb_strtolower($tituloCita, 'UTF-8') }}"
+                     data-pago="{{ $estaPagado ? 'pagado' : 'pendiente' }}"
+                     data-estado-cita="{{ $cita->estado }}">
+                    
+                    <!-- COLUMNA IZQUIERDA: TIPS DINÁMICOS -->
+                    <aside class="tips-column">
+                        <article class="card-tip-bienestar">
+                            <span class="tip-label">PARA TI:</span>
+                            <h3 class="tip-title">Tip de bienestar</h3>
+                            <p class="tip-text">{{ $tipBienestar }}</p>
+                            <span class="tip-author">— Equipo The Beauty Room</span>
+                        </article>
+
+                        <article class="card-prepara-visita">
+                            <header class="prepara-header">
+                                <h4>Antes de venir</h4>
+                                <span>PREPARA TU VISITA</span>
+                            </header>
+                            <p class="prepara-desc">Pequeños detalles para que tu experiencia sea perfecta.</p>
+                            <div class="checklist">
+                                @foreach($tipsPreparacion as $index => $tip)
+                                    <div class="check-item">
+                                        <input type="checkbox" id="prep-{{ $cita->id }}-{{ $index }}" class="prep-checkbox">
+                                        <label for="prep-{{ $cita->id }}-{{ $index }}">{{ $tip }}</label>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </article>
+                    </aside>
+
+                    <!-- COLUMNA CENTRO: TARJETA TICKET -->
+                    <article class="cita-ticket">
+                        <div class="ticket-fecha">
+                            <span class="mes">{{ $fechaCarbon->translatedFormat('M') }}</span>
+                            <span class="dia">{{ $fechaCarbon->format('d') }}</span>
+                            <span class="dia-semana">{{ $fechaCarbon->translatedFormat('l') }}</span>
+                            <div class="ticket-anio">
+                                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>
+                                {{ $fechaCarbon->format('Y') }}
+                            </div>
                         </div>
 
-                        <h3 class="ticket-titulo">{{ $nombresServicios ?: ($proximaCita->servicio->nombre_servicio ?? 'Tratamiento') }}</h3>
-                        <p class="ticket-desc">{{ $descripcionServicio }}</p>
+                        <div class="ticket-detalles">
+                            @if($cita->servicio && $cita->servicio->imagen)
+                                <div class="ticket-imagen-fondo">
+                                    <img src="{{ asset('storage/' . $cita->servicio->imagen) }}" alt="{{ $cita->servicio->nombre_servicio }}">
+                                </div>
+                            @endif
 
-                        <div class="ticket-meta">
-                            <div class="meta-item">
-                                <span class="meta-icon">
-                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                                </span>
-                                <div>
-                                    <small>HORA</small>
-                                    <strong>{{ \Carbon\Carbon::parse($proximaCita->hora)->format('h:i A') }}</strong>
+                            <div class="ticket-top">
+                                <span class="ticket-ref">RESERVA #BR-{{ $fechaCarbon->format('Ymd') }}{{ $cita->id }}</span>
+                                <div class="ticket-badges">
+                                    <span class="badge {{ $estaPagado ? 'badge-pagado' : 'badge-pendiente' }}">
+                                        {{ $estaPagado ? '✓ PAGADO' : '● PENDIENTE DE PAGO RESTANTE' }}
+                                    </span>
+                                    <span class="badge {{ $cita->estado === 'confirmada' ? 'badge-pagado' : 'badge-pendiente' }}">
+                                        {{ $cita->estado === 'confirmada' ? '✓ CITA CONFIRMADA' : '● CITA PENDIENTE' }}
+                                    </span>
                                 </div>
                             </div>
-                            
-                            <div class="meta-item" style="grid-column: span 2; align-items: flex-start; margin-top: 5px; margin-bottom: 5px;">
-                                <span class="meta-icon" style="margin-top: 3px;">
-                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2"/></svg>
-                                </span>
-                                <div style="width: 100%;">
-                                    <small>ESPECIALISTAS ASIGNADOS</small>
-                                    <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 5px;">
-                                        @foreach($proximaCita->servicios as $serv)
-                                            @php
-                                                $espId = $serv->pivot->trabajador_id;
-                                                $especialista = \App\Models\User::find($espId);
-                                            @endphp
-                                            <strong style="font-size: 0.85rem; color: var(--text-main); line-height: 1.3;">
-                                                {{ $especialista->nombre ?? 'Por asignar' }} <br>
-                                                <span style="font-weight: 500; font-size: 0.75rem; color: var(--text-muted);">({{ $serv->nombre_servicio }})</span>
-                                            </strong>
-                                        @endforeach
+
+                            <h3 class="ticket-titulo">{{ $tituloCita }}</h3>
+                            <p class="ticket-desc">{{ $cita->servicio->descripcion ?? 'Un ritual exclusivo diseñado para renovar tu energía y devolverte el equilibrio.' }}</p>
+
+                            <div class="ticket-meta">
+                                <div class="meta-item">
+                                    <span class="meta-icon">
+                                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                                    </span>
+                                    <div>
+                                        <small>HORA</small>
+                                        <strong>{{ \Carbon\Carbon::parse($cita->hora)->format('h:i A') }}</strong>
+                                    </div>
+                                </div>
+                                
+                                <div class="meta-item" style="grid-column: span 2; align-items: flex-start; margin-top: 5px; margin-bottom: 5px;">
+                                    <span class="meta-icon" style="margin-top: 3px;">
+                                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2"/></svg>
+                                    </span>
+                                    <div style="width: 100%;">
+                                        <small>ESPECIALISTAS ASIGNADOS</small>
+                                        <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 5px;">
+                                            @foreach($cita->servicios as $serv)
+                                                @php
+                                                    $espId = $serv->pivot->trabajador_id;
+                                                    $especialista = \App\Models\User::find($espId);
+                                                @endphp
+                                                <strong style="font-size: 0.85rem; color: var(--text-main); line-height: 1.3;">
+                                                    {{ $especialista->nombre ?? 'Por asignar' }} <br>
+                                                    <span style="font-weight: 500; font-size: 0.75rem; color: var(--text-muted);">({{ $serv->nombre_servicio }})</span>
+                                                </strong>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="meta-item">
+                                    <span class="meta-icon">
+                                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                                    </span>
+                                    <div>
+                                        <small>DURACIÓN TOTAL</small>
+                                        <strong>{{ $duracionTotal > 0 ? $duracionTotal : ($cita->servicio->duracion_minutos ?? 60) }} minutos</strong>
                                     </div>
                                 </div>
                             </div>
-
-                            <div class="meta-item">
-                                <span class="meta-icon">
-                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                                </span>
-                                <div>
-                                    <small>DURACIÓN TOTAL</small>
-                                    <strong>{{ $duracionTotal > 0 ? $duracionTotal : ($proximaCita->servicio->duracion_minutos ?? 60) }} minutos</strong>
-                                </div>
-                            </div>
                         </div>
-                    </div>
-                </article>
+                    </article>
 
-                <!-- COLUMNA DERECHA: PAGO -->
-                <aside class="cita-pago-sidebar">
-                    <div>
-                        <span class="pago-total-label">{{ $estaPagado ? 'TOTAL PAGADO' : 'TOTAL PENDIENTE' }}</span>
-                        <p class="pago-total-monto">${{ number_format($estaPagado ? $totalPagado : $montoRestante, 2) }}</p>
-                        
-                        @if(!$estaPagado && $enRevision == 0)
-                            <div class="pago-alerta">
-                                <span class="pago-alerta-icon">
-                                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-                                </span>
-                                <div class="pago-alerta-text">
-                                    <strong>Completa el pago para confirmar</strong>
-                                    <span>Pago seguro y confirmación inmediata.</span>
+                    <!-- COLUMNA DERECHA: PAGO -->
+                    <aside class="cita-pago-sidebar">
+                        <div>
+                            <span class="pago-total-label">{{ $estaPagado ? 'TOTAL PAGADO' : 'TOTAL PENDIENTE' }}</span>
+                            <p class="pago-total-monto">${{ number_format($estaPagado ? $totalPagado : $montoRestante, 2) }}</p>
+                            
+                            @if(!$estaPagado && $enRevision == 0)
+                                <div class="pago-alerta">
+                                    <span class="pago-alerta-icon">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                                    </span>
+                                    <div class="pago-alerta-text">
+                                        <strong>Completa el pago para confirmar</strong>
+                                        <span>Pago seguro y confirmación inmediata.</span>
+                                    </div>
                                 </div>
-                            </div>
+                            @endif
+                        </div>
+
+                        @if(!$estaPagado && $enRevision == 0)
+                            <a href="{{ route('checkout.view', ['cita_id' => $cita->id]) }}" class="btn-completar-pago">
+                                COMPLETAR PAGO <span>→</span>
+                            </a>
                         @endif
-                    </div>
+                    </aside>
 
-                    @if(!$estaPagado && $enRevision == 0)
-                        <a href="{{ route('checkout.view', ['cita_id' => $proximaCita->id]) }}" class="btn-completar-pago">
-                            COMPLETAR PAGO <span>→</span>
-                        </a>
-                    @endif
-                </aside>
+                </div>
+            @empty
+                <p class="empty-state">No tienes citas próximas agendadas.</p>
+            @endforelse
+        </div>
 
+        <!-- PAGINADOR DE PRÓXIMAS CITAS -->
+        @if($citasPendientes->count() > 0)
+            <div id="proximas-pagination-container" class="historial-pagination-container" style="margin-top: 1rem; margin-bottom: 4rem;">
+                <div id="proximas-pagination-info" class="historial-pagination-info">
+                    Mostrando reserva 1 de {{ $citasPendientes->count() }}
+                </div>
+                <div class="historial-pagination-buttons">
+                    <button type="button" id="btn-proximas-prev" class="btn-paginacion" disabled>← Anterior</button>
+                    <div id="proximas-pagination-numeros" class="proximas-numeros-wrapper"></div>
+                    <button type="button" id="btn-proximas-next" class="btn-paginacion">Siguiente →</button>
+                </div>
             </div>
-        @else
-            <p class="empty-state">No tienes citas próximas agendadas.</p>
         @endif
     </section>
 
-    <!-- HISTORIAL -->
+<!-- HISTORIAL -->
     <section class="historial-section">
         <header class="section-header">
             <div class="section-title">
@@ -258,10 +383,9 @@
         </header>
 
         <div class="historial-grid">
-            @forelse($historialCitas as $cita)
+            @forelse($historialPaginado as $cita)
                 @php 
                     $fechaHist = \Carbon\Carbon::parse($cita->fecha); 
-                    // Verificamos si ya calificó esta cita
                     $yaCalifico = \App\Models\Resena::where('user_id', auth()->id())->where('cita_id', $cita->id)->exists();
                 @endphp
                 
@@ -276,7 +400,6 @@
                         <h4>{{ $cita->servicio->nombre_servicio ?? 'Tratamiento' }}</h4>
                         <p>{{ $cita->trabajador->nombre ?? 'Especialista' }} - {{ $cita->servicio->duracion_minutos ?? 60 }} min</p>
                         
-                        <!-- 🆕 BOTÓN PARA CALIFICAR (Solo si no lo ha hecho) -->
                         @if(!$yaCalifico)
                             <button type="button" class="btn-calificar" 
                                     onclick="abrirModalResena({{ $cita->id }}, '{{ $cita->trabajador->nombre ?? 'Especialista' }}')">
@@ -295,6 +418,32 @@
             @empty
                 <p class="empty-state">Aún no tienes visitas registradas.</p>
             @endforelse
+
+            {{-- PAGINADOR DE 6 EN 6 --}}
+            @if($historialPaginado->hasPages())
+                <div class="historial-pagination-container">
+                    <div class="historial-pagination-info">
+                        Mostrando del {{ $historialPaginado->firstItem() ?? 0 }} al {{ $historialPaginado->lastItem() ?? 0 }} de {{ $historialPaginado->total() }} rituales
+                    </div>
+                    <div class="historial-pagination-buttons">
+                        {{-- Botón Anterior --}}
+                        @if ($historialPaginado->onFirstPage())
+                            <button type="button" class="btn-paginacion disabled" disabled>← Anterior</button>
+                        @else
+                            <a href="{{ $historialPaginado->previousPageUrl() }}" class="btn-paginacion">← Anterior</a>
+                        @endif
+
+                        <span class="paginacion-numeros">Página {{ $historialPaginado->currentPage() }} de {{ $historialPaginado->lastPage() }}</span>
+
+                        {{-- Botón Siguiente --}}
+                        @if ($historialPaginado->hasMorePages())
+                            <a href="{{ $historialPaginado->nextPageUrl() }}" class="btn-paginacion">Siguiente →</a>
+                        @else
+                            <button type="button" class="btn-paginacion disabled" disabled>Siguiente →</button>
+                        @endif
+                    </div>
+                </div>
+            @endif
         </div>
     </section>
 
@@ -306,7 +455,6 @@
 
 <div id="modal-resena-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 99999; align-items: center; justify-content: center;">
    
-    <!-- CORRECCIÓN AQUÍ: Se usa 0 como ID temporal y se reemplaza dinámicamente al enviar -->
     <form id="form-resena" method="POST" action="{{ route('resenas.store', 0) }}" 
           onsubmit="this.action = this.action.replace('/0', '/' + document.getElementById('resena-cita-id').value);" 
           style="background: #fff; padding: 2rem; border-radius: 16px; width: 90%; max-width: 400px; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
@@ -344,8 +492,4 @@
         </div>
     </form>
 </div>
-
-@push('scripts')
-    @vite(['resources/js/mis-reservas.js'])
-@endpush
 @endsection

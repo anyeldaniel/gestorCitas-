@@ -45,6 +45,8 @@
             <label for="email">Correo Electrónico</label>
             <input type="email" id="email" name="email" required value="{{ old('email') }}" placeholder="ejemplo@thebeautyroom.com">
             <small style="color: #64748b; font-size: 0.8rem;">Debe ser un correo válido y no estar registrado previamente.</small>
+            <!-- 🛑 Contenedor dinámico para error de correo -->
+            <div id="error-email" class="mensaje-error-campo" style="display: none;"></div>
         </fieldset>
 
         <!-- ESPECIALIDADES -->
@@ -68,11 +70,11 @@
         </fieldset>
 
         <!-- CONTRASEÑA -->
-        <section id="campo-password" class="grupo-seguridad-modal">
+<section id="campo-password" class="grupo-seguridad-modal">
             <fieldset class="campo-formulario campo-password-contenedor">
                 <label for="password">Contraseña de Acceso</label>
                 <div class="input-icono-wrapper">
-                    <input type="password" id="password" name="password" required minlength="8" placeholder="Mínimo 8 caracteres">
+                    <input type="password" id="password" name="password" required minlength="8" maxlength="20" placeholder="Mínimo 8 caracteres">
                     <button type="button" class="btn-alternar-password" onclick="alternarVisibilidad('password', this)" aria-label="Mostrar contraseña">
                         <svg class="svg-ojo" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
@@ -85,7 +87,7 @@
             <fieldset class="campo-formulario campo-password-contenedor">
                 <label for="password_confirmation">Confirmar Contraseña</label>
                 <div class="input-icono-wrapper">
-                    <input type="password" id="password_confirmation" name="password_confirmation" required minlength="8" placeholder="Repita la contraseña">
+                    <input type="password" id="password_confirmation" name="password_confirmation" required minlength="8" maxlength="20" placeholder="Repita la contraseña">
                     <button type="button" class="btn-alternar-password" onclick="alternarVisibilidad('password_confirmation', this)" aria-label="Mostrar contraseña">
                         <svg class="svg-ojo" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
@@ -93,8 +95,16 @@
                         </svg>
                     </button>
                 </div>
+                <!-- 🛑 Contenedor dinámico unificado debajo de confirmación de contraseña -->
+                <div id="error-password" class="mensaje-error-campo" style="display: none;"></div>
             </fieldset>
         </section>
+        <div id="password-feedback-especialista" class="feedback-total" style="display: none;">
+            <span id="especialista-length-req"></span><br>
+            <span id="especialista-alpha-req"></span><br>
+            <span id="especialista-special-req"></span>
+        </div>
+        <div id="especialista-strength-text"></div>
 
         <!-- ACCIONES -->
         <footer class="modal-acciones">
@@ -156,10 +166,16 @@
 
 <dialog id="modal-confirmacion-custom" class="modal-contenedor-alerta-critica">
     <article class="cuerpo-alerta-centrado">
-        <figure class="icono-alerta-advertencia">⚠️</figure>
+        <div class="icono-alerta-dinamico" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 9v4" />
+                <path d="M12 17h.01" />
+                <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+            </svg>
+        </div>
         <h3 id="confirm-alerta-titulo" class="titulo-alerta-critica">¿Confirmar acción?</h3>
         <p id="confirm-alerta-mensaje" class="mensaje-alerta-descripcion"></p>
-        
+
         <footer class="pie-alerta-botones">
             <button type="button" id="btn-confirm-cancelar" class="btn-cancelar-alerta">Cancelar</button>
             <button type="button" id="btn-confirm-aceptar" class="btn-aceptar-eliminar">Eliminar permanentemente</button>

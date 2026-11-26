@@ -83,6 +83,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelFecha     = document.getElementById('cancel-fecha');
     const cancelHora      = document.getElementById('cancel-hora');
     const cancelAvatar    = document.getElementById('cancel-avatar');
+    const camposReembolso = document.getElementById('campos-reembolso-cita');
+    const listaReembolsos = document.getElementById('lista-reembolsos-cita');
+    const avisoReembolso  = document.getElementById('aviso-reembolso-pendiente');
 
     document.querySelectorAll('[data-declinar]').forEach((btn) => {
         btn.addEventListener('click', () => {
@@ -102,6 +105,24 @@ document.addEventListener('DOMContentLoaded', () => {
             cancelAvatar.textContent   = iniciales(cliente);
 
             formCancelar.querySelector('textarea[name="motivo"]').value = '';
+            listaReembolsos.replaceChildren();
+            camposReembolso.hidden = true;
+            avisoReembolso.hidden = true;
+
+            const pagosAprobados = JSON.parse(btn.dataset.pagosAprobados || '[]');
+            if (pagosAprobados.length && btn.dataset.puedeDefinirReembolso === '1') {
+                listaReembolsos.innerHTML = pagosAprobados.map(pago => `
+                    <label class="campo-modal">
+                        <span class="label-modal">Pago #${pago.id} (máximo $${Number(pago.monto).toFixed(2)})</span>
+                        <input type="number" name="reembolsos[${pago.id}]" min="0.01"
+                               max="${Number(pago.monto).toFixed(2)}" step="0.01" required>
+                    </label>
+                `).join('');
+                camposReembolso.hidden = false;
+            } else if (pagosAprobados.length) {
+                avisoReembolso.hidden = false;
+            }
+
             modalCancelar.showModal();
         });
     });

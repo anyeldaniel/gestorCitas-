@@ -81,7 +81,7 @@
             <div class="form-row" style="margin-bottom: 15px;">
                 <label for="password">NUEVA CLAVE</label>
                 <div class="caja-input-clave">
-                    <input id="password" name="password" type="password" placeholder="Ingresa tu nueva clave" required>
+                    <input id="password" name="password" type="password" placeholder="Ingresa tu nueva clave" required minlength="8" maxlength="20" autocomplete="new-password">
                     <button type="button" class="btn-ver-clave" onclick="togglePassword('password', this)">
                         <i data-lucide="eye"></i>
                     </button>
@@ -92,7 +92,7 @@
             <div class="form-row" style="margin-bottom: 15px;">
                 <label for="password_confirmation">CONFIRMAR NUEVA CLAVE</label>
                 <div class="caja-input-clave">
-                    <input id="password_confirmation" name="password_confirmation" type="password" placeholder="Vuelve a escribir tu nueva clave" required>
+                    <input id="password_confirmation" name="password_confirmation" type="password" placeholder="Vuelve a escribir tu nueva clave" required minlength="8" maxlength="20" autocomplete="new-password">
                     <button type="button" class="btn-ver-clave" onclick="togglePassword('password_confirmation', this)">
                         <i data-lucide="eye"></i>
                     </button>

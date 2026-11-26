@@ -175,7 +175,7 @@
                         </div>
                         <div class="form-group">
                             <label for="token">Últimos 6 dígitos</label>
-                            <input type="text" name="token" id="token" class="form-control" placeholder="000000" maxlength="6">
+                            <input type="text" name="token" id="token" class="form-control" placeholder="000000" maxlength="6" inputmode="numeric" pattern="[0-9]{6}">
                         </div>
                     </div>
 

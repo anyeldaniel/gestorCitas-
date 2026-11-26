@@ -1,0 +1,267 @@
+INFORME DE AUDITORIA ESTATICA - SYNCROSTYLE
+===========================================
+
+RESUMEN EJECUTIVO
+-----------------
+El proyecto utiliza una estructura Laravel convencional (rutas, controladores,
+modelos Eloquent, vistas Blade y recursos Vite), adecuada para una aplicacion
+pequena o de volumen moderado. No se puede asignar una velocidad real ni afirmar
+que la pagina es rapida o lenta sin mediciones de carga y consultas en un entorno
+representativo.
+
+La revision estatica identifica varios problemas de correccion y control de
+acceso que conviene resolver antes de ampliar el uso: algunas rutas apuntan a
+metodos o vistas inexistentes, las rutas agrupadas por area no necesariamente
+comprueban el rol del usuario, y hay una diferencia entre los estados de cita
+aceptados por el controlador y los permitidos por la base de datos. En eficiencia,
+los principales riesgos son consultas y listas sin paginacion, agregaciones
+hechas en PHP y archivos front-end muy grandes.
+
+Conclusion cualitativa: la base existente se puede mantener y mejorar sin
+reescribirla. Para un volumen bajo puede ser suficiente, pero requiere corregir
+los problemas funcionales y de permisos y optimizar consultas antes de crecer.
+
+ALCANCE Y LIMITACIONES
+----------------------
+Se revisaron estaticamente las rutas, controladores principales, modelos y
+migraciones relacionadas con usuarios, citas y pagos, configuracion, vistas,
+JavaScript/CSS, pruebas y documentacion del proyecto. Se hizo una revision de
+coherencia entre rutas, metodos y vistas, y se consideraron resultados de
+verificaciones previas disponibles en esta conversacion.
+
+No se ejecutaron pruebas, profiling, pruebas de carga ni analisis de consultas
+en produccion para este informe. Por tanto, las observaciones de rendimiento son
+riesgos deducidos del codigo, no mediciones de tiempos. Tampoco se revisaron las
+dependencias de terceros en busca de vulnerabilidades ni se inspecciono el
+contenido de secretos del archivo de entorno. La revision se enfoca en el codigo
+de la aplicacion, no en cada archivo generado, dependencia o recurso binario.
+
+ARQUITECTURA Y ORGANIZACION
+---------------------------
+- PHP 8.2+ y Laravel 12, con Eloquent, Blade y Vite.
+- Las funciones principales se organizan en controladores para citas/agenda,
+  reservas, pagos, usuarios, servicios, terapeutas, reseñas, recepcion y
+  notificaciones.
+- Los flujos de cancelacion y pagos ya cuentan con logica de servicio y uso de
+  transacciones en operaciones importantes. Esto es una buena base para mantener
+  las reglas de negocio juntas.
+- La estructura sigue siendo mayormente MVC tradicional. No se recomienda una
+  reescritura ni introducir una arquitectura compleja ahora. Conviene extraer
+  gradualmente reglas de negocio reutilizables, validacion y autorizacion a
+  servicios, Form Requests y Policies.
+
+RUTAS Y FUNCIONALIDAD
+---------------------
+Las rutas cubren paginas publicas/autenticacion, reservas e historial de clientes,
+agenda y pagos, administracion de servicios/usuarios, funciones de especialista
+y notificaciones. El agrupamiento por prefijo ayuda a organizar las URL; sin
+embargo, un prefijo como /admin o /recepcion no autoriza por si mismo a un rol.
+
+Hallazgos comprobables:
+
+1. La mayoria de rutas privadas se encuentra bajo middleware auth, pero no se
+   observa una proteccion general por rol en los grupos administrativos. Algunas
+   acciones de AdminController y ServicioController no comprueban el rol en el
+   controlador. Un usuario autenticado sin el rol esperado podria intentar
+   acceder a acciones administrativas. Deben aplicarse middleware de rol o
+   Policies/Gates de forma uniforme, incluidos los endpoints de escritura.
+   Referencias: routes/web.php, especialmente los grupos de rutas de usuarios,
+   servicios, administracion y recepcion; ServicioController.php.
+
+2. La ruta de suscripcion Push esta fuera del grupo auth, aunque el controlador
+   espera un usuario autenticado. Conviene protegerla explicitamente y responder
+   con un error HTTP apropiado cuando no hay sesion.
+   Referencia: routes/web.php, ruta de suscripcion Push cercana a la linea 31.
+
+3. La ruta recepcion.agenda llama RecepcionController::agenda, que consulta las
+   tablas users y devuelve la vista recepcion.agenda. La aplicacion utiliza una
+   tabla personalizada usuarios y no hay una vista recepcion/agenda.blade.php en
+   el inventario revisado. Esta ruta tiene dos causas independientes probables
+   de error: tabla incorrecta y vista inexistente.
+   Referencias: RecepcionController.php:15-16,34; resources/views/recepcion/.
+
+4. La ruta terapeuta.gestion-interna llama TerapeutaController::tablero, pero
+   ese controlador no define tablero. Existe un tablero en
+   EspecialistaController; hay que confirmar cual es la accion correcta antes de
+   cambiar el destino.
+   Referencias: routes/web.php:165; TerapeutaController.php; EspecialistaController.php.
+
+5. Las rutas resenas.update y resenas.destroy llaman metodos que no estan
+   implementados en ResenaController. La ruta de creacion si tiene store.
+   Referencias: routes/web.php:104-106; ResenaController.php.
+
+6. La ruta catalogo.update permite modificar servicios y no debe depender solo
+   de que el usuario haya iniciado sesion; necesita autorizacion de rol.
+   Referencia: routes/web.php:78 y ServicioController::update.
+
+7. El archivo routes/prueba.php parece residual/incompleto y no forma parte del
+   registro de rutas principal. Se recomienda retirarlo o documentar su proposito
+   cuando se realice una limpieza separada.
+
+CORRECCION Y MODELO DE DATOS
+----------------------------
+1. Hay una discrepancia entre estados de cita: la migracion enumera pendiente,
+   confirmada, completada y cancelada, mientras AgendaController acepta tambien
+   "en curso". En una base que aplique el enum, intentar guardar ese valor puede
+   fallar. Debe definirse una lista unica de estados y alinear validacion,
+   migracion y transiciones.
+   Referencias: migracion create_citas_table.php, estado; AgendaController.php:175.
+
+2. En la reserva se comprueba disponibilidad consultando citas existentes, pero
+   no se aprecia una proteccion atomica completa ante dos solicitudes
+   concurrentes. Ademas, la regla de solapamiento debe considerar la duracion de
+   los servicios y todos los trabajadores/recursos involucrados, no solo una
+   hora exacta. La transaccion, bloqueo o restriccion de base de datos apropiada
+   debe impedir que dos reservas simultaneas ocupen el mismo espacio.
+   Referencias: ReservaController.php, comprobacion de disponibilidad y guardado.
+
+3. La tabla de usuarios utiliza nombres de columnas personalizados (usuarios,
+   nombre, correo y contraseña), mientras UserFactory y DatabaseSeeder usan
+   nombres convencionales de Laravel (name, email y password). Los factories y
+   seeders pueden fallar o no generar datos utilizables en pruebas y desarrollo.
+   Referencias: migracion create_users_table.php; database/factories/UserFactory.php;
+   database/seeders/DatabaseSeeder.php.
+
+4. La migracion inicial inserta un usuario administrador con una credencial fija.
+   No se reproduce aqui ningun valor. Las credenciales iniciales estaticas son
+   riesgosas y hacen que el resultado de una migracion dependa de una cuenta
+   predefinida. Es preferible un seeder de instalacion con credencial configurable
+   y cambio obligatorio, o un proceso de alta seguro.
+   Referencia: migracion inicial de usuarios, insercion inicial del administrador.
+
+5. La fecha/hora de la aplicacion esta configurada en UTC. Debe confirmarse que
+   coincide con la zona horaria del negocio y que la conversion es coherente en
+   formularios, base de datos, correos y calendario.
+   Referencia: config/app.php:68.
+
+EFICIENCIA Y ESCALABILIDAD
+--------------------------
+No se midio la velocidad. Los siguientes patrones pueden aumentar el tiempo de
+respuesta o el uso de memoria a medida que crecen usuarios y citas:
+
+- AdminController obtiene trabajadores y recepcionistas completos; el dashboard
+  realiza consultas adicionales dentro de ciclos para preparar los datos de
+  trabajadores. Esto puede producir un patron N+1. Conviene precargar relaciones
+  o reemplazar el ciclo por consultas agrupadas.
+- Los reportes cargan citas de un periodo y agrupan/calculan parte de los datos
+  en PHP. Para historiales grandes, es mas eficiente agregar en SQL y devolver
+  solo los campos y totales requeridos.
+- ReservaController trae colecciones completas de servicios, terapeutas y
+  reservas. PagoController obtiene la lista de pagos sin paginacion. Terapeuta,
+  servicio y algunas listas administrativas tambien usan get() sin limite.
+  Conviene paginar las listas visibles y limitar consultas a lo necesario.
+- Algunas relaciones ya se cargan con with/withCount, lo cual evita consultas
+  repetidas en ciertos flujos. Es positivo, pero debe revisarse junto con las
+  consultas individuales dentro de bucles.
+- AgendaController calcula terapeutas destacados con withCount y HAVING sobre
+  una cuenta alias. Durante una comprobacion previa de renderizado en SQLite se
+  observo que esta forma de HAVING falla en SQLite con "HAVING clause on a
+  non-aggregate query". Puede funcionar en MySQL, pero dificulta la portabilidad
+  y la ejecucion de pruebas. Reescribir como subconsulta/whereHas o adaptar la
+  agregacion al motor usado.
+- El clima usa cache, una medida apropiada para evitar llamadas remotas
+  repetidas. La vista de notificaciones consulta periodicamente; el intervalo
+  actual es de 30 segundos, por lo que su costo debe observarse si muchos usuarios
+  mantienen la pagina abierta.
+- El rendimiento de citas depende tambien de indices adecuados para fecha,
+  trabajador, estado y claves foraneas. Revisar indices con EXPLAIN y datos de
+  volumen real antes de agregar indices indiscriminadamente.
+
+SEGURIDAD Y CONFIGURACION
+-------------------------
+1. En resources/js/notificaciones.js se interpolan titulo y mensaje recibidos
+   desde la respuesta del servidor dentro de innerHTML. Como esos textos pueden
+   incluir datos ingresados por usuarios, deben insertarse como texto (por
+   ejemplo, textContent) o escaparse con una rutina fiable. Esta es una prioridad
+   para evitar que contenido no confiable se interprete como HTML.
+   Referencia: notificaciones.js:47-57.
+
+2. La configuracion SMTP desactiva la verificacion del certificado y del nombre
+   del servidor. Esto puede aceptarse en una configuracion local muy especifica,
+   pero no en produccion; debe habilitarse la verificacion TLS y configurarse el
+   certificado correctamente.
+   Referencia: config/mail.php:56-57.
+
+3. Se requiere autorizacion de rol, no solo autenticacion, en las rutas de
+   administracion, recepcion y modificacion de catalogo. Aplicar minimo
+   privilegio y comprobar tambien que el usuario puede acceder al recurso
+   especifico solicitado.
+
+4. El correo usa por defecto el driver log si MAIL_MAILER no esta configurado.
+   Confirmar la configuracion real por entorno; no se inspeccionaron ni se
+   reproducen valores del archivo .env.
+   Referencia: config/mail.php:17.
+
+INTERFAZ Y MANTENIBILIDAD
+-------------------------
+- Hay vistas de checkout duplicadas: clientes/checkout.blade.php y
+  clientes/pago-checkout.blade.php comparten estructura y usan estilos/scripts
+  similares, mientras PagoController devuelve clientes.checkout. Esto aumenta
+  el riesgo de que se corrija una vista y la otra quede desactualizada.
+- Hay vistas de verificacion de pagos en compartidas y recepcion con estructura
+  y recursos semejantes. Confirmar si ambas son necesarias; si lo son, extraer
+  componentes compartidos.
+- Algunos recursos front-end son grandes y concentran responsabilidades:
+  terapeutas.js (~878 lineas), terapeutas.css (~1869), agenda.css (~1437),
+  modal.css (~1287) y verificar-pago.css (~1088). Separarlos por componentes o
+  funcionalidades reducira el costo de mantenimiento. El numero de lineas por
+  si solo no prueba lentitud.
+- README.md conserva contenido generico de Laravel y no explica instalacion,
+  configuracion, roles, flujos ni comandos del producto. estructura.txt presenta
+  problemas de codificacion. Mejorar documentacion facilita despliegue y soporte.
+- En una compilacion Vite previa se reporto una referencia a
+  /asset/img/parts/fdp.jpg que no se pudo resolver. Confirmar si el recurso falta
+  o si la ruta/nombre es incorrecto.
+
+PRUEBAS Y VALIDACION
+--------------------
+- Hay pruebas de PHPUnit, incluidas pruebas del flujo reciente de cancelacion y
+  seguimiento de reembolsos, pero la cobertura visible no demuestra por si sola
+  la proteccion de roles, la coherencia de todas las rutas ni reservas
+  concurrentes.
+- No se ejecuto la suite durante esta auditoria. Una prueba de renderizado de la
+  agenda con SQLite realizada previamente no llego a validar la vista porque
+  fallo antes en la consulta HAVING descrita arriba.
+- Recomendacion: agregar pruebas de acceso por rol y usuario propietario,
+  transiciones validas/invalidas de estados, disponibilidad con servicios de
+  distinta duracion, concurrencia de reservas y renderizado de rutas por rol.
+  Mantener pruebas separadas por motor de base de datos si se soporta mas de uno.
+
+PLAN DE MEJORA PRIORIZADO
+------------------------
+Prioridad 1 - Correccion y seguridad:
+1. Asegurar cada grupo/accion con middleware de rol o Policies.
+2. Corregir las rutas que apuntan a metodos inexistentes y la agenda de recepcion
+   (tabla y vista).
+3. Unificar estados de cita entre migraciones, validacion e interfaz.
+4. Evitar insertar textos no confiables en innerHTML.
+5. Retirar credenciales fijas y habilitar verificacion TLS en produccion.
+
+Prioridad 2 - Integridad y pruebas:
+6. Proteger la reserva contra colisiones simultaneas y considerar duracion y
+   recursos completos.
+7. Alinear UserFactory/DatabaseSeeder con el esquema personalizado.
+8. Cubrir permisos, rutas, pagos, reembolsos y reservas con pruebas focalizadas.
+
+Prioridad 3 - Rendimiento y mantenimiento:
+9. Paginar pagos, reservas y listados administrativos.
+10. Reducir consultas N+1 y trasladar agregaciones grandes a SQL.
+11. Resolver compatibilidad de HAVING entre SQLite y MySQL.
+12. Consolidar vistas duplicadas, dividir archivos front-end grandes y actualizar
+    README/documentacion.
+13. Medir tiempos, consultas y memoria con datos representativos antes y despues
+    de optimizar; establecer indices segun planes EXPLAIN.
+
+VEREDICTO
+---------
+La aplicacion tiene una base Laravel reconocible y varias decisiones correctas,
+como carga anticipada de relaciones en algunos flujos, cache para datos externos
+y transacciones en operaciones sensibles de pagos. La principal deuda no es que
+necesite otra tecnologia, sino consistencia entre rutas, roles, estados y esquema,
+ademas de consultas que no escalan bien con colecciones grandes.
+
+No es posible afirmar un porcentaje de eficiencia ni un tiempo de carga con una
+revision estatica. Las primeras mejoras recomendadas son proteger correctamente
+las acciones, reparar las rutas rotas y alinear estados; luego optimizar consultas
+y validar con pruebas/perfilado. No se modifico codigo como parte de esta
+auditoria; este archivo es el unico entregable solicitado.

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class PasswordController extends Controller
 {
@@ -20,14 +21,19 @@ class PasswordController extends Controller
         }
 
         // 2. Enviamos el código secreto a Google para verificar que sea un humano real
-        $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
-            'secret' => env('RECAPTCHA_SECRET_KEY'),
+        $response = Http::asForm()->timeout(10)->post('https://www.google.com/recaptcha/api/siteverify', [
+            'secret' => config('services.recaptcha.secret_key'),
             'response' => $request->input('g-recaptcha-response'),
             'remoteip' => $request->ip(),
         ]);
 
         // 3. Si Google rechaza el código (es un bot o el tiempo expiró)
-        if (!$response->json('success')) {
+        if (!$response->successful() || $response->json('success') !== true) {
+            Log::warning('Google rechazó la verificación reCAPTCHA durante la recuperación de contraseña.', [
+                'error_codes' => $response->json('error-codes', []),
+                'http_status' => $response->status(),
+            ]);
+
             return back()
                 ->withErrors(['captcha' => 'La validación del CAPTCHA falló. Intenta de nuevo.'])
                 ->withInput();
@@ -60,15 +66,27 @@ class PasswordController extends Controller
         $request->validate([
             'token' => 'required',
             'email' => 'required|email',
-            'password' => 'required|confirmed|min:8',
-            'password_confirmation' => 'required',
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'max:20',
+                'regex:/[a-zA-Z]/',
+                'regex:/[0-9]/',
+                'regex:/[!@#$%^&*(),.?":{}|<>]/',
+                'confirmed',
+            ],
+            'password_confirmation' => 'required|string|min:8|max:20|same:password',
         ], [
             'email.required' => 'El correo es obligatorio.',
             'email.email' => 'El correo electrónico debe ser una dirección de correo válida.',
             'password.required' => 'La contraseña es obligatoria.',
-            'password.confirmed' => 'Las contraseñas no coinciden.',
             'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.max' => 'La contraseña no puede tener más de 20 caracteres.',
+            'password.regex' => 'La contraseña debe incluir letras, números y un carácter especial.',
+            'password.confirmed' => 'Las contraseñas no coinciden.',
             'password_confirmation.required' => 'La confirmación de la contraseña es obligatoria.',
+            'password_confirmation.same' => 'Las contraseñas no coinciden.',
         ]);
 
         $email = $request->input('email');

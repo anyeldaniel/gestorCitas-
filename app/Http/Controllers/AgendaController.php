@@ -7,6 +7,12 @@ use App\Models\Cita;
 use App\Models\User;
 use Carbon\Carbon;
 use App\Services\WeatherService;
+use App\Services\NotificacionService;
+use App\Services\CancelacionCitaService;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\CitaCancelada;
+use App\Mail\ReembolsoPorDefinir;
+use Illuminate\Support\Facades\Log; // <-- Agregado para manejar los logs de error
 
 class AgendaController extends Controller
 {
@@ -77,7 +83,7 @@ class AgendaController extends Controller
         }
 
         // Query base.
-        $base = Cita::with(['cliente', 'trabajador', 'servicio']);
+        $base = Cita::with(['cliente', 'trabajador', 'servicio', 'pagos']);
 
         if ($user->rol === 'trabajador') {
             $base->where('trabajador_id', $user->id);
@@ -169,7 +175,8 @@ class AgendaController extends Controller
             'estado' => 'required|in:pendiente,confirmada,en curso,completada',
         ]);
 
-        $cita = Cita::findOrFail($id);
+        // Carga al cliente y al servicio para usarlos en el correo sin consultas adicionales.
+        $cita = Cita::with(['cliente', 'servicio'])->findOrFail($id);
 
         if ($cita->estaCancelada()) {
             return response()->json([
@@ -178,8 +185,21 @@ class AgendaController extends Controller
             ], 422);
         }
 
+        // Sin el visto bueno del pago, no damos la cita por confirmada.
+        if ($request->estado === 'confirmada' && !$cita->pagos()->where('estado_pago', 'aprobado')->exists())
+             {
+            return response()->json([
+                'ok'      => false,
+                'mensaje' => 'Primero hay que autorizar el pago para confirmar esta cita.',
+            ], 422);
+        }
+
+        // Asigna a la cita el nuevo estado validado que llegó desde la agenda.
         $cita->estado = $request->estado;
+        // Persiste el cambio de estado en la base de datos.
         $cita->save();
+
+        NotificacionService::cambioEstado($cita, $request->estado);
 
         return response()->json([
             'ok'       => true,
@@ -194,22 +214,33 @@ class AgendaController extends Controller
      * Cancela una cita con motivo.
      * Admin, recepción y el trabajador asignado.
      */
-    public function cancelar(Request $request, $id)
+    public function cancelar(Request $request, $id, CancelacionCitaService $cancelacionCita)
     {
         $user = auth()->user();
 
-        $request->validate([
+        $data = $request->validate([
             'motivo' => 'required|string|min:5|max:500',
+            'reembolsos' => 'sometimes|array',
+            'reembolsos.*' => 'required|numeric|decimal:0,2|min:0.01',
         ], [
             'motivo.required' => 'Necesitamos un motivo para dejar constancia.',
             'motivo.min'      => 'El motivo debe tener al menos 5 caracteres.',
         ]);
 
-        $cita = Cita::findOrFail($id);
+        $cita = Cita::with(['cliente', 'servicio'])->findOrFail($id);
+
+        // 👈 NUEVO: verificar también la tabla pivote cita_servicio
+        // (para multi-servicio, el trabajador puede no ser el $cita->trabajador_id principal)
+        $esTrabajadorDeLaCita = $user->rol === 'trabajador' && (
+            $cita->trabajador_id === $user->id ||
+            $cita->servicios()
+                ->wherePivot('trabajador_id', $user->id)
+                ->exists()
+        );
 
         $puedeCancelar =
             in_array($user->rol, ['admin', 'recepcion']) ||
-            ($user->rol === 'trabajador' && $cita->trabajador_id === $user->id);
+            $esTrabajadorDeLaCita;
 
         if (!$puedeCancelar) {
             return response()->json([
@@ -218,22 +249,43 @@ class AgendaController extends Controller
             ], 403);
         }
 
-        if ($cita->estaCancelada()) {
-            return response()->json([
-                'ok'      => false,
-                'mensaje' => 'Esta cita ya estaba cancelada.',
-            ], 422);
+        $resultado = $cancelacionCita->cancelarCita(
+            (int) $id,
+            $user,
+            $data['motivo'],
+            $data['reembolsos'] ?? []
+        );
+        $cita = $resultado['cita'];
+
+        // 1. Notificación interna (campanita)
+        NotificacionService::citaCancelada($cita, $data['motivo']);
+
+        // 2. Correo electrónico
+        Mail::to($cita->cliente->correo)->send(new CitaCancelada($cita, $data['motivo']));
+
+        // 3. NUEVO: Notificación Push al cliente
+        try {
+            $cliente = \App\Models\User::find($cita->cliente_id);
+            if ($cliente) {
+                $cliente->notify(new \App\Notifications\CitaCanceladaNotification($cita));
+            }
+        } catch (\Exception $e) {
+            // Si falla el envío (ej. sin internet), no rompemos la cancelación.
+            Log::error("Error al enviar Push de cancelación: " . $e->getMessage());
         }
 
-        $cita->estado              = 'cancelada';
-        $cita->motivo_cancelacion  = $request->motivo;
-        $cita->cancelada_por       = $user->id;
-        $cita->cancelada_en        = now();
-        $cita->save();
+        if ($resultado['reembolso_por_definir']) {
+            $destinatarios = NotificacionService::reembolsoPorDefinir($cita);
+            foreach ($destinatarios as $destinatario) {
+                Mail::to($destinatario->correo)->send(new ReembolsoPorDefinir($cita));
+            }
+        }
 
         return response()->json([
             'ok'      => true,
-            'mensaje' => 'Cita cancelada. Administración hará seguimiento.',
+            'mensaje' => $resultado['reembolso_por_definir']
+                ? 'Cita cancelada. Se notificó a administración y recepción para definir el reembolso.'
+                : 'Cita cancelada. Administración hará seguimiento.',
         ]);
     }
 }

@@ -6,7 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Syncrostyle SPA — The Beauty Room')</title>
 
-    {{-- Google Fonts (de josebackend) --}}
+    {{-- ✅ PWA MANIFEST Y METADATOS --}}
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0A5C9E">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+
+    {{-- Google Fonts --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
@@ -14,10 +19,17 @@
     {{-- Estilos globales --}}
     @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/layout.js'])
 
-    {{-- Stack para que tus vistas hijas inyecten sus estilos --}}
     @stack('styles')
 </head>
-<body>
+{{-- 👇 DATOS INYECTADOS DE FORMA SEGURA PARA EL JAVASCRIPT 👇 --}}
+<body 
+    data-auth="{{ auth()->check() ? 'true' : 'false' }}"
+    data-route-push="{{ route('push.subscribe') }}"
+    data-vapid-key="{{ config('pwa.vapid_public_key') }}"
+    data-notif-lista="{{ route('notificaciones.lista') }}"
+    data-notif-leer="{{ route('notificaciones.leer', ['notificacion' => ':id']) }}"
+    data-notif-leer-todas="{{ route('notificaciones.leerTodas') }}"
+>
     @auth
         @php
             $user = auth()->user();
@@ -35,13 +47,14 @@
                 <span class="brand-title">THE BEAUTY ROOM</span>
             </a>
 
+            {{-- NAV DESKTOP --}}
             <nav class="hidden md:flex items-center space-x-6">
                 @auth
                     @if($isAdmin || $isRecepcionista || $isTrabajador)
                         <a href="{{ route('agenda') }}" class="nav-item">Agenda</a>
                     @endif
 
-                    @if($isAdmin || $isRecepcionista || $isCliente)
+                    @if($isAdmin || $isRecepcionista || $isTrabajador || $isCliente)
                         <a href="{{ url('/terapeutas') }}" class="nav-item">Terapeutas</a>
                     @endif
 
@@ -61,6 +74,24 @@
 
                     <a href="{{ route('catalogo') }}" class="nav-item">Catálogo Zen</a>
 
+                    {{-- 🔔 CAMPANA DESKTOP --}}
+                    <div class="notif-widget" id="notif-widget">
+                        <button type="button" class="notif-campana" id="notif-btn" aria-label="Notificaciones">
+                            <i data-lucide="bell"></i>
+                            <span class="notif-badge" id="notif-badge" hidden>0</span>
+                        </button>
+
+                        <div class="notif-panel" id="notif-panel" hidden>
+                            <header class="notif-panel-header">
+                                <strong>Notificaciones</strong>
+                                <button type="button" id="notif-marcar-todas" class="notif-btn-mini">Marcar todas</button>
+                            </header>
+                            <ul class="notif-lista" id="notif-lista">
+                                <li class="notif-vacio">Cargando…</li>
+                            </ul>
+                        </div>
+                    </div>
+
                     <button onclick="document.getElementById('logout-form').submit();" class="btn-logout">Cerrar Sesión</button>
                     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">@csrf</form>
                 @endauth
@@ -68,14 +99,32 @@
             <button id="hamburger-btn" class="md:hidden text-white"><i data-lucide="menu"></i></button>
         </div>
 
+        {{-- NAV MÓVIL --}}
         <nav id="mobile-menu">
             <button onclick="document.getElementById('mobile-menu').classList.remove('active')" class="text-white self-end mb-4"><i data-lucide="x"></i></button>
-            <div class="flex flex-col gap-6 text-left">
+            
+            <div class="flex flex-col gap-6 text-left w-full">
                 @auth
+                    <div class="notif-widget notif-widget-mobile" id="notif-widget-mobile" style="margin-bottom: 1rem; display: flex; justify-content: flex-end;">
+                        <button type="button" class="notif-campana" id="notif-btn-mobile" aria-label="Notificaciones">
+                            <i data-lucide="bell"></i>
+                            <span class="notif-badge" id="notif-badge-mobile" hidden>0</span>
+                        </button>
+                        <div class="notif-panel" id="notif-panel-mobile" hidden style="right: 0; left: auto; width: 100%;">
+                            <header class="notif-panel-header">
+                                <strong>Notificaciones</strong>
+                                <button type="button" id="notif-marcar-todas-mobile" class="notif-btn-mini">Marcar todas</button>
+                            </header>
+                            <ul class="notif-lista" id="notif-lista-mobile">
+                                <li class="notif-vacio">Cargando…</li>
+                            </ul>
+                        </div>
+                    </div>
+
                     @if($isAdmin || $isRecepcionista || $isTrabajador)
                         <a href="{{ route('agenda') }}" class="text-white text-lg font-medium border-b border-white/20 pb-2">Agenda</a>
                     @endif
-                    @if($isAdmin || $isRecepcionista || $isCliente)
+                    @if($isAdmin || $isRecepcionista || $isTrabajador || $isCliente)
                         <a href="{{ url('/terapeutas') }}" class="text-white text-lg font-medium border-b border-white/20 pb-2">Terapeutas</a>
                     @endif
                     @if($isAdmin)
@@ -130,16 +179,9 @@
         </div>
     </footer>
 
-    {{-- Inicialización de Iconos --}}
+    {{-- Scripts finales --}}
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script>
-        lucide.createIcons();
-        document.getElementById('hamburger-btn')?.addEventListener('click', () => {
-            document.getElementById('mobile-menu').classList.add('active');
-        });
-    </script>
-
-    {{-- Stack para scripts específicos de cada vista --}}
+    @vite(['resources/js/notificaciones.js'])
     @stack('scripts')
 </body>
 </html>

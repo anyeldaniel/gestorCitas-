@@ -1241,6 +1241,18 @@ dialog::backdrop {
     transition: border 0.2s ease, background 0.2s ease;
 }
 
+.campo-modal input[type="number"] {
+    width: 100%;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 0.9rem 1rem;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    color: var(--text-main);
+    outline: none;
+    background: #fcfaf8;
+}
+
 .campo-modal textarea:focus {
     border-color: var(--primary-brown);
     background: #ffffff;

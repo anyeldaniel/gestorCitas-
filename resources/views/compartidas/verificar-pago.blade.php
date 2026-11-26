@@ -117,6 +117,9 @@
             <button type="button" class="tab-estado" data-filtro="rechazado">
                 Rechazado <span class="tab-contador">{{ $pagos->where('estado_pago', 'rechazado')->count() }}</span>
             </button>
+            <button type="button" class="tab-estado" data-filtro="reembolso">
+                Reembolso <span class="tab-contador">{{ $pagos->whereNotNull('estado_reembolso')->count() }}</span>
+            </button>
         </nav>
 
         <!-- Tabla de Transacciones -->
@@ -144,9 +147,18 @@
                             $estadoTexto = 'Pendiente';
                             if($pago->estado_pago === 'aprobado') { $estadoClass = 'estado-autorizado'; $estadoTexto = 'Autorizado'; }
                             if($pago->estado_pago === 'rechazado') { $estadoClass = 'estado-rechazado'; $estadoTexto = 'Rechazado'; }
+                            if($pago->estado_reembolso === 'por_definir') { $estadoClass = 'estado-pendiente'; $estadoTexto = 'Reembolso por definir'; }
+                            if($pago->estado_reembolso === 'pendiente') { $estadoClass = 'estado-pendiente'; $estadoTexto = 'Reembolso pendiente'; }
+                            $pagosAprobados = $pago->cita->pagos
+                                ->where('estado_pago', 'aprobado')
+                                ->where('estado_reembolso', '!=', 'pendiente')
+                                ->map(fn ($pagoAprobado) => ['id' => $pagoAprobado->id, 'monto' => $pagoAprobado->monto_anticipado])
+                                ->values();
                         @endphp
                         
-                        <tr data-estado="{{ $pago->estado_pago }}" data-fecha="{{ $pago->created_at->format('Y-m-d') }}">
+                        <tr data-estado="{{ $pago->estado_reembolso ? 'reembolso' : $pago->estado_pago }}"
+                            data-fecha="{{ $pago->created_at->format('Y-m-d') }}"
+                            data-pagos-aprobados='@json($pagosAprobados)'>
                             <td class="celda-fecha">
                                 <strong>{{ $pago->created_at->format('d M Y') }}</strong>
                                 <span>{{ $pago->created_at->format('h:i A') }}</span>
@@ -163,8 +175,8 @@
                             </td>
                             
                             <td class="celda-banco">
-                                <strong>{{ ucfirst(str_replace('_', ' ', $pago->metodo_pago)) }}</strong>
-                                @if($pago->banco_origen)
+                                <strong>{{ $pago->metodoBancoLabel() }}</strong>
+                                @if($pago->banco_origen && $pago->metodo_pago !== 'c2p')
                                     <small>{{ $pago->banco_origen }}</small>
                                 @endif
                             </td>
@@ -179,6 +191,15 @@
                             
                             <td>
                                 <span class="{{ $estadoClass }}">{{ $estadoTexto }}</span>
+                                @if($pago->estado_reembolso === 'pendiente')
+                                    <small>${{ number_format($pago->monto_reembolso, 2) }}</small>
+                                @endif
+                                @if($pago->motivo_reembolso)
+                                    <small>{{ $pago->motivo_reembolso }}</small>
+                                @endif
+                                @if($pago->estado_pago === 'rechazado')
+                                    <small>{{ $pago->motivo_rechazo }}</small>
+                                @endif
                             </td>
                             
                             <td>
@@ -190,6 +211,12 @@
                                         <button type="button" class="btn-autorizar" data-url="{{ route('recepcion.aprobar.pago', $pago->id) }}">
                                             Autorizar
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></svg>
+                                        </button>
+                                    @elseif($pago->estado_reembolso === 'por_definir')
+                                        <button type="button" class="btn-autorizar btn-definir-reembolso"
+                                                data-url="{{ route('recepcion.definir.reembolso', $pago->id) }}"
+                                                data-max="{{ $pago->monto_anticipado }}">
+                                            Definir reembolso
                                         </button>
                                     @else
                                         <span class="texto-procesado">Procesado</span>
@@ -219,18 +246,45 @@
 
 <!-- Modal de Confirmación (Fuera del main para semántica correcta) -->
 <dialog id="modal-confirmacion" class="modal-contenedor-alerta-critica">
-    <article class="cuerpo-alerta-centrado">
-        <figure class="icono-alerta-advertencia">⚠️</figure>
-        <h3 id="modal-titulo" class="titulo-alerta-critica">Confirmar Acción</h3>
-        <p id="modal-mensaje" class="mensaje-alerta-descripcion"></p>
-        
-        <textarea id="motivo-rechazo" class="textarea-motivo hidden" rows="3" placeholder="Escribe el motivo del rechazo aquí..."></textarea>
-        
+    <div class="modal-pago-card">
+        <header class="modal-pago-header">
+            <div class="modal-pago-header__texto">
+                <span id="modal-kicker" class="modal-pago-kicker">VERIFICACIÓN DE PAGO</span>
+                <h3 id="modal-titulo" class="titulo-alerta-critica">¿Quieres rechazar pago?</h3>
+            </div>
+            <button type="button" id="btn-modal-cerrar-x" class="modal-pago-cerrar" aria-label="Cerrar modal">&times;</button>
+        </header>
+
+        <div class="modal-pago-body">
+            <div id="modal-resumen-pago" class="modal-pago-resumen">
+                <div class="modal-pago-resumen__info">
+                    <strong id="modal-pago-cliente">Cliente</strong>
+                    <span id="modal-pago-detalle">Método · Referencia</span>
+                </div>
+                <div class="modal-pago-resumen__meta">
+                    <strong id="modal-pago-monto">$0.00</strong>
+                    <span id="modal-pago-fecha">Fecha</span>
+                </div>
+            </div>
+
+            <p id="modal-mensaje" class="mensaje-alerta-descripcion"></p>
+
+            <textarea id="motivo-rechazo" class="textarea-motivo hidden" rows="3" minlength="5" maxlength="500" placeholder="Escribe el motivo del rechazo aquí..."></textarea>
+            <div id="campos-reembolso-pago" class="textarea-motivo hidden">
+                <p>Indica cuánto se reembolsará por cada pago aprobado:</p>
+                <div id="lista-reembolsos-pago"></div>
+            </div>
+            <label id="campo-monto-reembolso" class="textarea-motivo hidden">
+                Importe del reembolso
+                <input id="monto-reembolso" type="number" min="0.01" step="0.01" required>
+            </label>
+        </div>
+
         <footer class="pie-alerta-botones">
             <button type="button" id="btn-modal-cancelar" class="btn-cancelar-alerta">Cancelar</button>
-            <button type="button" id="btn-modal-confirmar" class="btn-confirmar-accion">Confirmar</button>
+            <button type="button" id="btn-modal-confirmar" class="btn-confirmar-accion">Rechazar pago</button>
         </footer>
-    </article>
+    </div>
 </dialog>
 @endsection
 

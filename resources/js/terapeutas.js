@@ -22,6 +22,49 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     const form = document.getElementById('form-terapeuta');
+    const passwordInput = document.getElementById('password');
+    const passwordConfirmationInput = document.getElementById('password_confirmation');
+
+    const actualizarRequisitosEspecialista = () => {
+        if (!passwordInput) return true;
+
+        const pwd = passwordInput.value;
+        const isLongEnough = pwd.length >= 8 && pwd.length <= 20;
+        const hasLetters = /[a-zA-Z]/.test(pwd);
+        const hasNumbers = /[0-9]/.test(pwd);
+        const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(pwd);
+        const passwordsMatch = pwd !== '' && pwd === passwordConfirmationInput?.value;
+        const feedbackBox = document.getElementById('password-feedback-especialista');
+        const strengthText = document.getElementById('especialista-strength-text');
+
+        if (feedbackBox) feedbackBox.style.display = pwd.length > 0 ? 'block' : 'none';
+
+        const updateRequirement = (elementId, isValid, text) => {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            element.style.color = isValid ? '#198754' : '#dc3545';
+            element.innerHTML = isValid ? `✓ ${text}` : `✗ ${text}`;
+        };
+
+        updateRequirement('especialista-length-req', isLongEnough, 'Entre 8 y 20 caracteres');
+        updateRequirement('especialista-alpha-req', hasLetters && hasNumbers, 'Alfanumérica (letras y números)');
+        updateRequirement('especialista-special-req', hasSpecial, 'Un carácter especial (@, $, !, %, etc.)');
+
+        const isValid = isLongEnough && hasLetters && hasNumbers && hasSpecial;
+        if (strengthText) {
+            strengthText.textContent = isValid ? 'Estado: Contraseña Muy Segura' : 'Estado: Contraseña Poco Segura';
+            strengthText.style.color = isValid ? '#198754' : '#dc3545';
+        }
+
+        if (passwordConfirmationInput && passwordConfirmationInput.value) {
+            passwordConfirmationInput.style.border = passwordsMatch ? '' : '2px solid #dc3545';
+        }
+        return isValid && passwordsMatch;
+    };
+
+    if (passwordInput) passwordInput.addEventListener('input', actualizarRequisitosEspecialista);
+    if (passwordConfirmationInput) passwordConfirmationInput.addEventListener('input', actualizarRequisitosEspecialista);
+
     if (form) {
         form.addEventListener('submit', function(e) {
             sincronizarEspecialidades();
@@ -65,17 +108,28 @@ function getBaseUrl() {
     return baseUrl;
 }
 
+//cambié la función del buscador para los terapeutas, para que el paginador pueda funcionar correctamente y no se rompa al filtrar, además de que ahora respeta el orden inicial de los terapeutas y los ordena correctamente según el criterio seleccionado. 
 function initBuscadorTerapeutas() {
     const input       = document.getElementById('buscador-terapeutas');
+    const selectOrden = document.getElementById('orden-terapeutas');
     const limpiarBtn  = document.getElementById('buscador-limpiar');
     const resultados  = document.getElementById('buscador-resultados');
     const sinResult   = document.getElementById('buscador-sin-resultados');
     const grid        = document.querySelector('.grid-terapeutas');
 
-    if (!input || !grid) return;
+    const paginador   = document.getElementById('paginador-terapeutas');
+    const btnPrev     = document.getElementById('pag-terapeutas-prev');
+    const btnNext     = document.getElementById('pag-terapeutas-next');
+    const numsCont    = document.getElementById('pag-terapeutas-numeros');
+    const infoPag     = document.getElementById('pag-terapeutas-info');
+
+    if (!grid) return;
 
     const tarjetas = Array.from(grid.querySelectorAll('.tarjeta-terapeuta'));
     if (tarjetas.length === 0) return;
+
+    const ITEMS_POR_PAGINA = 12;
+    let paginaActual = 1;
 
     function normalizar(texto) {
         return (texto || '')
@@ -87,48 +141,40 @@ function initBuscadorTerapeutas() {
     }
 
     const datosTarjetas = tarjetas.map(tarjeta => {
-        const nombre = tarjeta.querySelector('.terapeuta-nombre')?.textContent || '';
+        const nombre = (tarjeta.dataset.nombre || tarjeta.querySelector('.terapeuta-nombre')?.textContent || '')
+            .replace(/\(Yo\)/gi, '')
+            .trim();
         const especialidades = tarjeta.dataset.especialidades || '';
+        const promedio = parseFloat(tarjeta.dataset.promedio || 0);
+        const esPropio = tarjeta.dataset.propio === '1' ? 1 : 0;
+        const ordenInicial = parseInt(tarjeta.dataset.ordenInicial || 0, 10);
         const buscar = normalizar(`${nombre} ${especialidades}`);
-        return { tarjeta, buscar, nombre, especialidades };
+        return { tarjeta, buscar, nombre, especialidades, promedio, esPropio, ordenInicial };
     });
 
-    function aplicarFiltro(termino) {
-        const q = normalizar(termino);
-        let visibles = 0;
+    function obtenerOrdenadas(criterio) {
+        const copia = [...datosTarjetas];
 
-        datosTarjetas.forEach(({ tarjeta, buscar }) => {
-            const coincide = q === '' || buscar.includes(q);
-            if (coincide) {
-                tarjeta.classList.remove('is-hidden');
-                visibles++;
-            } else {
-                tarjeta.classList.add('is-hidden');
+        copia.sort((a, b) => {
+            if (criterio === 'defecto' && a.esPropio !== b.esPropio) {
+                return b.esPropio - a.esPropio;
+            }
+
+            switch (criterio) {
+                case 'alfabetico-asc':
+                    return a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' });
+                case 'alfabetico-desc':
+                    return b.nombre.localeCompare(a.nombre, 'es', { sensitivity: 'base' });
+                case 'rating-desc':
+                    if (b.promedio !== a.promedio) return b.promedio - a.promedio;
+                    return a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' });
+                case 'defecto':
+                default:
+                    return a.ordenInicial - b.ordenInicial;
             }
         });
 
-        if (limpiarBtn) {
-            limpiarBtn.hidden = (q === '');
-        }
-
-        if (resultados) {
-            if (q === '') {
-                resultados.hidden = true;
-                resultados.innerHTML = '';
-            } else {
-                resultados.hidden = false;
-                const total = datosTarjetas.length;
-                if (visibles === 0) {
-                    resultados.innerHTML = `Sin resultados para <strong>"${escaparHTML(termino)}"</strong>`;
-                } else {
-                    resultados.innerHTML = `Mostrando <strong>${visibles}</strong> de <strong>${total}</strong> especialistas`;
-                }
-            }
-        }
-
-        if (sinResult) {
-            sinResult.hidden = (visibles !== 0);
-        }
+        return copia;
     }
 
     function escaparHTML(str) {
@@ -137,27 +183,156 @@ function initBuscadorTerapeutas() {
         return div.innerHTML;
     }
 
-    input.addEventListener('input', (e) => {
-        aplicarFiltro(e.target.value);
-    });
+    function renderizarBotonesPagina(totalPaginas) {
+        if (!numsCont) return;
+        numsCont.innerHTML = '';
 
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            input.value = '';
-            aplicarFiltro('');
-            input.blur();
+        for (let i = 1; i <= totalPaginas; i++) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'pag-terapeutas-num' + (i === paginaActual ? ' is-active' : '');
+            btn.textContent = i;
+            btn.setAttribute('aria-label', `Ir a la página ${i}`);
+            btn.addEventListener('click', () => {
+                paginaActual = i;
+                actualizarVista(false);
+                grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+            numsCont.appendChild(btn);
         }
-    });
+    }
 
-    if (limpiarBtn) {
-        limpiarBtn.addEventListener('click', () => {
-            input.value = '';
-            aplicarFiltro('');
-            input.focus();
+    function actualizarVista(reiniciarPagina = true) {
+        if (reiniciarPagina) {
+            paginaActual = 1;
+        }
+
+        const termino = input ? input.value : '';
+        const q = normalizar(termino);
+        const criterio = selectOrden ? selectOrden.value : 'defecto';
+        const filtroActivo = q !== '' || criterio !== 'defecto';
+
+        const ordenadas = obtenerOrdenadas(criterio);
+
+        ordenadas.forEach(({ tarjeta }) => {
+            grid.appendChild(tarjeta);
+        });
+
+        const coincidencias = ordenadas.filter(({ buscar }) => q === '' || buscar.includes(q));
+        const noCoinciden = ordenadas.filter(({ buscar }) => q !== '' && !buscar.includes(q));
+
+        noCoinciden.forEach(({ tarjeta }) => {
+            tarjeta.classList.add('is-hidden');
+        });
+
+        const totalCoincidencias = coincidencias.length;
+        const totalPaginas = Math.max(1, Math.ceil(totalCoincidencias / ITEMS_POR_PAGINA));
+
+        if (paginaActual > totalPaginas) paginaActual = totalPaginas;
+        if (paginaActual < 1) paginaActual = 1;
+
+        const inicio = (paginaActual - 1) * ITEMS_POR_PAGINA;
+        const fin = inicio + ITEMS_POR_PAGINA;
+
+        coincidencias.forEach(({ tarjeta }, idx) => {
+            const enPagina = idx >= inicio && idx < fin;
+            tarjeta.classList.toggle('is-hidden', !enPagina);
+        });
+
+        if (limpiarBtn) {
+            limpiarBtn.hidden = !filtroActivo;
+        }
+
+        if (resultados) {
+            if (!filtroActivo) {
+                resultados.hidden = true;
+                resultados.innerHTML = '';
+            } else {
+                resultados.hidden = false;
+                const total = datosTarjetas.length;
+                if (totalCoincidencias === 0) {
+                    resultados.innerHTML = `Sin resultados para <strong>"${escaparHTML(termino)}"</strong>`;
+                } else if (q !== '') {
+                    resultados.innerHTML = `Mostrando <strong>${totalCoincidencias}</strong> de <strong>${total}</strong> especialistas para <strong>"${escaparHTML(termino)}"</strong>`;
+                } else {
+                    resultados.innerHTML = `Mostrando <strong>${totalCoincidencias}</strong> especialistas ordenados`;
+                }
+            }
+        }
+
+        if (sinResult) {
+            sinResult.hidden = (totalCoincidencias !== 0);
+        }
+
+        if (paginador) {
+            if (totalCoincidencias > ITEMS_POR_PAGINA) {
+                paginador.hidden = false;
+                if (infoPag) {
+                    infoPag.textContent = `Página ${paginaActual} de ${totalPaginas}`;
+                }
+                if (btnPrev) {
+                    btnPrev.disabled = (paginaActual <= 1);
+                }
+                if (btnNext) {
+                    btnNext.disabled = (paginaActual >= totalPaginas);
+                }
+                renderizarBotonesPagina(totalPaginas);
+            } else {
+                paginador.hidden = true;
+            }
+        }
+    }
+
+    if (input) {
+        input.addEventListener('input', () => actualizarVista(true));
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                input.value = '';
+                actualizarVista(true);
+                input.blur();
+            }
         });
     }
 
-    aplicarFiltro('');
+    if (selectOrden) {
+        selectOrden.addEventListener('change', () => actualizarVista(true));
+    }
+
+    if (limpiarBtn) {
+        limpiarBtn.addEventListener('click', () => {
+            if (input) input.value = '';
+            if (selectOrden) selectOrden.value = 'defecto';
+            actualizarVista(true);
+            if (input) input.focus();
+        });
+    }
+
+    if (btnPrev) {
+        btnPrev.addEventListener('click', () => {
+            if (paginaActual > 1) {
+                paginaActual--;
+                actualizarVista(false);
+                grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    }
+
+    if (btnNext) {
+        btnNext.addEventListener('click', () => {
+            const termino = input ? input.value : '';
+            const q = normalizar(termino);
+            const totalCoincidencias = datosTarjetas.filter(({ buscar }) => q === '' || buscar.includes(q)).length;
+            const totalPaginas = Math.max(1, Math.ceil(totalCoincidencias / ITEMS_POR_PAGINA));
+
+            if (paginaActual < totalPaginas) {
+                paginaActual++;
+                actualizarVista(false);
+                grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    }
+
+    actualizarVista(true);
 }
 
 function renderizarEstrellas() {
@@ -214,7 +389,12 @@ window.verTerapeutaDetalle = function(id) {
     if (!tarjeta) { alert('Terapeuta no encontrado'); return; }
 
     const nombre = tarjeta.querySelector('.terapeuta-nombre')?.textContent.trim() || 'Sin nombre';
-    const especialidades = tarjeta.querySelector('.contenedor-tags-especialidades .tag-especialidad')?.textContent.trim() || 'Sin especialidad';
+    //Aquí estoy cambiando la forma en que se obtienen las especialidades para que sea más robusta y no dependa de un solo lugar, buscando primero en el dataset y luego en el contenido de la tarjeta. :D
+    const especialidades = (
+        tarjeta.dataset.especialidades ||
+        tarjeta.querySelector('.tag-especialidad')?.textContent ||
+        ''
+    ).trim();
     const foto = tarjeta.querySelector('img')?.src || null;
     const telefono = tarjeta.querySelector('.terapeuta-telefono')?.textContent.trim() || 'No disponible';
     const email = tarjeta.querySelector('.terapeuta-email')?.textContent.trim() || 'No disponible';
@@ -227,9 +407,10 @@ window.verTerapeutaDetalle = function(id) {
         document.getElementById('view-terapeuta-email').textContent = email;
         document.getElementById('view-terapeuta-descripcion').textContent = descripcion;
 
+        //Con esto me aseguro de que las especialidades se muestren correctamente, incluso si no hay ninguna registrada, mostrando un mensaje amigable en ese caso. Att: Andrés
         const espContainer = document.getElementById('view-terapeuta-especialidades');
-        if (especialidades && especialidades !== 'Sin especialidad') {
-            const espArray = especialidades.split(',').map(e => e.trim());
+        if (especialidades && especialidades !== 'Sin especialidad' && especialidades !== 'Especialista en Bienestar') {
+            const espArray = especialidades.split(',').map(e => e.trim()).filter(Boolean);
             espContainer.innerHTML = espArray.map(esp => `<span class="badge">${esp}</span>`).join('');
         } else {
             espContainer.innerHTML = '<span style="color: var(--gris-texto); font-size: 0.85rem;">Sin especialidades registradas</span>';
@@ -525,14 +706,113 @@ window.sincronizarEspecialidades = function() {
     const hidden = document.getElementById('especialidades_hidden');
     if (hidden) hidden.value = lista.join(',');
 };
+//Aquí estoy modificando las alertas para que ya no se vean feas, agregué una función para mostrar alertas de manera más bonita y amigable, usando SweetAlert si está disponible, o un alert normal como fallback. :D att. Andrés
+window.mostrarAlertaTerapeuta = function(titulo, mensaje, campoEnfocar = null) {
+    const modalTerapeuta = document.getElementById('modal-terapeuta');
+    const estabaAbierto = modalTerapeuta && modalTerapeuta.open;
+
+    if (typeof Swal !== 'undefined') {
+        if (estabaAbierto) modalTerapeuta.close();
+
+        Swal.fire({
+            icon: 'warning',
+            title: titulo,
+            text: mensaje,
+            confirmButtonText: 'ACEPTAR',
+            customClass: {
+                popup: 'tbr-dash-popup',
+                title: 'tbr-dash-title',
+                htmlContainer: 'tbr-dash-text',
+                confirmButton: 'tbr-dash-btn'
+            },
+            buttonsStyling: false
+        }).then(() => {
+            if (estabaAbierto) modalTerapeuta.showModal();
+            if (campoEnfocar) campoEnfocar.focus();
+        });
+    } else {
+        alert(mensaje);
+        if (campoEnfocar) campoEnfocar.focus();
+    }
+};
 
 window.validarContrasenas = function() {
     const pass = document.getElementById('password');
     const confirm = document.getElementById('password_confirmation');
+    const emailInput = document.getElementById('email');
+    
+    const errorPassDiv = document.getElementById('error-password');
+    const errorEmailDiv = document.getElementById('error-email');
+
+    // Limpiar errores previos
+    if (pass) pass.classList.remove('input-error');
+    if (confirm) confirm.classList.remove('input-error');
+    if (emailInput) emailInput.classList.remove('input-error');
+    
+    if (errorPassDiv) {
+        errorPassDiv.style.display = 'none';
+        errorPassDiv.textContent = '';
+    }
+    if (errorEmailDiv) {
+        errorEmailDiv.style.display = 'none';
+        errorEmailDiv.textContent = '';
+    }
+
+    // 1. Validación de formato básico de correo
+    if (emailInput && emailInput.value.trim() !== '') {
+        const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!regexEmail.test(emailInput.value.trim())) {
+            emailInput.classList.add('input-error');
+            window.mostrarAlertaTerapeuta(
+                'Correo inválido',
+                'Ingresa una dirección de correo electrónico válida.',
+                emailInput
+            );
+            return false;
+        }
+    }
+
+    // Si no hay campos de contraseña obligatorios (ej. modo edición)
     if (!pass || !confirm) return true;
     if (pass.value === '' && confirm.value === '') return true;
-    if (pass.value !== confirm.value) { alert('❌ Las contraseñas no coinciden.'); pass.focus(); return false; }
-    if (pass.value.length > 0 && pass.value.length < 8) { alert('❌ La contraseña debe tener al menos 8 caracteres.'); pass.focus(); return false; }
+
+    // 2. Validación completa de contraseña
+    const hasLetters = /[a-zA-Z]/.test(pass.value);
+    const hasNumbers = /[0-9]/.test(pass.value);
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(pass.value);
+
+    if (pass.value.length > 0 && (pass.value.length < 8 || pass.value.length > 20)) {
+        pass.classList.add('input-error');
+        window.mostrarAlertaTerapeuta(
+            'Atención',
+            'Tu contraseña no cumple con los criterios de seguridad',
+            pass
+        );
+        return false;
+    }
+
+    if (pass.value.length > 0 && (!hasLetters || !hasNumbers || !hasSpecial)) {
+        pass.classList.add('input-error');
+        window.mostrarAlertaTerapeuta(
+            'Atención',
+            'Tu contraseña no cumple con los criterios de seguridad',
+            pass
+        );
+        return false;
+    }
+
+    // 3. Validación de coincidencia de contraseñas
+    if (pass.value !== confirm.value) {
+        pass.classList.add('input-error');
+        confirm.classList.add('input-error');
+        window.mostrarAlertaTerapeuta(
+            'Atención',
+            'Tus contraseñas no coinciden',
+            confirm
+        );
+        return false;
+    }
+
     return true;
 };
 
@@ -604,3 +884,163 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+// ============================================
+// MODAL DE RESEÑAS - CONTROLADOR CON PAGINACIÓN
+// ============================================
+let resenasActuales = [];
+let paginaActualResenas = 1;
+const LIMITE_RESENAS_POR_PAGINA = 3; // 👈 Aquí puedes cambiar cuántas reseñas se ven por página
+
+window.verResenasTerapeuta = function(btn) {
+    if (typeof event !== 'undefined' && event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+
+    const modal = document.getElementById('modal-resenas');
+    const titulo = document.getElementById('resenas-titulo-terapeuta');
+    
+    if (!modal) return;
+
+    const nombre = btn.dataset.nombre || 'Especialista';
+    try {
+        resenasActuales = JSON.parse(btn.dataset.resenas || '[]');
+    } catch (e) {
+        console.error("Error al parsear las reseñas", e);
+        resenasActuales = [];
+    }
+    
+    titulo.textContent = `Reseñas de ${nombre}`;
+    paginaActualResenas = 1; // Reiniciar a la primera página
+    renderizarPaginaResenas();
+
+    // Forzar visualización centrada con flex
+    modal.style.setProperty('display', 'flex', 'important');
+    modal.classList.add('is-open');
+};
+
+window.renderizarPaginaResenas = function() {
+    const contenedor = document.getElementById('lista-resenas');
+    if (!contenedor) return;
+    contenedor.textContent = '';
+
+    if (resenasActuales.length === 0) {
+        const vacio = document.createElement('div');
+        vacio.style.cssText = 'text-align: center; padding: 2.5rem 1rem; color: #8c7a6b;';
+
+        const mensaje = document.createElement('p');
+        mensaje.style.cssText = "font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; margin: 0;";
+        mensaje.textContent = 'Este especialista aún no cuenta con opiniones registradas.';
+
+        const invitacion = document.createElement('small');
+        invitacion.style.cssText = 'font-size: 0.8rem; color: #a89a8c; display: block; margin-top: 0.4rem;';
+        invitacion.textContent = '¡Sé el primero en calificar su servicio!';
+
+        vacio.appendChild(mensaje);
+        vacio.appendChild(invitacion);
+        contenedor.appendChild(vacio);
+        return;
+    }
+
+    // Calcular índices para el slice
+    const totalResenas = resenasActuales.length;
+    const totalPaginas = Math.ceil(totalResenas / LIMITE_RESENAS_POR_PAGINA);
+    
+    if (paginaActualResenas > totalPaginas) paginaActualResenas = totalPaginas;
+    if (paginaActualResenas < 1) paginaActualResenas = 1;
+
+    const inicio = (paginaActualResenas - 1) * LIMITE_RESENAS_POR_PAGINA;
+    const fin = inicio + LIMITE_RESENAS_POR_PAGINA;
+    const resenasPagina = resenasActuales.slice(inicio, fin);
+
+    // Renderizar las reseñas de la página actual
+    resenasPagina.forEach(resena => {
+        const puntuacion = parseInt(resena.puntuacion || 0);
+        const tarjeta = document.createElement('div');
+        tarjeta.className = 'resena-item-card';
+        tarjeta.style.cssText = 'border-bottom: 1px solid #efe9e1; padding-bottom: 1.25rem;';
+
+        const cabecera = document.createElement('div');
+        cabecera.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;';
+
+        const estrellas = document.createElement('div');
+        estrellas.style.cssText = 'color: #f5b301; font-size: 0.95rem; letter-spacing: 2px;';
+        for (let i = 1; i <= 5; i++) {
+            if (i <= puntuacion) {
+                estrellas.appendChild(document.createTextNode('★'));
+            } else {
+                const estrella = document.createElement('span');
+                estrella.style.color = '#d1c7bd';
+                estrella.textContent = '★';
+                estrellas.appendChild(estrella);
+            }
+        }
+
+        const fecha = document.createElement('span');
+        fecha.style.cssText = "font-family: 'Inter', sans-serif; font-size: 0.72rem; color: #a89a8c; font-weight: 500;";
+        fecha.textContent = resena.fecha ?? '';
+        cabecera.appendChild(estrellas);
+        cabecera.appendChild(fecha);
+
+        const comentario = document.createElement('p');
+        comentario.style.cssText = "font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-style: italic; color: #3d2c1e; margin: 0 0 0.5rem 0; line-height: 1.4;";
+        comentario.textContent = `"${resena.comentario ?? ''}"`;
+
+        const cliente = document.createElement('span');
+        cliente.style.cssText = "font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 700; color: #8b5e3c; text-transform: uppercase; letter-spacing: 0.5px;";
+        cliente.textContent = resena.cliente ?? '';
+
+        tarjeta.appendChild(cabecera);
+        tarjeta.appendChild(comentario);
+        tarjeta.appendChild(cliente);
+        contenedor.appendChild(tarjeta);
+    });
+
+    // Agregar barra de paginación si hay más de una página
+    if (totalPaginas > 1) {
+        const paginador = document.createElement('div');
+        paginador.className = 'modal-paginador-container';
+        paginador.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding-top: 1rem; border-top: 1px solid #efe9e1; margin-top: auto;';
+
+        const anterior = document.createElement('button');
+        anterior.type = 'button';
+        anterior.className = 'btn-paginador-modal';
+        anterior.disabled = paginaActualResenas === 1;
+        anterior.style.cssText = `padding: 0.4rem 0.9rem; border-radius: 6px; border: 1px solid #e8e2dd; background: ${paginaActualResenas === 1 ? '#f5efe8' : '#ffffff'}; color: ${paginaActualResenas === 1 ? '#a89a8c' : '#4a3b32'}; font-size: 0.75rem; font-weight: 600; cursor: ${paginaActualResenas === 1 ? 'not-allowed' : 'pointer'};`;
+        anterior.textContent = '← Anterior';
+        anterior.addEventListener('click', () => window.cambiarPaginaResenas(-1));
+
+        const pagina = document.createElement('span');
+        pagina.style.cssText = "font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 600; color: #8c7a6b; text-transform: uppercase; letter-spacing: 0.5px;";
+        pagina.textContent = `Página ${paginaActualResenas} de ${totalPaginas}`;
+
+        const siguiente = document.createElement('button');
+        siguiente.type = 'button';
+        siguiente.className = 'btn-paginador-modal';
+        siguiente.disabled = paginaActualResenas === totalPaginas;
+        siguiente.style.cssText = `padding: 0.4rem 0.9rem; border-radius: 6px; border: 1px solid #e8e2dd; background: ${paginaActualResenas === totalPaginas ? '#f5efe8' : '#ffffff'}; color: ${paginaActualResenas === totalPaginas ? '#a89a8c' : '#4a3b32'}; font-size: 0.75rem; font-weight: 600; cursor: ${paginaActualResenas === totalPaginas ? 'not-allowed' : 'pointer'};`;
+        siguiente.textContent = 'Siguiente →';
+        siguiente.addEventListener('click', () => window.cambiarPaginaResenas(1));
+
+        paginador.appendChild(anterior);
+        paginador.appendChild(pagina);
+        paginador.appendChild(siguiente);
+        contenedor.appendChild(paginador);
+    }
+};
+
+window.cambiarPaginaResenas = function(direccion) {
+    const totalPaginas = Math.ceil(resenasActuales.length / LIMITE_RESENAS_POR_PAGINA);
+    paginaActualResenas += direccion;
+    if (paginaActualResenas < 1) paginaActualResenas = 1;
+    if (paginaActualResenas > totalPaginas) paginaActualResenas = totalPaginas;
+    renderizarPaginaResenas();
+};
+
+window.cerrarModalResenas = function() {
+    const modal = document.getElementById('modal-resenas');
+    if (modal) {
+        modal.style.setProperty('display', 'none', 'important');
+        modal.classList.remove('is-open');
+    }
+};

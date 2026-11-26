@@ -4,13 +4,15 @@ namespace App\Models;
 
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\Cita;
+use NotificationChannels\WebPush\HasPushSubscriptions; 
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasPushSubscriptions; 
 
     /**
      * El nombre de la tabla asociada al modelo.
@@ -108,6 +110,26 @@ class User extends Authenticatable
         return $this->hasMany(Resena::class, 'terapeuta_id');
     }
 
+    /**
+     * Notificaciones del usuario (más recientes primero).
+     */
+    public function notificaciones(): HasMany
+    {
+        return $this->hasMany(Notificacion::class, 'user_id')->latest();
+    }
+
+    /**
+     * Solo notificaciones no leídas.
+     */
+    public function notificacionesNoLeidas(): HasMany
+    {
+        return $this->notificaciones()->whereNull('leida_at');
+    }
+
+    /**
+     * Alias de citas como trabajador (compatibilidad con josebackend).
+     * Equivalente a citasComoTrabajador().
+     */
     public function citas()
     {
         return $this->hasMany(Cita::class, 'trabajador_id');

@@ -28,6 +28,10 @@ export default defineConfig({
                 'resources/css/agenda.css',
                 'resources/js/agenda.js',
 
+                // === Notificaciones ===
+                'resources/css/notificaciones.css',
+                'resources/js/notificaciones.js',
+
                 // === Terapeutas ===
                 'resources/css/terapeutas.css',
                 'resources/js/terapeutas.js',
