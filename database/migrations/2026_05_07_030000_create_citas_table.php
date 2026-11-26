@@ -22,7 +22,7 @@ return new class extends Migration
             $table->date('fecha');
             $table->time('hora');
             // control de estado
-            $table->enum('estado',['pendiente','confirmada','completada','cancelada'])->default('pendiente');
+            $table->enum('estado', ['pendiente', 'confirmada', 'en curso', 'completada', 'cancelada'])->default('pendiente');
             $table->timestamps();
         });
     }

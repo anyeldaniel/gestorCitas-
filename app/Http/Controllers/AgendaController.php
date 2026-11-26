@@ -177,6 +177,7 @@ class AgendaController extends Controller
 
         // Carga al cliente y al servicio para usarlos en el correo sin consultas adicionales.
         $cita = Cita::with(['cliente', 'servicio'])->findOrFail($id);
+        $nuevoEstado = $request->estado;
 
         if ($cita->estaCancelada()) {
             return response()->json([
@@ -185,21 +186,64 @@ class AgendaController extends Controller
             ], 422);
         }
 
-        // Sin el visto bueno del pago, no damos la cita por confirmada.
-        if ($request->estado === 'confirmada' && !$cita->pagos()->where('estado_pago', 'aprobado')->exists())
-             {
+        if ($cita->estado === 'completada') {
             return response()->json([
                 'ok'      => false,
-                'mensaje' => 'Primero hay que autorizar el pago para confirmar esta cita.',
+                'mensaje' => 'Esta cita ya fue completada y no puede modificarse.',
             ], 422);
         }
 
+        if ($cita->estado === $nuevoEstado) {
+            return response()->json([
+                'ok'      => false,
+                'mensaje' => 'La cita ya se encuentra en ese estado.',
+            ], 422);
+        }
+
+        // Flujo estricto de transiciones permitidas
+        $transicionesPermitidas = [
+            'pendiente'  => ['confirmada'],
+            'confirmada' => ['en curso', 'completada'],
+            'en curso'   => ['completada'],
+        ];
+
+        $permitidos = $transicionesPermitidas[$cita->estado] ?? [];
+        if (!in_array($nuevoEstado, $permitidos, true)) {
+            return response()->json([
+                'ok'      => false,
+                'mensaje' => "No se puede cambiar una cita de '{$cita->estado}' a '{$nuevoEstado}'. Primero debe estar confirmada.",
+            ], 422);
+        }
+
+        // Pago aprobado obligatorio para confirmar, iniciar o completar
+        $tienePagoAprobado = $cita->pagos()->where('estado_pago', 'aprobado')->exists();
+        if (in_array($nuevoEstado, ['confirmada', 'en curso', 'completada'], true) && !$tienePagoAprobado) {
+            return response()->json([
+                'ok'      => false,
+                'mensaje' => 'Primero hay que autorizar el pago para avanzar el estado de esta cita.',
+            ], 422);
+        }
+
+        // No permitir completar una cita que todavía no ha ocurrido
+        if ($nuevoEstado === 'completada') {
+            $fechaHoraCita = Carbon::parse(
+                Carbon::parse($cita->fecha)->format('Y-m-d') . ' ' . $cita->hora
+            );
+
+            if (Carbon::now()->lt($fechaHoraCita)) {
+                return response()->json([
+                    'ok'      => false,
+                    'mensaje' => 'No puedes marcar como completada una cita cuya fecha y hora aún no han llegado.',
+                ], 422);
+            }
+        }
+
         // Asigna a la cita el nuevo estado validado que llegó desde la agenda.
-        $cita->estado = $request->estado;
+        $cita->estado = $nuevoEstado;
         // Persiste el cambio de estado en la base de datos.
         $cita->save();
 
-        NotificacionService::cambioEstado($cita, $request->estado);
+        NotificacionService::cambioEstado($cita, $nuevoEstado);
 
         return response()->json([
             'ok'       => true,
