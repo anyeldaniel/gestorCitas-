@@ -37,6 +37,26 @@
     <div id="dashboard-mensaje-exito" data-mensaje="{{ session('success') }}" style="display: none;"></div>
     @endif
 
+{{-- Mensaje de Éxito Oculto (El JS lo leerá para mostrar el SweetAlert) --}}
+    @if(session('success'))
+    <div id="dashboard-mensaje-exito" data-mensaje="{{ session('success') }}" style="display: none;"></div>
+    @endif
+
+    @if ($errors->any())
+        <div style="background: #ffdddd; color: #900; padding: 12px; margin: 12px 0; border: 2px solid #900; border-radius: 6px;">
+            <strong>Errores de validación:</strong>
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <!-- ==========================================
+         KPI CARDS ESTILO IMAGEN 1
+         ========================================== -->
+
     <!-- ==========================================
          KPI CARDS ESTILO IMAGEN 1
          ========================================== -->

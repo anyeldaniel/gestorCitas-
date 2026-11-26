@@ -99,7 +99,7 @@ class AdminController extends Controller
             ],
             'password_confirmation' => 'required|string|min:8|max:20',
             'especialidades' => 'nullable|string',
-            'foto'           => 'nullable|image|max:2048',
+            'foto'           => 'nullable|image|max:10240',
         ], [
             'nombre.required'    => 'El nombre es obligatorio.',
             'nombre.min'         => 'El nombre debe tener al menos 3 caracteres.',
@@ -115,7 +115,7 @@ class AdminController extends Controller
             'password_confirmation.required' => 'Debes confirmar la contraseña.',
             'password_confirmation.same' => 'Las contraseñas no coinciden.',
             'foto.image'         => 'El archivo debe ser una imagen válida.',
-            'foto.max'           => 'La imagen no debe superar los 2 MB.',
+            'foto.max'           => 'La imagen no debe superar los 10 MB.',
         ]);
 
         $rutaFoto = null;
