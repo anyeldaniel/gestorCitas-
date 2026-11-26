@@ -44,9 +44,21 @@ class AdminController extends Controller
 
     public function reportesDatos(Request $request)
     {
+        $request->validate([
+            'fecha_inicio' => 'nullable|date',
+            'fecha_fin'    => 'nullable|date',
+        ]);
+
         $fechaInicio = $request->input('fecha_inicio', now()->startOfMonth()->toDateString());
         $fechaFin    = $request->input('fecha_fin', now()->endOfMonth()->toDateString());
-        if ($fechaInicio > $fechaFin) [$fechaInicio, $fechaFin] = [$fechaFin, $fechaInicio];
+        if ($fechaInicio > $fechaFin) {
+            [$fechaInicio, $fechaFin] = [$fechaFin, $fechaInicio];
+        }
+
+        // Evita rangos absurdos que cuelguen el bucle de semanas (máximo 1 año)
+        if (\Carbon\Carbon::parse($fechaInicio)->diffInDays(\Carbon\Carbon::parse($fechaFin)) > 366) {
+            return response()->json(['error' => 'El rango máximo para reportes es de 1 año.'], 422);
+        }
 
         $servicios = Servicio::withCount(['citas' => function ($q) use ($fechaInicio, $fechaFin) {
             $q->whereBetween('fecha', [$fechaInicio, $fechaFin])->where('estado', '!=', 'cancelada');
@@ -193,14 +205,26 @@ class AdminController extends Controller
     public function destroyUsuario($id)
     {
         $usuario = User::findOrFail($id);
-        if ($usuario->foto && Storage::disk('public')->exists($usuario->foto)) Storage::disk('public')->delete($usuario->foto);
+
+        if ((int) $usuario->id === (int) auth()->id()) {
+            return back()->with('error', 'No puedes eliminar tu propia cuenta de administrador.');
+        }
+
+        if (!in_array($usuario->rol, ['trabajador', 'recepcion'], true)) {
+            return back()->with('error', 'Solo se pueden eliminar cuentas de trabajadores o recepcionistas desde este panel.');
+        }
+
+        if ($usuario->foto && Storage::disk('public')->exists($usuario->foto)) {
+            Storage::disk('public')->delete($usuario->foto);
+        }
+
         $usuario->delete();
         return back()->with('success', 'Usuario eliminado exitosamente.');
     }
 
     public function updateTrabajador(Request $request, $id)
     {
-        $trabajador = User::findOrFail($id);
+        $trabajador = User::where('rol', 'trabajador')->findOrFail($id);
 
         $validatedData = $request->validate([
             'nombre'      => 'required|string|max:255',
@@ -217,10 +241,10 @@ class AdminController extends Controller
                 'regex:/[!@#$%^&*(),.?":{}|<>]/',
                 'confirmed',
             ],
-            'foto'        => 'nullable|image|max:2048',
+            'foto'        => 'nullable|image|max:10240',
         ], [
             'foto.image' => 'El archivo debe ser una imagen válida.',
-            'foto.max'   => 'La imagen no debe superar los 2 MB.',
+            'foto.max'   => 'La imagen no debe superar los 10 MB.',
         ]);
 
         $datosActualizar = [
@@ -263,7 +287,7 @@ class AdminController extends Controller
 
     public function updateRecepcionista(Request $request, $id)
     {
-        $recepcionista = User::findOrFail($id);
+        $recepcionista = User::where('rol', 'recepcion')->findOrFail($id);
         $validatedData = $request->validate([
             'nombre'   => 'required|string|max:255',
             'email'    => 'required|email|unique:usuarios,correo,' . $id,
