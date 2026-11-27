@@ -294,9 +294,15 @@ class AgendaController extends Controller
             $esTrabajadorDeLaCita;
 
         if (!$puedeCancelar) {
+            $mensaje = 'No tienes permiso para cancelar esta cita.';
+
+            if (!$request->expectsJson()) {
+                return redirect()->route('agenda')->with('error', $mensaje);
+            }
+
             return response()->json([
                 'ok'      => false,
-                'mensaje' => 'No tienes permiso para cancelar esta cita.',
+                'mensaje' => $mensaje,
             ], 403);
         }
 
@@ -332,11 +338,17 @@ class AgendaController extends Controller
             }
         }
 
+        $mensaje = $resultado['reembolso_por_definir']
+            ? 'Cita cancelada. Se notificó a administración y recepción para definir el reembolso.'
+            : 'Cita cancelada. Administración hará seguimiento.';
+
+        if (!$request->expectsJson()) {
+            return redirect()->route('agenda')->with('success', $mensaje);
+        }
+
         return response()->json([
             'ok'      => true,
-            'mensaje' => $resultado['reembolso_por_definir']
-                ? 'Cita cancelada. Se notificó a administración y recepción para definir el reembolso.'
-                : 'Cita cancelada. Administración hará seguimiento.',
+            'mensaje' => $mensaje,
         ]);
     }
 }

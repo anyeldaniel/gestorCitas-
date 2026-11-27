@@ -109,6 +109,27 @@ class CancelacionPagoTest extends TestCase
         ]);
     }
 
+    public function test_cancelar_desde_formulario_redirige_a_la_agenda(): void
+    {
+        Mail::fake();
+        Notification::fake();
+
+        $admin = $this->crearUsuario('admin');
+        $cita = $this->crearCita();
+
+        $this->actingAs($admin)
+            ->from(route('agenda'))
+            ->post(route('agenda.cita.cancelar', $cita->id), [
+                'motivo' => 'No se podrá atender esta cita',
+            ])
+            ->assertRedirect(route('agenda'));
+
+        $this->assertDatabaseHas('citas', [
+            'id' => $cita->id,
+            'estado' => 'cancelada',
+        ]);
+    }
+
     public function test_cancelacion_por_trabajador_notifica_admin_y_recepcion_sobre_reembolso(): void
     {
         Mail::fake();
