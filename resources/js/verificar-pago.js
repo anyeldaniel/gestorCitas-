@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    if (tabs.length) {
+if (tabs.length) {
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
                 tabs.forEach(t => t.classList.remove('activo'));
@@ -81,6 +81,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (inputBusqueda) inputBusqueda.addEventListener('input', aplicarFiltros);
     if (inputFecha) inputFecha.addEventListener('change', aplicarFiltros);
 
+    // Aplicar filtro inicial al cargar la página
+    aplicarFiltros();
     // =====================================================================
     // 2. Lógica del Modal de Confirmación (Abrir y Cerrar)
     // =====================================================================

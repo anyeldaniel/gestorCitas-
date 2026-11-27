@@ -1424,3 +1424,7 @@ dialog.modal-detalle {
     color: #ffffff;
     min-width: 150px;
 }
+
+.modulo-vista .tabla-transacciones tbody tr.fila-oculta {
+    display: none;
+}
