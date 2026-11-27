@@ -28,7 +28,6 @@
     </header>
 
     @php
-        // Cálculo de métricas basadas en la colección de pagos
         $pendientes = $pagos->where('estado_pago', 'revision')->count();
         $montoPendiente = $pagos->where('estado_pago', 'revision')->sum('monto_anticipado');
         $aprobadosHoy = $pagos->where('estado_pago', 'aprobado')->where('created_at', '>=', \Carbon\Carbon::today())->count();
@@ -78,8 +77,6 @@
 
     <!-- Panel Principal -->
     <section class="panel-pagos">
-
-        <!-- Header del Panel -->
         <header class="panel-pagos__header">
             <div class="panel-pagos__titulo">
                 <span class="kicker">Transacciones reportadas</span>
@@ -142,7 +139,6 @@
                             $cliente = $pago->cita->cliente ?? null;
                             $nombreCliente = $cliente ? $cliente->nombre : 'Cliente Eliminado';
                             
-                            // Lógica para obtener "YP" (Inicial del Nombre + Inicial del Apellido)
                             $partesNombre = explode(' ', trim($nombreCliente));
                             $iniciales = strtoupper(substr($partesNombre[0], 0, 1) . (isset($partesNombre[1]) ? substr($partesNombre[1], 0, 1) : ''));
                             
@@ -225,7 +221,6 @@
                                         <span class="texto-procesado">Procesado</span>
                                     @endif
                                     
-                                    <!-- Botón para abrir el modal de detalle -->
                                     <button type="button" class="btn-ver-detalle" 
                                             data-cliente="{{ $nombreCliente }}"
                                             data-correo="{{ $cliente->correo ?? 'Sin correo' }}"
@@ -236,8 +231,6 @@
                                             data-monto="${{ number_format($pago->monto_anticipado, 2) }}"
                                             data-fecha="{{ $pago->created_at->format('d M Y · h:i A') }}"
                                             data-estado="{{ $estadoTexto }}"
-                                            
-                                            {{-- Ajustado a las propiedades de tu base de datos --}}
                                             data-servicio="{{ $pago->cita->servicio->nombre_servicio ?? 'No asignado' }}"
                                             data-duracion="{{ $pago->cita->servicio->duracion_minutos ?? '0' }} minutos"
                                             data-fecha-cita="{{ $pago->cita->fecha ? \Carbon\Carbon::parse($pago->cita->fecha)->translatedFormat('l, d \d\e F \d\e Y') : 'No definida' }}"
@@ -265,9 +258,13 @@
             <p>Mostrando <strong id="footer-contador">{{ $pagos->count() }}</strong> transacciones</p>
             <p class="nota">Los datos se muestran solo para fines de verificación interna.</p>
         </footer>
-
     </section>
 </main>
+
+<!-- ========================================== -->
+<!-- CONTENEDOR DE TOASTS (ALERTAS)             -->
+<!-- ========================================== -->
+<div id="contenedor-toasts" class="contenedor-toasts" aria-live="polite" aria-atomic="true"></div>
 
 <!-- ========================================== -->
 <!-- MODAL 1: CONFIRMACIÓN DE PAGO              -->

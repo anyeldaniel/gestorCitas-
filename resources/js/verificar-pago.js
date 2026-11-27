@@ -5,6 +5,67 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+    // =====================================================================
+    // 0. Sistema de Alertas (Modal Central)
+    // =====================================================================
+    function mostrarToast(mensaje, tipo = 'info', duracion = 3500) {
+        const contenedor = document.getElementById('contenedor-toasts');
+        if (!contenedor) {
+            console.warn('[Toast]', mensaje);
+            return;
+        }
+
+        const iconos = {
+            exito: '✔',
+            error: '✕',
+            info:  'ℹ'
+        };
+
+        // Creamos el HTML interno con el botón "Entendido"
+        contenedor.innerHTML = `
+            <div class="toast toast-${tipo}">
+                <div class="toast-icono">${iconos[tipo] || 'ℹ'}</div>
+                <div class="toast-texto">${mensaje}</div>
+                <button class="toast-btn-cerrar" type="button">Entendido</button>
+            </div>
+        `;
+
+        // Mostramos el contenedor (oscurece el fondo)
+        contenedor.classList.add('activo');
+
+        // Función para cerrar
+        const cerrar = () => {
+            contenedor.classList.remove('activo');
+            setTimeout(() => { contenedor.innerHTML = ''; }, 300);
+        };
+
+        // Evento del botón
+        const btnCerrar = contenedor.querySelector('.toast-btn-cerrar');
+        if (btnCerrar) btnCerrar.addEventListener('click', cerrar);
+
+        // Cierre automático si tiene duración
+        if (duracion > 0) {
+            setTimeout(() => {
+                if (contenedor.classList.contains('activo')) {
+                    cerrar();
+                }
+            }, duracion);
+        }
+    }
+
+    // Exponer globalmente por si se necesita
+    window.mostrarToast = mostrarToast;
+
+    // Mostrar toast pendiente guardado antes del reload (éxito de acciones)
+    const toastPendiente = sessionStorage.getItem('toast_pago');
+    if (toastPendiente) {
+        try {
+            const { texto, tipo } = JSON.parse(toastPendiente);
+            mostrarToast(texto, tipo || 'exito');
+        } catch (_) { /* ignorar */ }
+        sessionStorage.removeItem('toast_pago');
+    }
+
     // Referencias del DOM
     const tablaBody = document.querySelector('.tabla-transacciones tbody');
     const filas = document.querySelectorAll('.tabla-transacciones tbody tr');
@@ -249,6 +310,26 @@ if (tabs.length) {
                 });
 
                 if (res.ok) {
+                    // Mensajes según la acción realizada
+                    const mensajesExito = {
+                        autorizar:         'Pago autorizado correctamente.',
+                        rechazar:          'Pago rechazado correctamente.',
+                        definir_reembolso: 'Importe de reembolso guardado correctamente.'
+                    };
+
+                    let textoFinal = mensajesExito[accionActual] || 'Operación realizada correctamente.';
+                    try {
+                        const data = await res.json();
+                        if (data && (data.mensaje || data.message)) {
+                            textoFinal = data.mensaje || data.message;
+                        }
+                    } catch (_) { /* respuesta sin JSON */ }
+
+                    sessionStorage.setItem('toast_pago', JSON.stringify({
+                        texto: textoFinal,
+                        tipo: 'exito'
+                    }));
+
                     window.location.reload();
                     return;
                 }
@@ -257,12 +338,16 @@ if (tabs.length) {
                 const error = data.message
                     || Object.values(data.errors || {}).flat()[0]
                     || 'Ocurrió un error al procesar la transacción.';
-                alert(error);
+                
+                // Reemplazamos alert(error) por el toast centrado
+                mostrarToast(error, 'error', 0); 
+                
                 btnConfirmar.textContent = accionActual === 'autorizar'
                     ? 'Autorizar pago'
                     : accionActual === 'rechazar' ? 'Rechazar pago' : 'Guardar importe';
             } catch (error) {
-                alert('Error de conexión.');
+                // Reemplazamos alert('Error de conexión.') por el toast centrado
+                mostrarToast('Error de conexión.', 'error', 0);
             } finally {
                 btnConfirmar.disabled = false;
             }
