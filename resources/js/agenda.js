@@ -17,18 +17,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 detalles.setAttribute('hidden', '');
                 this.classList.remove('is-expanded');
                 this.setAttribute('aria-expanded', 'false');
-                this.setAttribute('data-lucide', 'chevron-down');
             } else {
                 // Expandir
                 detalles.removeAttribute('hidden');
                 this.classList.add('is-expanded');
                 this.setAttribute('aria-expanded', 'true');
-                this.setAttribute('data-lucide', 'chevron-up');
             }
 
-            // Volver a renderizar los iconos de Lucide para que la flecha cambie
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
+            // --- CORRECCIÓN PARA EL ICONO ---
+            // Buscamos el SVG que Lucide ya renderizó dentro del botón
+            const iconoSVG = this.querySelector('svg');
+            if (iconoSVG) {
+                // Alternamos una clase de rotación (puedes usar tu clase 'is-expanded' o una personalizada)
+                // Si usas Tailwind: iconoSVG.classList.toggle('rotate-180'); 
+                // Si usas CSS puro, asegúrate de tener: .rotate-180 { transform: rotate(180deg); }
+                iconoSVG.classList.toggle('rotate-180');
             }
         });
     });
