@@ -12,7 +12,7 @@ use App\Services\CancelacionCitaService;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\CitaCancelada;
 use App\Mail\ReembolsoPorDefinir;
-use Illuminate\Support\Facades\Log; // <-- Agregado para manejar los logs de error
+use Illuminate\Support\Facades\Log;
 
 class AgendaController extends Controller
 {
@@ -61,10 +61,17 @@ class AgendaController extends Controller
                 ->with('info', 'Tu agenda personal está en "Mis reservas".');
         }
 
-        // Fecha seleccionada (por defecto hoy).
-        $fecha = $request->filled('fecha')
-            ? Carbon::parse($request->fecha)->toDateString()
-            : Carbon::today()->toDateString();
+        // 👇 CORRECCIÓN: Evitamos que las zonas horarias resten un día 👇
+        $fechaInput = $request->input('fecha');
+
+        if ($fechaInput) {
+            // Tomamos solo los primeros 10 caracteres (YYYY-MM-DD) ignorando horas y zonas horarias
+            $fechaStr = substr($fechaInput, 0, 10);
+            $fecha = Carbon::parse($fechaStr)->toDateString();
+        } else {
+            $fecha = Carbon::today()->toDateString();
+        }
+        // 👆 FIN DE LA CORRECCIÓN 👆
 
         // Rango lunes → sábado de la semana de esa fecha.
         $diaSemana  = Carbon::parse($fecha)->dayOfWeekIso; // 1 = lunes
@@ -119,6 +126,7 @@ class AgendaController extends Controller
             $dia = $lunes->copy()->addDays($i);
             $conteoSemana[$dia->toDateString()] = (clone $base)
                 ->whereDate('fecha', $dia->toDateString())
+                ->where('estado', '!=', 'cancelada')
                 ->count();
         }
 
@@ -179,6 +187,13 @@ class AgendaController extends Controller
         $cita = Cita::with(['cliente', 'servicio'])->findOrFail($id);
         $nuevoEstado = $request->estado;
 
+        if ($cita->estado === 'pendiente' || $nuevoEstado === 'confirmada') {
+            return response()->json([
+                'ok'      => false,
+                'mensaje' => 'Las citas pendientes se confirman exclusivamente desde Verificar Pagos; no puedes cambiar su estado desde Agenda.',
+            ], 422);
+        }
+
         if ($cita->estaCancelada()) {
             return response()->json([
                 'ok'      => false,
@@ -202,7 +217,6 @@ class AgendaController extends Controller
 
         // Flujo estricto de transiciones permitidas
         $transicionesPermitidas = [
-            'pendiente'  => ['confirmada'],
             'confirmada' => ['en curso', 'completada'],
             'en curso'   => ['completada'],
         ];
@@ -273,7 +287,7 @@ class AgendaController extends Controller
 
         $cita = Cita::with(['cliente', 'servicio'])->findOrFail($id);
 
-        // 👈 NUEVO: verificar también la tabla pivote cita_servicio
+        // Verificar también la tabla pivote cita_servicio
         // (para multi-servicio, el trabajador puede no ser el $cita->trabajador_id principal)
         $esTrabajadorDeLaCita = $user->rol === 'trabajador' && (
             $cita->trabajador_id === $user->id ||
@@ -287,9 +301,15 @@ class AgendaController extends Controller
             $esTrabajadorDeLaCita;
 
         if (!$puedeCancelar) {
+            $mensaje = 'No tienes permiso para cancelar esta cita.';
+
+            if (!$request->expectsJson()) {
+                return redirect()->route('agenda')->with('error', $mensaje);
+            }
+
             return response()->json([
                 'ok'      => false,
-                'mensaje' => 'No tienes permiso para cancelar esta cita.',
+                'mensaje' => $mensaje,
             ], 403);
         }
 
@@ -307,7 +327,7 @@ class AgendaController extends Controller
         // 2. Correo electrónico
         Mail::to($cita->cliente->correo)->send(new CitaCancelada($cita, $data['motivo']));
 
-        // 3. NUEVO: Notificación Push al cliente
+        // 3. Notificación Push al cliente
         try {
             $cliente = \App\Models\User::find($cita->cliente_id);
             if ($cliente) {
@@ -325,11 +345,17 @@ class AgendaController extends Controller
             }
         }
 
+        $mensaje = $resultado['reembolso_por_definir']
+            ? 'Cita cancelada. Se notificó a administración y recepción para definir el reembolso.'
+            : 'Cita cancelada. Administración hará seguimiento.';
+
+        if (!$request->expectsJson()) {
+            return redirect()->route('agenda')->with('success', $mensaje);
+        }
+
         return response()->json([
             'ok'      => true,
-            'mensaje' => $resultado['reembolso_por_definir']
-                ? 'Cita cancelada. Se notificó a administración y recepción para definir el reembolso.'
-                : 'Cita cancelada. Administración hará seguimiento.',
+            'mensaje' => $mensaje,
         ]);
     }
 }

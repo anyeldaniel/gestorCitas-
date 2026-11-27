@@ -783,7 +783,8 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    flex-wrap: nowrap; /* Evita que los botones salten de línea */
 }
 
 .modulo-vista .btn-accion-icono {
@@ -858,6 +859,38 @@
     cursor: not-allowed;
     transform: none !important;
     box-shadow: none !important;
+}
+
+/* ESTILO DEL BOTÓN "VER DETALLE" */
+.modulo-vista .btn-ver-detalle {
+    background: transparent;
+    color: var(--primary-brown);
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.35rem 0.5rem;
+    white-space: nowrap;
+    transition: color 0.2s ease;
+}
+
+.modulo-vista .btn-ver-detalle:hover {
+    color: var(--primary-brown-ink);
+    text-decoration: underline;
+}
+
+/* ESTILO PARA EL TEXTO "PROCESADO" */
+.modulo-vista .texto-procesado {
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.5rem;
+    white-space: nowrap;
 }
 
 /* ==========================================================================
@@ -950,235 +983,280 @@
 }
 
 /* ==========================================================================
-   MODAL DE CONFIRMACIÓN - CENTRADO 
-   Corrigiendo los errores de renderizado donde se veía feíto al confirmar la cita de pago, ahora se ve centrado y con un diseño más limpio. Aprendan niños.
+   MODAL DE CONFIRMACIÓN (AUTORIZAR / RECHAZAR PAGO) - DISEÑO PREMIUM
    ========================================================================== */
+
 dialog.modal-contenedor-alerta-critica {
     position: fixed;
     inset: 0;
     margin: auto;
-    border: 1px solid var(--border-light);
-    border-radius: 16px;
+    border: none;
+    border-radius: 24px;
     padding: 0;
-    background: #ffffff;
+    background: #fcf9f5;
     color: var(--text-main);
-    max-width: 540px;
+    max-width: 600px;
     width: 92%;
     max-height: 90vh;
     overflow: hidden;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
-    animation: fadeInModal 0.3s var(--ease-zen) forwards;
+    box-shadow: 0 40px 80px -20px rgba(45, 42, 38, 0.3);
+    animation: fadeInModal 0.4s var(--ease-zen) forwards;
     z-index: 99999;
+    font-family: var(--font-body);
 }
 
 dialog.modal-contenedor-alerta-critica::backdrop {
-    background: rgba(30, 25, 20, 0.72);
-    backdrop-filter: blur(4px);
+    background: rgba(40, 30, 20, 0.55);
+    backdrop-filter: blur(6px);
 }
 
 .modal-pago-card {
     display: flex;
     flex-direction: column;
-    background: #ffffff;
-    font-family: var(--font-body);
+    background: #fcf9f5;
+    max-height: 90vh;
+    height: 100%;
+    overflow: hidden;
 }
 
+/* --- HEADER DEL MODAL --- */
 .modal-pago-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     gap: 1rem;
-    padding: 1.5rem 1.75rem 1.15rem;
-    border-bottom: 1px solid var(--border-light);
+    padding: 2.5rem 2.5rem 1.5rem;
+    position: relative;
+    flex-shrink: 0;
 }
 
 .modal-pago-header__texto {
     display: flex;
     flex-direction: column;
-    gap: 0.3rem;
+    gap: 0.6rem;
     text-align: left;
+    max-width: 85%;
+}
+
+.modal-icono-escudo {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #f2e8dc;
+    color: #8b5e3c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+}
+
+.modal-icono-escudo svg {
+    width: 24px;
+    height: 24px;
 }
 
 .modal-pago-kicker {
     font-family: var(--font-ui);
-    font-size: 0.68rem;
+    font-size: 0.7rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--text-muted);
+    letter-spacing: 0.18em;
+    color: #8b5e3c;
+    margin-top: 0.5rem;
 }
 
 .titulo-alerta-critica {
     font-family: var(--font-display);
-    font-size: 1.65rem;
+    font-size: 2.2rem;
     font-weight: 700;
-    color: var(--text-main);
+    color: #2d2a26;
     margin: 0;
-    letter-spacing: -0.01em;
-    line-height: 1.2;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+}
+
+.modal-pago-subtitulo {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: #6b6560;
+    margin: 0;
+    line-height: 1.5;
+    max-width: 90%;
 }
 
 .modal-pago-cerrar {
-    width: 34px;
-    height: 34px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
-    border: 1px solid var(--border-color);
-    background: #ffffff;
-    color: var(--text-muted);
-    font-size: 1.15rem;
-    line-height: 1;
+    border: 1px solid #e8e2dd;
+    background: transparent;
+    color: #8a8580;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
     transition: all 0.2s ease;
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
 }
 
 .modal-pago-cerrar:hover {
-    background: var(--bg-soft);
-    color: var(--primary-brown);
+    background: #ffffff;
+    color: #8b5e3c;
+    border-color: #8b5e3c;
 }
 
+/* --- CUERPO DEL MODAL (CON SCROLL INTERNO) --- */
 .modal-pago-body {
-    padding: 1.35rem 1.75rem;
+    padding: 0 2.5rem 1.5rem;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    text-align: left;
+    gap: 1.25rem;
+    overflow-y: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: 60vh;
+    -webkit-overflow-scrolling: touch;
 }
+
+.modal-pago-body::-webkit-scrollbar { width: 6px; }
+.modal-pago-body::-webkit-scrollbar-track { background: transparent; }
+.modal-pago-body::-webkit-scrollbar-thumb { background: #d6ccc2; border-radius: 10px; }
 
 .modal-pago-resumen {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 0.85rem;
-    padding: 0.9rem 1.1rem;
-    border-radius: 12px;
-    background: #fbf7f2;
-    border: 1px solid #f2e8dc;
+    gap: 1.25rem;
+    padding: 1.25rem 1.5rem;
+    border-radius: 14px;
+    background: #f5efe8;
+    border: 1px solid #efe6db;
+}
+
+.cliente-avatar-modal {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #8b5e3c;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    letter-spacing: 0.05em;
 }
 
 .modal-pago-resumen__info {
     display: flex;
     flex-direction: column;
-    gap: 0.15rem;
+    gap: 0.25rem;
     flex: 1;
     min-width: 0;
 }
 
 .modal-pago-resumen__info strong {
     font-family: var(--font-body);
-    font-size: 0.95rem;
+    font-size: 1.05rem;
     font-weight: 600;
-    color: var(--text-main);
-    line-height: 1.3;
+    color: #2d2a26;
+    word-break: break-word;
 }
 
 .modal-pago-resumen__info span {
     font-family: var(--font-body);
-    font-size: 0.8rem;
-    font-weight: 400;
-    color: var(--text-muted);
-    line-height: 1.35;
+    font-size: 0.82rem;
+    color: #7a736c;
+    line-height: 1.3;
+    word-break: break-word;
 }
 
 .modal-pago-resumen__meta {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 0.15rem;
+    gap: 0.2rem;
+    text-align: right;
+    border-left: 1px solid #e2d6c8;
+    padding-left: 1.5rem;
+    min-height: 40px;
+    justify-content: center;
     flex-shrink: 0;
 }
 
 .modal-pago-resumen__meta strong {
     font-family: var(--font-display);
-    font-size: 1.15rem;
+    font-size: 1.6rem;
     font-weight: 700;
-    color: var(--primary-brown);
-    line-height: 1.2;
+    color: #2d2a26;
+    line-height: 1;
+    letter-spacing: -0.02em;
 }
 
 .modal-pago-resumen__meta span {
     font-family: var(--font-body);
-    font-size: 0.76rem;
-    font-weight: 400;
-    color: var(--text-muted);
-    line-height: 1.3;
+    font-size: 0.78rem;
+    color: #8a8580;
 }
 
-.mensaje-alerta-descripcion {
-    font-family: var(--font-body);
-    font-size: 0.85rem;
-    font-weight: 400;
-    color: var(--text-soft);
+.modal-nota-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.1rem 1.25rem;
+    background: #f5efe8;
+    border-radius: 12px;
+}
+
+.nota-icono {
+    color: #8b5e3c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.modal-nota-info p {
     margin: 0;
-    line-height: 1.45;
+    font-size: 0.85rem;
+    color: #4a4640;
+    line-height: 1.4;
 }
 
-.textarea-motivo {
-    width: 100%;
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    padding: 0.9rem 1rem;
-    font-family: var(--font-body);
-    font-size: 0.9rem;
-    color: var(--text-main);
-    background: var(--bg-soft);
-    resize: vertical;
-    min-height: 110px;
-    outline: none;
-    transition: border 0.2s ease, background 0.2s ease;
+.modal-nota-info p strong {
+    font-weight: 600;
+    color: #2d2a26;
 }
 
-.textarea-motivo:focus {
-    border-color: var(--primary-brown);
-    background: #ffffff;
-    box-shadow: 0 0 0 3px rgba(139, 94, 60, 0.1);
-}
-
-.modal-contenedor-alerta-critica .hidden {
-    display: none !important;
-}
-
-.textarea-motivo input[type="number"] {
-    display: block;
-    width: 100%;
-    margin-top: 0.5rem;
-    padding: 0.65rem 0.75rem;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    background: #fff;
-    color: var(--text-main);
-}
-
-.campo-reembolso-pago {
-    display: block;
-    margin-top: 0.75rem;
-}
-
+/* --- FOOTER (Botones) --- */
 .pie-alerta-botones {
     display: flex;
-    gap: 0.85rem;
+    gap: 1rem;
     width: 100%;
-    justify-content: center;
+    justify-content: flex-end;
     align-items: center;
-    padding: 1.1rem 1.75rem;
-    background: #8b5e3c;
+    padding: 1.5rem 2.5rem 2rem;
+    background: #fcf9f5;
+    border-top: 1px solid #efe9e1;
+    flex-shrink: 0;
 }
 
 .btn-cancelar-alerta,
 .btn-confirmar-accion {
-    height: 40px;
-    padding: 0 1.5rem;
+    height: 48px;
+    padding: 0 2rem;
     border-radius: 10px;
     font-family: var(--font-ui);
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     font-weight: 600;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.01em;
     cursor: pointer;
-    border: none;
-    transition: var(--transition);
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1187,50 +1265,690 @@ dialog.modal-contenedor-alerta-critica::backdrop {
 
 .btn-cancelar-alerta {
     background: #ffffff;
-    color: #3d2c1e;
+    color: #2d2a26;
+    border-color: #e8e2dd;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
 .btn-cancelar-alerta:hover {
-    background: #f5efe8;
+    background: #fcfaf8;
+    border-color: #cfc6bd;
 }
 
-.btn-confirmar-accion {
-    background: #6d4a2f;
+.btn-confirmar-accion.btn-accion-autorizar {
+    background: #3d2c1e;
     color: #ffffff;
+    box-shadow: 0 6px 16px rgba(61, 44, 30, 0.25);
+    border: none;
 }
 
-.btn-confirmar-accion:hover {
-    background: #583b24;
+.btn-confirmar-accion.btn-accion-autorizar:hover {
+    background: #2b1f14;
     transform: translateY(-1px);
-}
-
-.btn-accion-autorizar {
-    background: #00796b;
-}
-
-.btn-accion-autorizar:hover {
-    background: #006256;
-}
-
-.btn-accion-rechazar {
-    background: #6d4a2f;
-}
-
-.btn-accion-rechazar:hover {
-    background: #583b24;
-}
-
-.modulo-vista .hidden {
-    display: none !important;
+    box-shadow: 0 8px 20px rgba(61, 44, 30, 0.35);
 }
 
 @keyframes fadeInModal {
-    from {
-        opacity: 0;
-        transform: scale(0.95) translateY(-12px);
+    from { opacity: 0; transform: scale(0.96) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ==========================================================================
+   AJUSTES RESPONSIVE Y SCROLL INTERNO (AUTORIZAR / RECHAZAR PAGO)
+   ========================================================================== */
+
+@media (max-width: 640px) {
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) {
+        width: 95%;
+        max-height: 92vh;
+        border-radius: 20px;
     }
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .modal-pago-card {
+        max-height: 92vh;
     }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .modal-pago-header {
+        padding: 1.5rem 1.5rem 1rem;
+    }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .modal-pago-header__texto {
+        max-width: calc(100% - 2.75rem);
+        gap: 0.45rem;
+    }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .modal-pago-subtitulo {
+        max-width: 100%;
+        font-size: 0.88rem;
+    }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .modal-pago-body {
+        padding: 0.5rem 1.5rem 1.25rem;
+        max-height: 62vh;
+        gap: 1rem;
+    }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .modal-pago-resumen {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.9rem;
+        padding: 1rem 1.15rem;
+    }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .modal-pago-resumen__meta {
+        align-items: flex-start;
+        text-align: left;
+        border-left: none;
+        border-top: 1px solid #e2d6c8;
+        padding-left: 0;
+        padding-top: 0.75rem;
+        width: 100%;
+        min-height: unset;
+    }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .modal-nota-info {
+        align-items: flex-start;
+        padding: 0.9rem 1rem;
+    }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .pie-alerta-botones {
+        padding: 1rem 1.5rem 1.25rem;
+        flex-direction: column-reverse;
+        gap: 0.65rem;
+    }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .pie-alerta-botones .btn-cancelar-alerta,
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .pie-alerta-botones .btn-confirmar-accion {
+        width: 100%;
+        min-width: unset;
+    }
+}
+
+@media (max-width: 400px) {
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .modal-pago-header {
+        padding: 1.25rem 1.25rem 0.75rem;
+    }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .modal-pago-body {
+        padding: 0.5rem 1.25rem 1rem;
+        max-height: 60vh;
+    }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .modal-pago-resumen {
+        padding: 0.85rem 1rem;
+    }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .cliente-avatar-modal {
+        width: 40px;
+        height: 40px;
+        font-size: 0.8rem;
+    }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .modal-pago-resumen__meta strong {
+        font-size: 1.35rem;
+    }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .pie-alerta-botones {
+        padding: 0.85rem 1.25rem 1.1rem;
+    }
+}
+
+/* ==========================================================================
+   MODAL DETALLE DE TRANSACCIÓN (RESPONSIVE)
+   ========================================================================== */
+
+dialog.modal-detalle {
+    max-width: 680px;
+}
+
+.modal-detalle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 2.5rem 2.5rem 1.5rem;
+    border-bottom: 1px solid #efe9e1;
+    position: relative;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.detalle-estado-fecha {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.detalle-fecha-texto {
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    color: #8a8580;
+}
+
+.modal-detalle-body {
+    padding: 2rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    overflow-y: auto;
+    max-height: 60vh;
+}
+
+.modal-detalle-body::-webkit-scrollbar { width: 6px; }
+.modal-detalle-body::-webkit-scrollbar-track { background: transparent; }
+.modal-detalle-body::-webkit-scrollbar-thumb { background: #d6ccc2; border-radius: 10px; }
+
+.detalle-seccion-pago {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.detalle-label {
+    font-family: var(--font-ui);
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: #8a8580;
+}
+
+.detalle-monto-grande {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #2d2a26;
+    line-height: 1;
+}
+
+.detalle-tarjeta-datos {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr;
+    gap: 1.5rem;
+    background: #f5efe8;
+    padding: 1.25rem 1.5rem;
+    border-radius: 12px;
+    border: 1px solid #efe6db;
+}
+
+.detalle-dato-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-width: 0;
+}
+
+.detalle-dato-label {
+    font-family: var(--font-ui);
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #9a9289;
+}
+
+.detalle-tarjeta-datos strong,
+.detalle-cita-item strong {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #2d2a26;
+    word-break: break-word;
+}
+
+.detalle-seccion-cita-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.detalle-badge-reserva {
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #00796b;
+}
+
+.detalle-tarjeta-cita {
+    background: #ffffff;
+    border: 1px solid #e8e2dd;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+.detalle-cita-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.detalle-cita-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-width: 0;
+}
+
+.detalle-cliente-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: #f5efe8;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    border: 1px solid #efe6db;
+    flex-wrap: wrap;
+}
+
+.pie-alerta-botones .btn-confirmar-accion.btn-accion-autorizar {
+    background: #3d2c1e;
+    color: #ffffff;
+    min-width: 150px;
+}
+
+/* --------------------------------------------------------------------------
+   AJUSTES RESPONSIVE PARA EL MODAL DE DETALLE
+   -------------------------------------------------------------------------- */
+
+/* Tablets y pantallas medianas */
+@media (max-width: 640px) {
+    dialog.modal-detalle {
+        width: 95%;
+        max-height: 95vh;
+    }
+
+    .modal-detalle-header {
+        padding: 1.5rem 1.5rem 1rem;
+    }
+
+    .modal-pago-cerrar {
+        top: 1rem;
+        right: 1rem;
+        width: 32px;
+        height: 32px;
+    }
+
+    .titulo-alerta-critica {
+        font-size: 1.8rem;
+    }
+
+    .modal-detalle-body {
+        padding: 1.5rem;
+        max-height: 65vh;
+    }
+
+    .detalle-tarjeta-datos {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .detalle-dato-col {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding-bottom: 0.5rem;
+    }
+
+    .detalle-dato-col:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .detalle-cita-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .detalle-seccion-pago {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .detalle-monto-grande {
+        font-size: 1.5rem;
+    }
+
+    .pie-alerta-botones {
+        padding: 1rem 1.5rem;
+        flex-direction: column-reverse;
+    }
+
+    .pie-alerta-botones .btn-cancelar-alerta,
+    .pie-alerta-botones .btn-confirmar-accion {
+        width: 100%;
+        min-width: unset;
+    }
+}
+
+/* Móviles pequeños */
+@media (max-width: 400px) {
+    .modal-detalle-header {
+        padding: 1.25rem 1.25rem 0.75rem;
+    }
+
+    .titulo-alerta-critica {
+        font-size: 1.5rem;
+    }
+
+    .modal-detalle-body {
+        padding: 1.25rem;
+    }
+
+    .detalle-cliente-card {
+        padding: 0.75rem;
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .detalle-estado-fecha {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .detalle-seccion-cita-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* ==========================================================================
+   RESPONSIVE: TARJETAS DE PAGO (AUTORIZAR / RECHAZAR) EN MÓVIL
+   Convierte cada fila de la tabla en una tarjeta apilada en pantallas ≤ 768px
+   ========================================================================== */
+
+@media (max-width: 768px) {
+
+    /* El wrapper deja de hacer scroll horizontal porque la tabla se apila */
+    .modulo-vista .tabla-responsive-wrapper {
+        overflow-x: visible;
+    }
+
+    /* La tabla deja de tener ancho mínimo y se comporta como bloque */
+    .modulo-vista .tabla-transacciones {
+        min-width: 0;
+        width: 100%;
+        display: block;
+    }
+
+    /* Ocultamos el thead (los encabezados no tienen sentido en modo tarjeta) */
+    .modulo-vista .tabla-transacciones thead {
+        display: none;
+    }
+
+    .modulo-vista .tabla-transacciones tbody {
+        display: block;
+        width: 100%;
+    }
+
+    /* Cada fila se convierte en una tarjeta */
+    .modulo-vista .tabla-transacciones tbody tr {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            "fecha    estado"
+            "cliente  cliente"
+            "banco    monto"
+            "ref      ref"
+            "acciones acciones";
+        gap: 0.85rem 1rem;
+        padding: 1.25rem;
+        margin: 0 0 1rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border-light);
+        border-radius: 14px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .modulo-vista .tabla-transacciones tbody tr:last-child {
+        margin-bottom: 0;
+    }
+
+    .modulo-vista .tabla-transacciones tbody tr:hover {
+        background: var(--bg-card); /* evita el hover de escritorio */
+    }
+
+    /* Todas las celdas pasan a comportarse como bloques dentro del grid */
+    .modulo-vista .tabla-transacciones td {
+        display: block;
+        padding: 0;
+        border: none;
+        font-size: 0.88rem;
+        min-width: 0;
+    }
+
+    /* Asignación de áreas del grid */
+    .modulo-vista .tabla-transacciones td.celda-fecha        { grid-area: fecha; }
+    .modulo-vista .tabla-transacciones td:nth-child(6)       { grid-area: estado; justify-self: end; align-self: start; }
+    .modulo-vista .tabla-transacciones td.celda-cliente      { grid-area: cliente; }
+    .modulo-vista .tabla-transacciones td.celda-banco        { grid-area: banco; }
+    .modulo-vista .tabla-transacciones td.celda-monto        { grid-area: monto; justify-self: end; text-align: right; }
+    .modulo-vista .tabla-transacciones td.celda-referencia   { grid-area: ref; }
+    .modulo-vista .tabla-transacciones td.celda-acciones     { grid-area: acciones; }
+
+    /* La celda de cliente ocupa todo el ancho y respira mejor */
+    .modulo-vista .tabla-transacciones td.celda-cliente .celda-cliente {
+        width: 100%;
+    }
+
+    /* La referencia se muestra como etiqueta de ancho completo */
+    .modulo-vista .tabla-transacciones td.celda-referencia code {
+        display: block;
+        width: 100%;
+        text-align: left;
+    }
+
+    /* ---- BOTONES DE ACCIÓN RESPONSIVE ---- */
+    .modulo-vista .celda-acciones {
+        display: flex;
+        flex-wrap: wrap;          /* Permite que los botones bajen de línea si no caben */
+        justify-content: flex-end;
+        align-items: center;
+        gap: 0.6rem;
+        padding-top: 0.85rem;
+        margin-top: 0.25rem;
+        border-top: 1px dashed var(--border-light);
+        width: 100%;
+    }
+
+    /* El botón de autorizar crece para ocupar el espacio disponible */
+    .modulo-vista .btn-autorizar {
+        flex: 1 1 auto;
+        justify-content: center;
+        min-height: 42px;
+        height: auto;
+        padding: 0.6rem 1rem;
+        font-size: 0.72rem;
+    }
+
+    /* Los botones de icono (rechazar) mantienen tamaño táctil cómodo */
+    .modulo-vista .btn-accion-icono {
+        width: 42px;
+        height: 42px;
+        flex: 0 0 auto;
+    }
+
+    /* El botón "Ver detalle" se alinea a la izquierda y ocupa su espacio */
+    .modulo-vista .btn-ver-detalle {
+        flex: 0 0 auto;
+        padding: 0.6rem 0.25rem;
+        font-size: 0.8rem;
+        text-align: left;
+    }
+
+    /* El texto "Procesado" se alinea a la izquierda */
+    .modulo-vista .texto-procesado {
+        justify-content: flex-start;
+        padding: 0;
+        font-size: 0.8rem;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Ajuste fino para teléfonos muy pequeños (≤ 420px)
+   -------------------------------------------------------------------------- */
+@media (max-width: 420px) {
+
+    .modulo-vista .tabla-transacciones tbody tr {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "fecha"
+            "estado"
+            "cliente"
+            "banco"
+            "monto"
+            "ref"
+            "acciones";
+        gap: 0.7rem;
+        padding: 1rem;
+    }
+
+    /* En una sola columna, el estado y el monto se alinean a la izquierda */
+    .modulo-vista .tabla-transacciones td:nth-child(6),
+    .modulo-vista .tabla-transacciones td.celda-monto {
+        justify-self: start;
+        text-align: left;
+    }
+
+    /* Los botones de acción se distribuyen en fila completa */
+    .modulo-vista .celda-acciones {
+        justify-content: space-between;
+    }
+
+    .modulo-vista .btn-autorizar {
+        flex: 1 1 100%;
+        order: 2;               /* El botón autorizar va abajo, ancho completo */
+    }
+
+    .modulo-vista .btn-accion-icono {
+        order: 1;               /* El botón rechazar va arriba, a la izquierda */
+    }
+
+    .modulo-vista .btn-ver-detalle,
+    .modulo-vista .texto-procesado {
+        order: 1;
+    }
+    
+}
+
+/* Regla proveniente de la rama "ramaerrores" para ocultar filas filtradas */
+.modulo-vista .tabla-transacciones tbody tr.fila-oculta {
+    display: none;
+}
+
+/* ==========================================================================
+   ALERTAS CENTRALES (TOASTS/MODALES)
+   ========================================================================== */
+.contenedor-toasts {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(40, 30, 20, 0.45); /* Fondo oscuro translúcido */
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    pointer-events: none;
+}
+
+.contenedor-toasts.activo {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.toast {
+    background: #fcf9f5;
+    min-width: 320px;
+    max-width: 440px;
+    width: 90%;
+    padding: 2.5rem 2rem;
+    border-radius: 24px;
+    box-shadow: 0 30px 60px -15px rgba(45, 42, 38, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transform: scale(0.95) translateY(15px);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    font-family: var(--font-body, 'Inter', sans-serif);
+}
+
+.contenedor-toasts.activo .toast {
+    transform: scale(1) translateY(0);
+}
+
+/* Círculo del ícono */
+.toast-icono {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Colores de los íconos basados en tu paleta */
+.toast-exito .toast-icono {
+    background: var(--color-ok-bg, #e0f2f1);
+    color: var(--color-ok, #00796b);
+}
+
+.toast-error .toast-icono {
+    background: var(--color-danger-bg, #fdf2f2);
+    color: var(--color-danger, #c53030);
+}
+
+.toast-info .toast-icono {
+    background: var(--color-info-bg, #eef2f9);
+    color: var(--color-info, #2b4c7e);
+}
+
+/* Tipografía igual a la de tu diseño principal */
+.toast-texto {
+    font-family: var(--font-display, 'Cormorant Garamond', serif);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-main, #2d2a26);
+    line-height: 1.15;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+/* Botón con tu color marrón */
+.toast-btn-cerrar {
+    margin-top: 2rem;
+    padding: 0.85rem 2.5rem;
+    background: var(--primary-brown-ink, #3d2c1e);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    font-family: var(--font-ui, 'Instrument Sans', sans-serif);
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(61, 44, 30, 0.2);
+}
+
+.toast-btn-cerrar:hover {
+    background: var(--primary-brown, #8b5e3c);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(61, 44, 30, 0.3);
 }

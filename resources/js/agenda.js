@@ -1,242 +1,184 @@
 document.addEventListener('DOMContentLoaded', () => {
-    if (window.lucide) window.lucide.createIcons();
 
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
-                    || document.querySelector('input[name="_token"]')?.value;
+    const formularioFiltrosAgenda = document.querySelector('.agenda-filtros');
+    const selectorFechaAgenda = formularioFiltrosAgenda?.querySelector('input[name="fecha"]');
 
-    /* ============================================================
-       1. AUTO-SUBMIT DE FILTROS
-       ============================================================ */
-    const formFiltros = document.querySelector('.agenda-filtros');
-    if (formFiltros) {
-        formFiltros.querySelectorAll('select, input[type="date"]').forEach((el) => {
-            el.addEventListener('change', () => formFiltros.submit());
+    selectorFechaAgenda?.addEventListener('change', () => {
+        formularioFiltrosAgenda.requestSubmit();
+    });
+    
+    /* =========================================================
+       1. LÓGICA PARA DESPLEGAR Y OCULTAR LOS DETALLES DE LA CITA
+       ========================================================= */
+    const botonesExpandir = document.querySelectorAll('[data-expandir-cita]');
+
+    botonesExpandir.forEach(boton => {
+        boton.addEventListener('click', function(e) {
+            e.preventDefault();
+            const citaId = this.dataset.cita;
+            const detalles = document.getElementById(`detalles-cita-${citaId}`);
+            const estaExpandido = this.classList.contains('is-expanded');
+
+            if (estaExpandido) {
+                // Contraer
+                detalles.setAttribute('hidden', '');
+                this.classList.remove('is-expanded');
+                this.setAttribute('aria-expanded', 'false');
+            } else {
+                // Expandir
+                detalles.removeAttribute('hidden');
+                this.classList.add('is-expanded');
+                this.setAttribute('aria-expanded', 'true');
+            }
+
+            // --- CORRECCIÓN PARA EL ICONO ---
+            // Buscamos el SVG que Lucide ya renderizó dentro del botón
+            const iconoSVG = this.querySelector('svg');
+            if (iconoSVG) {
+                // Alternamos una clase de rotación (puedes usar tu clase 'is-expanded' o una personalizada)
+                // Si usas Tailwind: iconoSVG.classList.toggle('rotate-180'); 
+                // Si usas CSS puro, asegúrate de tener: .rotate-180 { transform: rotate(180deg); }
+                iconoSVG.classList.toggle('rotate-180');
+            }
         });
+    });
 
-        const buscador = formFiltros.querySelector('input[name="search"]');
-        if (buscador) {
-            let ultimo = buscador.value;
-            const enviar = () => {
-                if (buscador.value.trim() !== ultimo.trim()) {
-                    ultimo = buscador.value;
-                    formFiltros.submit();
+    /* =========================================================
+       2. LÓGICA GENERAL PARA CERRAR MODALES
+       ========================================================= */
+    const botonesCerrar = document.querySelectorAll('[data-close-modal]');
+    
+    botonesCerrar.forEach(boton => {
+        boton.addEventListener('click', (e) => {
+            e.preventDefault();
+            const modal = boton.closest('dialog');
+            if (modal) {
+                modal.close();
+            }
+        });
+    });
+
+    /* =========================================================
+       3. LÓGICA PARA EL MODAL DE DECLINAR / CANCELAR CITA
+       ========================================================= */
+    const botonesDeclinar = document.querySelectorAll('[data-declinar]');
+    const modalCancelar = document.getElementById('modal-cancelar-cita');
+    const formCancelar = document.getElementById('form-cancelar-cita');
+
+    if (modalCancelar && formCancelar) {
+        botonesDeclinar.forEach(boton => {
+            boton.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Obtener los datos inyectados desde Blade en el HTML
+                const url = this.dataset.url;
+                const cliente = this.dataset.cliente;
+                const servicio = this.dataset.servicio;
+                const fecha = this.dataset.fecha;
+                const hora = this.dataset.hora;
+                const puedeDefinirReembolso = this.dataset.puedeDefinirReembolso === '1';
+                const pagosAprobados = JSON.parse(this.dataset.pagosAprobados || '[]');
+
+                // Llenar los campos del modal
+                formCancelar.action = url;
+                document.getElementById('cancel-cliente').textContent = cliente;
+                document.getElementById('cancel-servicio').textContent = servicio;
+                document.getElementById('cancel-hora').textContent = hora;
+                document.getElementById('cancel-fecha').textContent = fecha;
+
+                // Generar iniciales para el avatar del modal
+                const iniciales = cliente.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                document.getElementById('cancel-avatar').textContent = iniciales || '—';
+
+                // Manejar la sección de reembolsos dinámicamente
+                const camposReembolso = document.getElementById('campos-reembolso-cita');
+                const listaReembolsos = document.getElementById('lista-reembolsos-cita');
+                const avisoPendiente = document.getElementById('aviso-reembolso-pendiente');
+
+                if (puedeDefinirReembolso && pagosAprobados.length > 0) {
+                    camposReembolso.removeAttribute('hidden');
+                    avisoPendiente.setAttribute('hidden', '');
+                    listaReembolsos.innerHTML = ''; // Limpiar contenido anterior
+
+                    pagosAprobados.forEach(pago => {
+                        listaReembolsos.innerHTML += `
+                            <div style="margin-bottom: 12px;">
+                                <label style="font-size: 0.85rem; color: #555; display: block; margin-bottom: 4px;">Pago #${pago.id} (Anticipo: $${pago.monto})</label>
+                                <input type="number" name="reembolsos[${pago.id}]" step="0.01" max="${pago.monto}" value="${pago.monto}" class="input-reembolso" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
+                            </div>
+                        `;
+                    });
+                } else if (!puedeDefinirReembolso) {
+                    camposReembolso.setAttribute('hidden', '');
+                    avisoPendiente.removeAttribute('hidden');
+                } else {
+                    camposReembolso.setAttribute('hidden', '');
+                    avisoPendiente.setAttribute('hidden', '');
                 }
-            };
-            buscador.addEventListener('blur', enviar);
-            buscador.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') { e.preventDefault(); enviar(); }
+
+                // Abrir el modal
+                modalCancelar.showModal();
             });
-        }
+        });
     }
 
-    /* ============================================================
-       2. HELPERS DE MODALES
-       ============================================================ */
-    const cerrar = (el) => el?.closest('dialog')?.close();
-
-    document.querySelectorAll('[data-close-modal]').forEach((btn) => {
-        btn.addEventListener('click', () => cerrar(btn));
-    });
-
-    // Cerrar al hacer click fuera de la tarjeta
-    document.querySelectorAll('dialog.modal-agenda, dialog.modal-alerta-centro').forEach((dlg) => {
-        dlg.addEventListener('click', (e) => {
-            const rect = dlg.querySelector('article')?.getBoundingClientRect();
-            if (!rect) return;
-            const dentro =
-                e.clientX >= rect.left && e.clientX <= rect.right &&
-                e.clientY >= rect.top  && e.clientY <= rect.bottom;
-            if (!dentro) dlg.close();
-        });
-    });
-
-    /* ============================================================
-       3. ALERTA CENTRAL
-       ============================================================ */
-    const alertaModal   = document.getElementById('modal-alerta');
-    const alertaIcono   = document.getElementById('alerta-icono');
-    const alertaTitulo  = document.getElementById('alerta-titulo');
-    const alertaMensaje = document.getElementById('alerta-mensaje');
-
-    const mostrarAlerta = (titulo, mensaje, tipo = 'success') => {
-        alertaTitulo.textContent  = titulo;
-        alertaMensaje.textContent = mensaje;
-
-        alertaIcono.className = 'alerta-icono alerta-' + tipo;
-        alertaIcono.innerHTML = tipo === 'success'
-            ? '<i data-lucide="check-circle-2"></i>'
-            : tipo === 'error'
-                ? '<i data-lucide="alert-triangle"></i>'
-                : '<i data-lucide="info"></i>';
-
-        if (window.lucide) window.lucide.createIcons();
-        alertaModal.showModal();
-    };
-
-    /* ============================================================
-       4. MODAL CANCELAR
-       ============================================================ */
-    const modalCancelar   = document.getElementById('modal-cancelar-cita');
-    const formCancelar    = document.getElementById('form-cancelar-cita');
-    const cancelCliente   = document.getElementById('cancel-cliente');
-    const cancelServicio  = document.getElementById('cancel-servicio');
-    const cancelFecha     = document.getElementById('cancel-fecha');
-    const cancelHora      = document.getElementById('cancel-hora');
-    const cancelAvatar    = document.getElementById('cancel-avatar');
-    const camposReembolso = document.getElementById('campos-reembolso-cita');
-    const listaReembolsos = document.getElementById('lista-reembolsos-cita');
-    const avisoReembolso  = document.getElementById('aviso-reembolso-pendiente');
-
-    document.querySelectorAll('[data-declinar]').forEach((btn) => {
-        btn.addEventListener('click', () => {
-            const citaId   = btn.dataset.cita;
-            const cliente  = btn.dataset.cliente;
-            const servicio = btn.dataset.servicio;
-            const fecha    = btn.dataset.fecha;
-            const hora     = btn.dataset.hora;
-
-            // 🔥 Usa la URL generada por Laravel en el HTML
-            formCancelar.action = btn.dataset.url;
-            
-            cancelCliente.textContent  = cliente;
-            cancelServicio.textContent = servicio;
-            cancelFecha.textContent    = fecha;
-            cancelHora.textContent     = hora;
-            cancelAvatar.textContent   = iniciales(cliente);
-
-            formCancelar.querySelector('textarea[name="motivo"]').value = '';
-            listaReembolsos.replaceChildren();
-            camposReembolso.hidden = true;
-            avisoReembolso.hidden = true;
-
-            const pagosAprobados = JSON.parse(btn.dataset.pagosAprobados || '[]');
-            if (pagosAprobados.length && btn.dataset.puedeDefinirReembolso === '1') {
-                listaReembolsos.innerHTML = pagosAprobados.map(pago => `
-                    <label class="campo-modal">
-                        <span class="label-modal">Pago #${pago.id} (máximo $${Number(pago.monto).toFixed(2)})</span>
-                        <input type="number" name="reembolsos[${pago.id}]" min="0.01"
-                               max="${Number(pago.monto).toFixed(2)}" step="0.01" required>
-                    </label>
-                `).join('');
-                camposReembolso.hidden = false;
-            } else if (pagosAprobados.length) {
-                avisoReembolso.hidden = false;
-            }
-
-            modalCancelar.showModal();
-        });
-    });
-
-    formCancelar?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const submit = formCancelar.querySelector('button[type="submit"]');
-        submit.disabled = true;
-
-        try {
-            const res = await fetch(formCancelar.action, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken,
-                    'Accept': 'application/json',
-                },
-                body: new FormData(formCancelar),
-            });
-            
-            // Si la respuesta no es exitosa, atrapamos el error real
-            if (!res.ok) {
-                const errorText = await res.text();
-                console.error("Error del servidor:", errorText);
-                try {
-                    const errorJson = JSON.parse(errorText);
-                    mostrarAlerta('Error', errorJson.message || errorJson.mensaje || 'Error en el servidor', 'error');
-                } catch (e) {
-                    mostrarAlerta('Error del servidor', 'Revisa la consola (F12) para ver el error.', 'error');
-                }
-                return;
-            }
-
-            const data = await res.json();
-
-            if (!data.ok) {
-                mostrarAlerta('No se pudo cancelar', data.mensaje || 'Revisa el motivo.', 'error');
-                return;
-            }
-
-            modalCancelar.close();
-            mostrarAlerta('Cita cancelada', data.mensaje, 'success');
-            setTimeout(() => location.reload(), 900);
-        } catch (err) {
-            mostrarAlerta('Error de red', 'Revisa tu conexión e inténtalo de nuevo.', 'error');
-        } finally {
-            submit.disabled = false;
-        }
-    });
-
-    /* ============================================================
-       5. MODAL CAMBIAR ESTADO
-       ============================================================ */
+    /* =========================================================
+       4. LÓGICA PARA EL MODAL DE CAMBIAR ESTADO
+       ========================================================= */
+    const botonesCambiarEstado = document.querySelectorAll('[data-cambiar-estado]');
     const modalEstado = document.getElementById('modal-cambiar-estado');
-    let citaEstadoId  = null;
-    let citaEstadoUrl = null;
 
-    document.querySelectorAll('[data-cambiar-estado]').forEach((btn) => {
-        btn.addEventListener('click', () => {
-            citaEstadoId  = btn.dataset.cita;
-            // 🔥 Guarda la URL generada por Laravel
-            citaEstadoUrl = btn.dataset.url; 
-            modalEstado.showModal();
-        });
-    });
+    if (modalEstado) {
+        let urlCambioEstado = '';
 
-    document.querySelectorAll('.btn-estado-opcion').forEach((btn) => {
-        btn.addEventListener('click', async () => {
-            if (!citaEstadoId || !citaEstadoUrl) return;
-            const nuevoEstado = btn.dataset.estado;
-
-            try {
-                // 🔥 Usa la URL guardada
-                const res = await fetch(citaEstadoUrl, {
-                    method: 'PATCH',
-                    headers: {
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify({ estado: nuevoEstado }),
+        // Abrir modal y guardar la URL de la cita seleccionada
+        botonesCambiarEstado.forEach(boton => {
+            boton.addEventListener('click', function(e) {
+                e.preventDefault();
+                urlCambioEstado = this.dataset.url;
+                const estadosPermitidos = JSON.parse(this.dataset.estados || '[]');
+                modalEstado.querySelectorAll('[data-estado]').forEach(opcion => {
+                    opcion.style.display = estadosPermitidos.includes(opcion.dataset.estado) ? '' : 'none';
                 });
-                const data = await res.json();
-
-                if (!res.ok || !data.ok) {
-                    mostrarAlerta('No se pudo actualizar', data.mensaje || 'Inténtalo de nuevo.', 'error');
-                    return;
-                }
-
-                modalEstado.close();
-
-                const tarjeta = document.querySelector(`[data-cita-id="${citaEstadoId}"]`);
-                if (tarjeta) {
-                    tarjeta.className = 'tarjeta-cita ' + data.clase;
-                    const badge = tarjeta.querySelector('[data-badge]');
-                    if (badge) {
-                        badge.className = 'badge-estado ' + data.clase;
-                        const txt = badge.querySelector('[data-badge-texto]');
-                        if (txt) txt.textContent = data.etiqueta;
-                    }
-                }
-
-                mostrarAlerta('Estado actualizado', data.mensaje, 'success');
-            } catch (err) {
-                mostrarAlerta('Error de red', 'No pudimos contactar al servidor.', 'error');
-            }
+                modalEstado.showModal();
+            });
         });
-    });
 
-    /* ============================================================
-       6. HELPER: INICIALES
-       ============================================================ */
-    function iniciales(nombre) {
-        if (!nombre) return '—';
-        return nombre.trim().split(/\s+/).slice(0, 2)
-            .map(p => p.charAt(0).toUpperCase()).join('');
+        // Detectar clic en las opciones de estado dentro del modal
+        const botonesOpcionEstado = modalEstado.querySelectorAll('[data-estado]');
+        botonesOpcionEstado.forEach(botonOpcion => {
+            botonOpcion.addEventListener('click', async function(e) {
+                e.preventDefault();
+                const nuevoEstado = this.dataset.estado;
+                
+                try {
+                    // Obtener token CSRF de Laravel
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+                    // Petición al servidor
+                    const response = await fetch(urlCambioEstado, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken || '',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ estado: nuevoEstado })
+                    });
+
+                    const resultado = await response.json();
+
+                    if (response.ok) {
+                        window.location.reload(); // Recargar para reflejar el nuevo estado
+                    } else {
+                        alert(resultado.mensaje || 'Hubo un error al cambiar el estado de la cita.');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error de conexión al intentar cambiar el estado.');
+                }
+            });
+        });
     }
+
 });

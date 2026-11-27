@@ -39,11 +39,9 @@
     };
 
     /* ============================================================
-       ESTADOS DISPONIBLES (para el modal de cambiar estado)
+       ESTADOS DISPONIBLES (transiciones posteriores al pago)
        ============================================================ */
     $estadosDisponibles = [
-        'pendiente'  => 'clock',
-        'confirmada' => 'check-circle-2',
         'en curso'   => 'play-circle',
         'completada' => 'check-check',
     ];
@@ -135,6 +133,20 @@
 
         {{-- COLUMNA PRINCIPAL --}}
         <div class="agenda-columna-principal">
+
+            @if(session('success') || session('error') || $errors->any())
+                <div role="{{ session('error') || $errors->any() ? 'alert' : 'status' }}" style="margin-bottom: 1rem;">
+                    @if(session('success'))
+                        <p>{{ session('success') }}</p>
+                    @endif
+                    @if(session('error'))
+                        <p>{{ session('error') }}</p>
+                    @endif
+                    @foreach($errors->all() as $error)
+                        <p>{{ $error }}</p>
+                    @endforeach
+                </div>
+            @endif
 
             {{-- CABECERA --}}
             <header class="agenda-header">
@@ -355,8 +367,14 @@
                                         'monto' => $pago->monto_anticipado,
                                     ])
                                     ->values();
+                                $transicionesEstado = match ($cita->estado) {
+                                    'confirmada' => ['en curso', 'completada'],
+                                    'en curso' => ['completada'],
+                                    default => [],
+                                };
                             @endphp
                             <li class="tarjeta-cita {{ $cita->claseEstado() }}" data-cita-id="{{ $cita->id }}">
+                                
                                 <div class="cita-hora">
                                     <time datetime="{{ \Carbon\Carbon::parse($cita->fecha->toDateString() . ' ' . $cita->hora)->toIso8601String() }}">
                                         <strong>{{ \Carbon\Carbon::parse($cita->hora)->format('H:i') }}</strong>
@@ -370,7 +388,9 @@
                                     <span class="avatar-iniciales" aria-hidden="true">{{ $iniciales($cita->cliente->nombre ?? '') }}</span>
                                     <div class="cita-cliente-info">
                                         <span class="etiqueta-mini">Cliente</span>
-                                        <strong class="cita-nombre">{{ $cita->cliente->nombre ?? 'Cliente no disponible' }}</strong>
+                                        <strong class="cita-nombre" title="{{ $cita->cliente->apellido?? 'Cliente no disponible' }}">
+                                         {{ $cita->cliente->nombre ?? 'Cliente no disponible' }}
+                                        </strong>
                                         @if($cita->cliente?->descripcion)
                                             <small class="cita-nota">{{ $cita->cliente->descripcion }}</small>
                                         @endif
@@ -379,7 +399,9 @@
 
                                 <div class="cita-servicio">
                                     <span class="etiqueta-mini">Servicio</span>
-                                    <strong class="cita-servicio-nombre">{{ $cita->servicio->nombre_servicio ?? 'Servicio no disponible' }}</strong>
+                                    <strong class="cita-servicio-nombre" title="{{ $cita->servicio->nombre_servicio ?? 'Servicio no disponible' }}">
+                                     {{ $cita->servicio->nombre_servicio ?? 'Servicio no disponible' }}
+                                    </strong>
                                     <small class="cita-servicio-duracion">
                                         <i data-lucide="clock" aria-hidden="true"></i> {{ $cita->servicio->duracion_minutos ?? '—' }} min
                                     </small>
@@ -393,18 +415,26 @@
                                 </div>
 
                                 <div class="cita-acciones">
-                                    @if($puedeGestionar && !$cita->estaCancelada())
-                                        <!-- 🔥 AQUÍ SE AGREGA data-url -->
+                                    {{-- BOTÓN NUEVO PARA DESPLEGAR (Lo puse al inicio para que quede a la derecha del todo) --}}
+                                    <button type="button" class="btn-expandir" data-expandir-cita data-cita="{{ $cita->id }}" aria-label="Ver más detalles" aria-expanded="false">
+                                        <i data-lucide="chevron-down" aria-hidden="true"></i>
+                                    </button>
+
+                                    @if($puedeGestionar && $cita->estado === 'pendiente')
+                                        <a href="{{ route('pago.verificar') }}" class="btn-cambiar-estado btn-verificar-pago">
+                                            <i data-lucide="credit-card" aria-hidden="true"></i>
+                                            <span>Verificar pago →</span>
+                                        </a>
+                                    @elseif($puedeGestionar && !$cita->estaCancelada() && count($transicionesEstado) > 0)
                                         <button type="button" class="btn-cambiar-estado" data-cambiar-estado data-cita="{{ $cita->id }}" 
                                                 data-url="{{ route('agenda.cita.estado', $cita->id) }}" 
-                                                data-estado="{{ $cita->estado }}">
+                                                data-estados='@json($transicionesEstado)'>
                                             <i data-lucide="refresh-cw" aria-hidden="true"></i>
                                             <span>Estado</span>
                                         </button>
                                     @endif
 
                                     @if($puedeCancelar && !$cita->estaCancelada())
-                                        <!-- 🔥 AQUÍ SE AGREGA data-url -->
                                         <button type="button" class="btn-declinar" data-declinar data-cita="{{ $cita->id }}"
                                                 data-url="{{ route('agenda.cita.cancelar', $cita->id) }}"
                                                 data-puede-definir-reembolso="{{ $puedeGestionar ? '1' : '0' }}"
@@ -416,7 +446,8 @@
                                             <span>Declinar cita</span>
                                         </button>
                                     @endif
-
+                                    
+                                    {{-- Botón original de Cancelada (solo se muestra si está cancelada) --}}
                                     @if($cita->estaCancelada())
                                         <span class="motivo-cancelacion" title="{{ $cita->motivo_cancelacion }}">
                                             <i data-lucide="info" aria-hidden="true"></i>
@@ -424,6 +455,51 @@
                                         </span>
                                     @endif
                                 </div>
+
+                                {{-- SECCIÓN DESPLEGABLE (Se agrega al final de la tarjeta) --}}
+                                <div class="cita-detalles" id="detalles-cita-{{ $cita->id }}" hidden>
+                                    
+                                    {{-- Mensaje de cancelación en la parte superior --}}
+                                    @if($cita->estaCancelada())
+                                        <div class="alerta-cancelada-detalle">
+                                            <i data-lucide="info" aria-hidden="true"></i>
+                                            <span>Esta cita fue cancelada</span>
+                                        </div>
+                                    @endif
+
+                                    <div class="detalles-grid">
+                                        <div class="detalle-item">
+                                            <span class="etiqueta-mini">Especialista asignado</span>
+                                         <strong>{{ $cita->trabajador->nombre ?? 'Por asignar' }}</strong>
+
+                                        </div>
+                                        
+                                        <div class="detalle-item">
+                                            <span class="etiqueta-mini">Fecha completa</span>
+                                            <strong>{{ \Carbon\Carbon::parse($cita->fecha)->locale('es')->translatedFormat('l, d \d\e F \d\e Y') }}</strong>
+                                        </div>
+
+                                        <div class="detalle-item">
+                                            <span class="etiqueta-mini">Horario</span>
+                                            <strong>{{ \Carbon\Carbon::parse($cita->hora)->format('H:i') }} - {{ $cita->horaFin() ?? '—' }}</strong>
+                                        </div>
+
+                                        @if($cita->cliente?->telefono)
+                                        <div class="detalle-item">
+                                            <span class="etiqueta-mini">Contacto del cliente</span>
+                                            <strong>{{ $cita->cliente->telefono }}</strong>
+                                        </div>
+                                        @endif
+
+                                        @if($cita->notas ?? false)
+                                        <div class="detalle-item detalle-full">
+                                            <span class="etiqueta-mini">Notas adicionales</span>
+                                            <p>{{ $cita->notas }}</p>
+                                        </div>
+                                        @endif
+                                    </div>
+                                </div>
+
                             </li>
                         @endforeach
                     </ul>

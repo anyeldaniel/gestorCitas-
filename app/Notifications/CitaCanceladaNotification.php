@@ -26,10 +26,32 @@ class CitaCanceladaNotification extends Notification
 
     public function toWebPush($notifiable, $notification)
     {
+        $this->cita->loadMissing('pagos');
+        $mensaje = 'Lamentamos informarte que tu cita del ' . $this->cita->fecha . ' a las ' . $this->cita->hora . ' ha sido cancelada.';
+
+        if ($this->cita->motivo_cancelacion) {
+            $mensaje .= ' Motivo: ' . $this->cita->motivo_cancelacion . '.';
+        }
+
+        $pagosConReembolso = $this->cita->pagos
+            ->where('estado_pago', 'aprobado')
+            ->whereIn('estado_reembolso', ['por_definir', 'pendiente']);
+        $montoPendiente = $pagosConReembolso
+            ->where('estado_reembolso', 'pendiente')
+            ->sum('monto_reembolso');
+
+        if ($montoPendiente > 0) {
+            $mensaje .= ' Reembolso pendiente por $' . number_format((float) $montoPendiente, 2) . '.';
+        }
+
+        if ($pagosConReembolso->contains('estado_reembolso', 'por_definir')) {
+            $mensaje .= ' Reembolso en revisión.';
+        }
+
         return (new WebPushMessage)
             ->title('❌ Cita Cancelada')
             ->icon('/icons/icon-192x192.png')
-            ->body('Lamentamos informarte que tu cita del ' . $this->cita->fecha . ' a las ' . $this->cita->hora . ' ha sido cancelada.')
+            ->body($mensaje)
             ->action('Ver mis reservas', '/mis-reservas')
             ->data(['url' => '/mis-reservas']);
     }

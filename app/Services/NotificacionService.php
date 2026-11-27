@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Cita;
 use App\Models\Notificacion;
+use App\Models\Pago;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -164,6 +165,29 @@ public static function reembolsoPorDefinir(Cita $cita): Collection
 
     return $destinatarios;
 }
+
+    /**
+     * Reembolso completado → cliente.
+     */
+    public static function reembolsoCompletado(Pago $pago): void
+    {
+        $pago->loadMissing('cita.cliente');
+        $cliente = $pago->cita?->cliente;
+
+        if (!$cliente) {
+            throw new \RuntimeException('No se pudo notificar el reembolso porque la cita no tiene un cliente asociado.');
+        }
+
+        $monto = number_format((float) $pago->monto_reembolso, 2);
+
+        self::crearPara(
+            collect([$cliente]),
+            'reembolso_completado',
+            'Reembolso completado',
+            "El reembolso de \${$monto} por tu cita fue completado.",
+            ['cita_id' => $pago->cita_id, 'pago_id' => $pago->id, 'monto_reembolso' => $pago->monto_reembolso]
+        );
+    }
 
    /**
  * Cambio de estado genérico → cliente + TODOS los trabajadores asignados.

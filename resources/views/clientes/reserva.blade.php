@@ -2,7 +2,9 @@
 
 @section('title', 'Reservar Cita - The Beauty Room')
 
-@vite(['resources/css/reserva.css'])
+@push('styles')
+    @vite(['resources/css/reserva.css'])
+@endpush
 
 @section('content')
 <main class="modulo-reserva" id="modulo-reserva" 
@@ -43,6 +45,10 @@
     <form class="reserva-panel" action="{{ route('clientes.reserva.store') }}" method="POST" id="form-reserva">
         @csrf
 
+        {{-- Solo se renderiza el input oculto si NO hay radios alternativos activos para evitar duplicados --}}
+        @if(!(session('terapeutas_alternativos') && session('terapeutas_alternativos')->count() > 0))
+            <input type="hidden" name="trabajador_id_alternativo" id="input-alternativo" value="">
+        @endif
         <input type="hidden" name="fecha" id="input-fecha" value="{{ old('fecha') }}">
         <input type="hidden" name="hora" id="input-hora" value="{{ old('hora') }}">
 
@@ -104,8 +110,11 @@
         </div>
 
         <footer class="panel-footer" style="display: flex; flex-direction: column; gap: 20px;">
-            <div class="paso-footer"><span class="numero-footer">04</span><div><strong>Tus datos</strong><small>Para enviarte la confirmación</small></div></div>
-            
+            <div class="paso-footer">
+                <span class="numero-footer">04</span>
+                <div><strong>Tus datos</strong><small>Para enviarte la confirmación</small></div>
+            </div>
+
             {{-- INICIO DEL BLOQUE DE VALIDACIÓN DE SUPERPOSICIÓN DE CITAS --}}
             @if(session('error'))
                 <div role="alert" style="background: #FCF3E3; color: #8A6D3B; padding: 15px; border-radius: 8px; font-size: 13px; width: 100%;">
@@ -124,8 +133,11 @@
                     <h4 style="color: #2C352D; margin-top: 0; font-family: 'Playfair Display', serif; font-size: 18px;">
                         ¡Tenemos otros especialistas disponibles a esa misma hora!
                     </h4>
-                    <p style="color: #5C665E; font-size: 13px; margin-bottom: 15px;">Selecciona uno de nuestros terapeutas libres a las {{ old('hora') ? \Carbon\Carbon::parse(old('hora'))->format('h:i A') : 'hora seleccionada' }}:</p>
-                    
+                    <p style="color: #5C665E; font-size: 13px; margin-bottom: 15px;">
+                        Selecciona uno de nuestros terapeutas libres a las
+                        {{ old('hora') ? \Carbon\Carbon::parse(old('hora'))->format('h:i A') : 'hora seleccionada' }}:
+                    </p>
+
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                         @foreach(session('terapeutas_alternativos') as $alternativa)
                             <label style="background: #FFF; padding: 10px 15px; border-radius: 30px; border: 1px solid #E5E2DC; cursor: pointer; font-size: 13px; font-weight: 600; color: #3A463B; display: flex; align-items: center; gap: 8px;">
@@ -143,17 +155,27 @@
             {{-- FIN DEL BLOQUE DE VALIDACIÓN --}}
 
             <div class="campos-cliente">
-                <label><small>Nombre completo</small><input type="text" name="nombre" placeholder="Ej.María González" required></label>
-                <label><small>Correo electrónico</small><input type="email" name="email" placeholder="nombre@correo.com" required></label>
-                
+                <label>
+                    <small>Nombre completo</small>
+                    <input type="text" name="nombre" placeholder="Ej. María González" required>
+                </label>
+                <label>
+                    <small>Correo electrónico</small>
+                    <input type="email" name="email" placeholder="nombre@correo.com" required>
+                </label>
+
                 {{-- CONTENEDOR DINÁMICO PARA ESPECIALISTAS --}}
-                <div class="especialistas-container" id="contenedor-especialistas" style="grid-column: span 2; display: flex; flex-direction: column; gap: 10px;">
-                    <small style="font-family: var(--font-ui); font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted);">Especialistas</small>
-                    <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;" id="msg-especialistas">Selecciona un servicio para asignar especialistas.</p>
+                <div class="especialistas-container" id="contenedor-especialistas"
+                     style="grid-column: span 2; display: flex; flex-direction: column; gap: 10px;">
+                    <small style="font-family: var(--font-ui); font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted);">
+                        Especialistas
+                    </small>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;" id="msg-especialistas">
+                        Selecciona un servicio para asignar especialistas.
+                    </p>
                 </div>
-                
             </div>
-            
+
             <div class="resumen-precio" style="margin-top: 15px;">
                 <div class="resumen-info">
                     <strong id="resumen-servicio">Ningún servicio</strong>
@@ -161,10 +183,17 @@
                 </div>
                 <div class="resumen-monto"><span id="resumen-precio">$0</span></div>
             </div>
-            <button type="submit" class="btn-confirmar"><span>Confirmar cita</span><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+
+            <button type="submit" class="btn-confirmar" id="btn-confirmar">
+                <span>Confirmar cita</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </button>
         </footer>
     </form>
 </main>
 @endsection
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-@vite(['resources/js/reserva.js'])
+
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @vite(['resources/js/reserva.js'])
+@endpush

@@ -36,7 +36,8 @@
 
     <form action="{{ route('checkout.procesar') }}" method="POST" id="form-pago">
         @csrf
-        <input type="hidden" name="monto" id="input-monto" value="{{ $montoAbono }}">
+        <input type="hidden" id="input-monto" value="{{ $montoAbono }}">
+        <input type="hidden" name="tipo_pago" id="input-tipo-pago" value="abono">
         <input type="hidden" id="monto-abono-data" value="{{ $montoAbono }}">
         <input type="hidden" id="monto-total-data" value="{{ $montoTotal }}">
 
@@ -130,19 +131,12 @@
                             <div class="card-radio"></div>
                         </label>
 
-                        <label class="payment-card" id="card-efectivo">
-                            <input type="radio" name="metodo_pago" value="divisas_efectivo" required>
-                            <div class="card-content">
-                                <div class="card-icon">
-                                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                                </div>
-                                <div class="card-text">
-                                    <strong>Efectivo</strong>
-                                    <small>Pagar en el local</small>
-                                </div>
-                            </div>
-                            <div class="card-radio"></div>
-                        </label>
+                    </div>
+
+                    <div class="alert-box" role="note">
+                        <div class="alert-text">
+                            <p>Los pagos en efectivo se realizan directamente en la sucursal.</p>
+                        </div>
                     </div>
 
                     <!-- ALERTA PAGO MÓVIL -->

@@ -3,6 +3,13 @@
    ========================================================================== */
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
+/* ==========================================================================
+   ESCALA BASE (Solución al zoom al 100%)
+   ========================================================================== */
+.modulo-agenda {
+    font-size: 14px;
+}
+
 :root {
     --bg-page: #f8f4ee;
     --primary-brown: #8b5e3c;
@@ -46,10 +53,10 @@
     font-family: var(--font-body);
     color: var(--text-main);
     background: var(--bg-page);
-    max-width: 1600px;
+    max-width: 1400px;
     width: 100%;
     margin: 0 auto;
-    padding: 2.5rem 2rem 4rem;
+    padding: 1.5rem 2rem 3rem;
     min-height: 100vh;
 }
 
@@ -89,7 +96,7 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
-    margin-bottom: 2.25rem;
+    margin-bottom: 1.5rem;
     gap: 1.5rem;
     flex-wrap: wrap;
 }
@@ -110,7 +117,7 @@
 
 .titulo-agenda {
     font-family: var(--font-display);
-    font-size: clamp(2.2rem, 4vw, 2.9rem);
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
     margin: 0 0 0.55rem 0;
     font-weight: 700;
     letter-spacing: -0.015em;
@@ -169,7 +176,7 @@
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 1rem;
-    margin-bottom: 2.25rem;
+    margin-bottom: 1.5rem;
 }
 
 .stat-card {
@@ -177,7 +184,7 @@
     display: flex;
     align-items: center;
     gap: 0.9rem;
-    padding: 1.15rem 1.25rem;
+    padding: 1rem 1.1rem;
     border-radius: 14px;
     border: 1px solid var(--border-color);
     background: #ffffff;
@@ -216,14 +223,13 @@
     border-color: currentColor;
 }
 
-/* ---- CAMBIO REALIZADO AQUÍ ---- */
 .stat-icono {
     flex-shrink: 0;
     width: 44px;
     height: 44px;
     border-radius: 12px;
-    background: currentColor; /* Toma el color de la tarjeta (verde, marrón, etc.) */
-    color: inherit;           /* NO sobrescribe el color del padre */
+    background: currentColor;
+    color: inherit;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -236,9 +242,8 @@
     width: 22px;
     height: 22px;
     stroke-width: 2.2;
-    color: #ffffff; /* El icono sí es blanco */
+    color: #ffffff;
 }
-/* ---- FIN DEL CAMBIO ---- */
 
 .stat-info {
     display: flex;
@@ -283,8 +288,8 @@
    ========================================================================== */
 .agenda-layout {
     display: grid;
-    grid-template-columns: 1fr 320px;
-    gap: 2.5rem;
+    grid-template-columns: 1fr 300px;
+    gap: 1.5rem;
     align-items: start;
 }
 
@@ -293,18 +298,18 @@
     background: #ffffff;
     border: 1px solid var(--border-color);
     border-radius: 20px;
-    padding: 2rem 2.2rem;
+    padding: 1.5rem 1.8rem;
     box-shadow: 0 10px 30px rgba(45, 42, 38, 0.04);
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1.5rem;
 }
 
 .agenda-columna-principal .bloque-semana,
 .agenda-columna-principal .agenda-filtros,
 .agenda-columna-principal .stats-container,
 .agenda-columna-principal .bloque-dia {
-    margin-bottom: 0; 
+    margin-bottom: 0;
     background: transparent;
     box-shadow: none;
     border: none;
@@ -316,7 +321,7 @@
     background: #fdfaf6;
     border: 1px solid var(--border-color);
     border-radius: 14px;
-    padding: 1.5rem;
+    padding: 1.25rem;
 }
 
 .agenda-sidebar {
@@ -352,7 +357,6 @@
     transform: translateY(-2px);
 }
 
-/* Widget Clima - Formato Horizontal */
 .widget-clima {
     display: flex;
     flex-direction: row;
@@ -398,7 +402,6 @@
     font-weight: 600;
 }
 
-/* Widget Tip - Tipografía más grande */
 .widget-tip {
     background: linear-gradient(135deg, #fdfbf7 0%, #f7f4ee 100%);
     padding: 1.5rem 1.5rem;
@@ -419,7 +422,7 @@
 
 .tip-texto {
     font-family: var(--font-display);
-    font-size: 1.15rem; /* Aumentado para mejor legibilidad */
+    font-size: 1.15rem;
     font-style: italic;
     color: #6d4a2f;
     line-height: 1.6;
@@ -427,7 +430,6 @@
     font-weight: 500;
 }
 
-/* Widget Top Terapeutas */
 .widget-top {
     padding: 1.25rem 1.5rem;
 }
@@ -797,10 +799,10 @@
     border: 1px solid var(--border-color);
     border-left: 4px solid var(--primary-brown);
     border-radius: var(--radius-card);
-    padding: 1.15rem 1.4rem;
+    padding: 1rem 1.25rem;
     display: grid;
-    grid-template-columns: 105px 1.9fr 1.4fr 1fr auto;
-    gap: 1.5rem;
+    grid-template-columns: 90px 2fr 1.5fr 130px auto;
+    gap: 1rem;
     align-items: center;
     box-shadow: 0 4px 14px rgba(45, 42, 38, 0.06);
     transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
@@ -822,7 +824,7 @@
 .cita-hora {
     text-align: center;
     border-right: 1px solid var(--border-color);
-    padding-right: 1.25rem;
+    padding-right: 1rem;
     align-self: stretch;
     display: flex;
     flex-direction: column;
@@ -905,7 +907,9 @@
     font-weight: 600;
     color: var(--text-main);
     line-height: 1.25;
-    word-break: break-word;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .cita-nota {
@@ -931,7 +935,15 @@
     font-weight: 600;
     color: var(--text-main);
     line-height: 1.25;
-    word-break: break-word;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tarjeta-cita:hover .cita-servicio-nombre {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
 }
 
 .cita-servicio-duracion {
@@ -952,7 +964,9 @@
 
 .cita-estado {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
 }
 
 .badge-estado {
@@ -984,12 +998,16 @@
 .badge-estado.estado-completada { background: #e5ddf5; color: #6a45c2; border-color: #cfc0ea; }
 .badge-estado.estado-cancelada  { background: #f8dede; color: #c0392b; border-color: #efc0c0; }
 
+/* --- BOTONES Y ACCIONES --- */
 .cita-acciones {
     display: flex;
-    flex-direction: column;
-    gap: 0.45rem;
-    align-items: stretch;
-    min-width: 140px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: flex-end;
+    width: 100%;
+    flex-shrink: 0;
 }
 
 .btn-cambiar-estado,
@@ -998,7 +1016,7 @@
     font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: 0.03em;
-    padding: 0.55rem 0.9rem;
+    padding: 0.55rem 1rem;
     border-radius: var(--radius-pill);
     cursor: pointer;
     border: 1px solid var(--border-color);
@@ -1007,9 +1025,17 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.4rem;
+    gap: 0.35rem;
     transition: all 0.25s ease;
     white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.btn-cambiar-estado.btn-verificar-pago {
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
 }
 
 .btn-cambiar-estado:hover {
@@ -1033,9 +1059,44 @@
 
 .btn-cambiar-estado i,
 .btn-declinar i {
-    width: 13px;
-    height: 13px;
+    width: 14px;
+    height: 14px;
     stroke-width: 2.4;
+    flex-shrink: 0;
+}
+
+.btn-expandir {
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    cursor: pointer !important;
+    padding: 6px !important;
+    border-radius: 50% !important;
+    color: var(--text-muted) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s !important;
+    flex-shrink: 0 !important;
+    width: 34px !important;
+    height: 34px !important;
+}
+
+.btn-expandir:hover {
+    background: rgba(0, 0, 0, 0.05) !important;
+    color: var(--text-main) !important;
+}
+
+.btn-expandir i {
+    transition: transform 0.3s ease !important;
+    width: 20px !important;
+    height: 20px !important;
+    flex-shrink: 0 !important;
+}
+
+.btn-expandir.is-expanded i {
+    transform: rotate(180deg) !important;
 }
 
 .motivo-cancelacion {
@@ -1099,10 +1160,7 @@ dialog.modal-alerta-centro {
     max-width: 580px;
     width: calc(100% - 2rem);
     color: var(--text-main);
-    
-    /* ---- CAMBIO REALIZADO AQUÍ PARA CENTRAR EL MODAL ---- */
-    margin: auto; /* Centra el modal horizontal y verticalmente */
-    /* ----------------------------------------------------- */
+    margin: auto;
 }
 
 dialog.modal-alerta-centro {
@@ -1405,6 +1463,85 @@ dialog::backdrop {
 }
 
 /* ==========================================================================
+   DESPLEGABLE DE LA TARJETA
+   ========================================================================== */
+.cita-detalles {
+    grid-column: 1 / -1;
+    margin: 1rem -1.25rem -1rem -1.25rem;
+    background-color: #fcf9f9;
+    border-top: 1px solid #f2e8e8;
+    padding: 24px;
+    box-sizing: border-box;
+    animation: slideDown 0.3s ease-out;
+    border-radius: 0 0 12px 12px;
+}
+
+.alerta-cancelada-detalle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #c94a4a;
+    font-size: 0.95rem;
+    margin-bottom: 24px;
+    font-weight: 500;
+}
+
+.alerta-cancelada-detalle i {
+    width: 18px;
+    height: 18px;
+}
+
+.detalles-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 24px 16px !important;
+    width: 100% !important;
+}
+
+.detalle-item {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    text-align: left !important;
+}
+
+.detalle-item .etiqueta-mini {
+    font-size: 0.7rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    color: var(--text-muted) !important;
+    font-weight: 600 !important;
+    margin: 0 !important;
+    white-space: nowrap !important;
+}
+
+.detalle-item strong {
+    font-size: 0.95rem !important;
+    color: var(--text-main) !important;
+    font-weight: 500 !important;
+}
+
+.detalle-item.detalle-full {
+    grid-column: 1 / -1 !important;
+    background: #ffffff !important;
+    padding: 16px !important;
+    border-radius: 8px !important;
+    border: 1px solid var(--border-color) !important;
+    margin-top: 8px !important;
+}
+
+.detalle-item p {
+    margin: 0 !important;
+    font-size: 0.9rem !important;
+    color: var(--text-muted) !important;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
    RESPONSIVE
    ========================================================================== */
 @media (max-width: 1024px) {
@@ -1446,7 +1583,7 @@ dialog::backdrop {
     .cita-hora      { grid-area: hora; }
     .cita-cliente   { grid-area: cliente; }
     .cita-servicio  { grid-area: servicio; }
-    .cita-estado    { grid-area: estado; justify-content: flex-start; }
+    .cita-estado    { grid-area: estado; justify-content: flex-start; width: auto; }
     .cita-acciones  { grid-area: acciones; flex-direction: row; min-width: 0; }
     
     .agenda-columna-principal {
@@ -1468,11 +1605,19 @@ dialog::backdrop {
         align-items: flex-start;
         gap: 0.5rem;
     }
+
+    .cita-detalles {
+        margin: 1.1rem -1.2rem -1.1rem -1.2rem;
+    }
+
+    .detalles-grid { 
+        grid-template-columns: repeat(2, 1fr) !important; 
+    }
 }
 
 @media (max-width: 768px) {
     .modulo-agenda {
-        padding: 2rem 1.1rem 3rem;
+        padding: 1.5rem 1.1rem 3rem;
     }
 
     .stats-container {
@@ -1563,12 +1708,14 @@ dialog::backdrop {
 
     .cita-acciones {
         flex-direction: row;
+        flex-wrap: wrap;
         min-width: 0;
     }
 
     .btn-cambiar-estado,
     .btn-declinar {
-        flex: 1;
+        flex: 1 1 8rem;
+        min-width: 8rem;
     }
 
     .lista-estados {
@@ -1586,6 +1733,15 @@ dialog::backdrop {
     .agenda-columna-principal {
         padding: 1rem;
         border-radius: 14px;
+    }
+
+    .cita-detalles {
+        margin: 1.1rem -1.1rem -1.1rem -1.1rem;
+        padding: 16px;
+    }
+
+    .detalles-grid { 
+        grid-template-columns: 1fr !important; 
     }
 }
 

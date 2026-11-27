@@ -34,11 +34,24 @@ class PagoController extends Controller
     {
         abort_unless(in_array(auth()->user()->rol, ['admin', 'recepcion']), 403);
 
-        $pagos = Pago::with(['cita.cliente', 'cita.servicio', 'cita.pagos'])
-            ->orderByDesc('created_at')
-            ->get();
+        // CORRECCIÓN: Agregamos 'cita.trabajador' a las relaciones cargadas
+        $pagos = Pago::with([
+            'cita.cliente', 
+            'cita.servicio', 
+            'cita.trabajador', // <-- AGREGA ESTO
+            'cita.pagos'
+        ])
+        ->orderByDesc('created_at')
+        ->get();
 
-        return view('compartidas.verificar-pago', compact('pagos'));
+        $pagosAutorizados = $pagos
+            ->where('estado_pago', 'aprobado')
+            ->whereNull('estado_reembolso');
+        $aprobadosHoy = $pagosAutorizados
+            ->filter(fn (Pago $pago) => $pago->created_at?->gte(Carbon::today()))
+            ->count();
+
+        return view('compartidas.verificar-pago', compact('pagos', 'pagosAutorizados', 'aprobadosHoy'));
     }
 
     /**
@@ -76,10 +89,14 @@ class PagoController extends Controller
             $montoAbonoEsperado = $this->calcularMontoAbono($cita->load('servicio'));
             $montoAbonoRegistradoEnCentimos = (int) round((float) $pago->monto_anticipado * 100);
             $montoAbonoEsperadoEnCentimos = (int) round($montoAbonoEsperado * 100);
+            $montoTotalEsperadoEnCentimos = (int) round((float) $cita->monto_total * 100);
 
-            if ($montoAbonoRegistradoEnCentimos !== $montoAbonoEsperadoEnCentimos) {
+            if (!in_array($montoAbonoRegistradoEnCentimos, [
+                $montoAbonoEsperadoEnCentimos,
+                $montoTotalEsperadoEnCentimos,
+            ], true)) {
                 throw ValidationException::withMessages([
-                    'pago' => 'No se puede aprobar el pago porque el monto del abono no coincide con el esperado.',
+                    'pago' => 'No se puede aprobar el pago porque el monto no coincide con el abono ni con el total esperado.',
                 ]);
             }
 
@@ -186,6 +203,32 @@ class PagoController extends Controller
         ]);
     }
 
+    public function marcarReembolsado(Request $request, int $id): JsonResponse
+    {
+        abort_unless(in_array($request->user()->rol, ['admin', 'recepcion']), 403);
+
+        $pago = DB::transaction(function () use ($id) {
+            $pago = Pago::query()->lockForUpdate()->findOrFail($id);
+
+            if ($pago->estado_reembolso !== 'pendiente' || $pago->estado_pago !== 'aprobado') {
+                throw ValidationException::withMessages([
+                    'pago' => 'Solo se puede completar un reembolso pendiente de un pago aprobado.',
+                ]);
+            }
+
+            $pago->update(['estado_reembolso' => 'reembolsado']);
+
+            return $pago->load('cita.cliente');
+        });
+
+        NotificacionService::reembolsoCompletado($pago);
+
+        return response()->json([
+            'ok' => true,
+            'mensaje' => 'El reembolso se marcó como completado y se notificó al cliente.',
+        ]);
+    }
+
     /**
      * Mostrar la pantalla de cobro al cliente.
      */
@@ -262,7 +305,8 @@ class PagoController extends Controller
         }
 
         $data = $request->validate([
-            'metodo_pago' => 'required|in:c2p,transferencia,divisas_efectivo',
+            'tipo_pago' => 'required|in:abono,total',
+            'metodo_pago' => 'required|in:c2p,transferencia',
         ]);
 
         if ($data['metodo_pago'] === 'c2p') {
@@ -273,14 +317,7 @@ class PagoController extends Controller
             ]);
 
 
-            // Antes se simulaba la respuesta del banco; ahora recepción revisa el pago manualmente.
-            // $resultado = $this->simularApiC2P($request->banco, $request->telefono, $request->token);
-            // if ($resultado['status'] !== 'aprobado') {
-            //     return back()->withErrors([
-            //         'pago_fallido' => 'Transacción C2P rechazada: ' . $resultado['mensaje'],
-            //     ]);
-            // }
-            // $estadoPago = 'aprobado';
+        
 
 
 
@@ -308,6 +345,7 @@ class PagoController extends Controller
 
         $montoTotal = (float) $servicios->sum('precio');
         $montoAbono = $this->calcularMontoAbonoDesdeDatos($montoTotal, $servicioPrincipal);
+        $montoPago = $data['tipo_pago'] === 'total' ? $montoTotal : $montoAbono;
 
         try {
             $cita = DB::transaction(function () use (
@@ -315,7 +353,7 @@ class PagoController extends Controller
                 $reserva,
                 $data,
                 $montoTotal,
-                $montoAbono
+                $montoPago
             ) {
                 User::query()
                     ->whereKey($reserva['trabajador_id'])
@@ -326,7 +364,7 @@ class PagoController extends Controller
                     ->where('fecha', $reserva['fecha'])
                     ->where('hora', $reserva['hora'])
                     ->where('trabajador_id', $reserva['trabajador_id'])
-                    ->whereIn('estado', ['pendiente', 'confirmada','en curso', 'revision'])
+                    ->whereIn('estado', ['pendiente', 'confirmada', 'en curso'])
                     ->lockForUpdate()
                     ->first();
 
@@ -357,7 +395,7 @@ class PagoController extends Controller
 
                 Pago::create([
                     'cita_id'          => $cita->id,
-                    'monto_anticipado' => $montoAbono,
+                    'monto_anticipado' => $montoPago,
                     'metodo_pago'      => $data['metodo_pago'],
                     'banco_origen'     => $request->banco ?? null,
                     'referencia'       => $data['metodo_pago'] === 'c2p'
@@ -392,7 +430,8 @@ class PagoController extends Controller
 
         try {
             $cliente = $cita->cliente;
-            $cliente?->notify(new \App\Notifications\NuevaCitaNotification($cita));
+            $esPagoTotal = $data['tipo_pago'] === 'total';
+            $cliente?->notify(new \App\Notifications\NuevaCitaNotification($cita, $esPagoTotal));
 
             $terapeutasNotificar = array_unique(array_values($reserva['trabajadores_por_servicio']));
             foreach ($terapeutasNotificar as $terapeutaId) {
@@ -453,13 +492,5 @@ class PagoController extends Controller
         return $this->procesarPago($request);
     }
 
-    // Esta era solo una prueba local; no confirmaba el pago con el banco.
-    // private function simularApiC2P(string $banco, string $telefono, string $token): array
-    // {
-    //     if ($token === '123456') {
-    //         return ['status' => 'aprobado', 'mensaje' => 'Operación exitosa'];
-    //     }
-    //
-    //     return ['status' => 'rechazado', 'mensaje' => 'Fondos insuficientes o token inválido'];
-    // }
+   
 }

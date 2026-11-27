@@ -5,6 +5,67 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+    // =====================================================================
+    // 0. Sistema de Alertas (Modal Central)
+    // =====================================================================
+    function mostrarToast(mensaje, tipo = 'info', duracion = 3500) {
+        const contenedor = document.getElementById('contenedor-toasts');
+        if (!contenedor) {
+            console.warn('[Toast]', mensaje);
+            return;
+        }
+
+        const iconos = {
+            exito: '✔',
+            error: '✕',
+            info:  'ℹ'
+        };
+
+        // Creamos el HTML interno con el botón "Entendido"
+        contenedor.innerHTML = `
+            <div class="toast toast-${tipo}">
+                <div class="toast-icono">${iconos[tipo] || 'ℹ'}</div>
+                <div class="toast-texto">${mensaje}</div>
+                <button class="toast-btn-cerrar" type="button">Entendido</button>
+            </div>
+        `;
+
+        // Mostramos el contenedor (oscurece el fondo)
+        contenedor.classList.add('activo');
+
+        // Función para cerrar
+        const cerrar = () => {
+            contenedor.classList.remove('activo');
+            setTimeout(() => { contenedor.innerHTML = ''; }, 300);
+        };
+
+        // Evento del botón
+        const btnCerrar = contenedor.querySelector('.toast-btn-cerrar');
+        if (btnCerrar) btnCerrar.addEventListener('click', cerrar);
+
+        // Cierre automático si tiene duración
+        if (duracion > 0) {
+            setTimeout(() => {
+                if (contenedor.classList.contains('activo')) {
+                    cerrar();
+                }
+            }, duracion);
+        }
+    }
+
+    // Exponer globalmente por si se necesita
+    window.mostrarToast = mostrarToast;
+
+    // Mostrar toast pendiente guardado antes del reload (éxito de acciones)
+    const toastPendiente = sessionStorage.getItem('toast_pago');
+    if (toastPendiente) {
+        try {
+            const { texto, tipo } = JSON.parse(toastPendiente);
+            mostrarToast(texto, tipo || 'exito');
+        } catch (_) { /* ignorar */ }
+        sessionStorage.removeItem('toast_pago');
+    }
+
     // Referencias del DOM
     const tablaBody = document.querySelector('.tabla-transacciones tbody');
     const filas = document.querySelectorAll('.tabla-transacciones tbody tr');
@@ -13,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputFecha = document.getElementById('input-fecha-pagos');
     const footerContador = document.getElementById('footer-contador');
 
-    // Referencias del Modal
+    // Referencias del Modal de Confirmación
     const modal = document.getElementById('modal-confirmacion');
     const modalKicker = document.getElementById('modal-kicker');
     const modalTitulo = document.getElementById('modal-titulo');
@@ -68,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    if (tabs.length) {
+if (tabs.length) {
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
                 tabs.forEach(t => t.classList.remove('activo'));
@@ -81,8 +142,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (inputBusqueda) inputBusqueda.addEventListener('input', aplicarFiltros);
     if (inputFecha) inputFecha.addEventListener('change', aplicarFiltros);
 
+    // Aplicar filtro inicial al cargar la página
+    aplicarFiltros();
     // =====================================================================
-    // 2. Lógica del Modal (Abrir y Cerrar)
+    // 2. Lógica del Modal de Confirmación (Abrir y Cerrar)
     // =====================================================================
     document.querySelectorAll('.btn-autorizar:not(.btn-definir-reembolso)').forEach(boton => {
         boton.addEventListener('click', (e) => {
@@ -103,6 +166,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.btn-definir-reembolso').forEach(boton => {
         boton.addEventListener('click', (e) => {
             accionActual = 'definir_reembolso';
+            filaActual = e.target.closest('tr');
+            abrirModal();
+        });
+    });
+
+    document.querySelectorAll('.btn-marcar-reembolsado').forEach(boton => {
+        boton.addEventListener('click', (e) => {
+            accionActual = 'marcar_reembolsado';
             filaActual = e.target.closest('tr');
             abrirModal();
         });
@@ -164,7 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 `).join('');
                 camposReembolso.classList.remove('hidden');
             }
-        } else {
+        } else if (accionActual === 'definir_reembolso') {
             if (modalKicker) modalKicker.textContent = 'GESTIONAR REEMBOLSO';
             modalTitulo.textContent = 'Define el importe del reembolso';
             modalMensaje.textContent = 'El trabajador canceló la cita. Indica cuánto se reembolsará al cliente.';
@@ -176,6 +247,12 @@ document.addEventListener('DOMContentLoaded', () => {
             ).toFixed(2);
             campoMontoReembolso.classList.remove('hidden');
             inputMontoReembolso.required = true;
+        } else {
+            if (modalKicker) modalKicker.textContent = 'GESTIONAR REEMBOLSO';
+            modalTitulo.textContent = '¿Marcar reembolso como completado?';
+            modalMensaje.textContent = 'Confirma que el importe fue devuelto al cliente. Se le enviará una notificación.';
+            btnConfirmar.textContent = 'Marcar reembolsado';
+            btnConfirmar.className = 'btn-confirmar-accion btn-accion-autorizar';
         }
 
         modal.showModal();
@@ -214,7 +291,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? filaActual.querySelector('.btn-autorizar').dataset.url
                 : accionActual === 'rechazar'
                     ? filaActual.querySelector('.btn-rechazar').dataset.url
-                    : filaActual.querySelector('.btn-definir-reembolso').dataset.url;
+                    : accionActual === 'definir_reembolso'
+                        ? filaActual.querySelector('.btn-definir-reembolso').dataset.url
+                        : filaActual.querySelector('.btn-marcar-reembolsado').dataset.url;
 
             const token = document.querySelector('meta[name="csrf-token"]').content;
             const body = {};
@@ -247,6 +326,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 if (res.ok) {
+                    // Mensajes según la acción realizada
+                    const mensajesExito = {
+                        autorizar:         'Pago autorizado correctamente.',
+                        rechazar:          'Pago rechazado correctamente.',
+                        definir_reembolso: 'Importe de reembolso guardado correctamente.'
+                    };
+
+                    let textoFinal = mensajesExito[accionActual] || 'Operación realizada correctamente.';
+                    try {
+                        const data = await res.json();
+                        if (data && (data.mensaje || data.message)) {
+                            textoFinal = data.mensaje || data.message;
+                        }
+                    } catch (_) { /* respuesta sin JSON */ }
+
+                    sessionStorage.setItem('toast_pago', JSON.stringify({
+                        texto: textoFinal,
+                        tipo: 'exito'
+                    }));
+
                     window.location.reload();
                     return;
                 }
@@ -255,12 +354,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 const error = data.message
                     || Object.values(data.errors || {}).flat()[0]
                     || 'Ocurrió un error al procesar la transacción.';
-                alert(error);
+                
+                // Reemplazamos alert(error) por el toast centrado
+                mostrarToast(error, 'error', 0); 
+                
                 btnConfirmar.textContent = accionActual === 'autorizar'
                     ? 'Autorizar pago'
-                    : accionActual === 'rechazar' ? 'Rechazar pago' : 'Guardar importe';
+                    : accionActual === 'rechazar'
+                        ? 'Rechazar pago'
+                        : accionActual === 'definir_reembolso' ? 'Guardar importe' : 'Marcar reembolsado';
             } catch (error) {
-                alert('Error de conexión.');
+                // Reemplazamos alert('Error de conexión.') por el toast centrado
+                mostrarToast('Error de conexión.', 'error', 0);
             } finally {
                 btnConfirmar.disabled = false;
             }
@@ -280,5 +385,99 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btnConfirmar) {
             btnConfirmar.disabled = false;
         }
+    }
+
+    // =====================================================================
+    // 4. Lógica del Modal de Detalle (Ver Detalle)
+    // =====================================================================
+    const modalDetallePago = document.getElementById('modal-detalle-pago');
+    const botonesDetalle = document.querySelectorAll('.btn-ver-detalle');
+    const btnCerrarDetalleX = document.getElementById('btn-detalle-cerrar-x');
+    const btnCerrarDetalleFooter = document.getElementById('btn-detalle-cerrar');
+
+    if (botonesDetalle.length) {
+        botonesDetalle.forEach(boton => {
+            boton.addEventListener('click', function() {
+                // Extraemos los datos del botón usando los atributos data-*
+                const cliente = this.dataset.cliente;
+                const correo = this.dataset.correo;
+                const iniciales = this.dataset.iniciales;
+                const metodo = this.dataset.metodo;
+                const banco = this.dataset.banco;
+                const referencia = this.dataset.referencia;
+                const monto = this.dataset.monto;
+                const fecha = this.dataset.fecha;
+                const estado = this.dataset.estado;
+                const servicio = this.dataset.servicio;
+                const duracion = this.dataset.duracion;
+                const fechaCita = this.dataset.fechaCita;
+                const horario = this.dataset.horario;
+                const especialista = this.dataset.especialista;
+                const contacto = this.dataset.contacto;
+
+                // Rellenamos el HTML del modal de detalle
+                document.getElementById('detalle-titulo').textContent = `Cita de ${cliente}`;
+                document.getElementById('detalle-fecha').textContent = fecha;
+                document.getElementById('detalle-monto').textContent = monto;
+                
+                // Método y banco (concatenamos si hay banco)
+                const metodoCompleto = banco ? `${metodo} · ${banco}` : metodo;
+                document.getElementById('detalle-metodo').textContent = metodoCompleto;
+                document.getElementById('detalle-referencia').textContent = `#${referencia}`;
+                document.getElementById('detalle-resultado').textContent = estado;
+
+                // Detalles de la cita
+                document.getElementById('detalle-servicio').textContent = servicio;
+                document.getElementById('detalle-duracion').textContent = duracion;
+                document.getElementById('detalle-fecha-cita').textContent = fechaCita;
+                document.getElementById('detalle-horario').textContent = horario;
+                document.getElementById('detalle-especialista').textContent = especialista;
+                document.getElementById('detalle-contacto').textContent = contacto;
+
+                // Datos del cliente final
+                document.getElementById('detalle-cliente-iniciales').textContent = iniciales;
+                document.getElementById('detalle-cliente-nombre').textContent = cliente;
+                document.getElementById('detalle-cliente-correo').textContent = correo;
+
+                // Lógica para los colores del badge de estado
+                const badgeEstado = document.getElementById('detalle-badge-estado');
+                badgeEstado.className = 'estado-autorizado'; // Clase base
+                
+                const estadoLower = estado.toLowerCase();
+                if (estadoLower.includes('rechazado')) {
+                    badgeEstado.className = 'estado-rechazado';
+                } else if (estadoLower.includes('pendiente') || estadoLower.includes('reembolso')) {
+                    badgeEstado.className = 'estado-pendiente';
+                } else {
+                    badgeEstado.className = 'estado-autorizado';
+                }
+
+                // Abrimos el modal
+                if (modalDetallePago) {
+                    modalDetallePago.showModal();
+                }
+            });
+        });
+    }
+
+    // Lógica para cerrar el modal de detalle
+    if (btnCerrarDetalleX) {
+        btnCerrarDetalleX.addEventListener('click', () => {
+            if (modalDetallePago) modalDetallePago.close();
+        });
+    }
+
+    if (btnCerrarDetalleFooter) {
+        btnCerrarDetalleFooter.addEventListener('click', () => {
+            if (modalDetallePago) modalDetallePago.close();
+        });
+    }
+
+    if (modalDetallePago) {
+        modalDetallePago.addEventListener('click', (e) => {
+            if (e.target === modalDetallePago) {
+                modalDetallePago.close();
+            }
+        });
     }
 });

@@ -234,13 +234,33 @@
     margin: 0;
     color: #4b5563;
     line-height: 1.5;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
     word-break: break-word;
+    /* Al quitar las líneas de line-clamp y overflow, el texto se expande solo */
+
 }
+
+/* 👇 NUEVO: ESTILOS DEL BOTÓN DE ACCIÓN 👇 */
+.notif-btn-accion {
+    display: inline-block;
+    margin-top: 0.6rem;
+    padding: 0.35rem 0.8rem;
+    background-color: #8b5e3c;
+    color: #ffffff !important;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    text-align: center;
+    width: fit-content;
+}
+
+.notif-btn-accion:hover {
+    background-color: #714a2e;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(139, 94, 60, 0.3);
+}
+/* 👆 FIN DEL NUEVO BOTÓN 👆 */
 
 /* ESTADO VACÍO */
 .notif-vacio {
@@ -255,33 +275,21 @@
    ========================================= */
 @media (max-width: 768px) {
     .notif-panel {
-        /* Lo fijamos a la pantalla */
         position: fixed;
-        
-        /* Lo centramos usando márgenes, la forma más segura */
         top: 10vh;
         bottom: auto;
         left: 0;
         right: 0;
         margin: 0 auto;
-        
-        /* Ancho seguro */
         width: calc(100vw - 32px);
         max-width: 400px;
         max-height: 80vh;
-        
-        /* Z-INDEX ALTÍSIMO para que pase por encima del menú marrón */
         z-index: 99999; 
-        
-        /* Fondo blanco sólido para que no se transparente el menú */
         background: #ffffff;
-        
-        /* Quitamos la animación problemática */
         transform: none;
         animation: none;
     }
 
-    /* Ajustes de la cabecera en móvil */
     .notif-panel-header {
         padding: 1.1rem 1.25rem;
     }
@@ -325,6 +333,10 @@
     .notif-mensaje {
         font-size: .8rem;
     }
+    .notif-btn-accion {
+        padding: 0.4rem 1rem;
+        font-size: 0.8rem;
+    }
 }
 
 /* =========================================
@@ -333,5 +345,6 @@
 @media (prefers-reduced-motion: reduce) {
     .notif-campana,
     .notif-item,
-    .notif-btn-mini { transition: none; }
+    .notif-btn-mini,
+    .notif-btn-accion { transition: none; }
 }

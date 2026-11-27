@@ -29,7 +29,7 @@ async function cargarWidget(suffix) {
         badge.hidden = data.count === 0;
         badge.textContent = data.count > 99 ? '99+' : data.count;
 
-        // 👇 NUEVO: Actualizar el Badge del ícono de la PWA (Sistema Operativo) 👇
+        // Actualizar el Badge del ícono de la PWA (Sistema Operativo)
         if ('setAppBadge' in navigator) {
             if (data.count > 0) {
                 navigator.setAppBadge(data.count).catch(err => console.log('Error al poner badge:', err));
@@ -37,7 +37,6 @@ async function cargarWidget(suffix) {
                 navigator.clearAppBadge().catch(err => console.log('Error al limpiar badge:', err));
             }
         }
-        // 👆 FIN DEL NUEVO CÓDIGO 👆
 
         if (!data.items.length) {
             const vacio = document.createElement('li');
@@ -76,8 +75,34 @@ async function cargarWidget(suffix) {
             const mensaje = document.createElement('p');
             mensaje.className = 'notif-mensaje';
             mensaje.textContent = n.mensaje;
+            mensaje.title = n.mensaje;
             contenido.appendChild(cabecera);
             contenido.appendChild(mensaje);
+
+            // 👇 AQUÍ ESTÁ EL CAMBIO DE ROLES Y EL BOTÓN 👇
+            if (n.url) {
+                const btnAccion = document.createElement('a');
+                btnAccion.className = 'notif-btn-accion';
+                
+                // Si es cancelada Y el rol es cliente, dice "Ver mis reservas". Si no, "Ver detalle"
+                if (n.tipo === 'cita_cancelada' && n.rol === 'cliente') {
+                    btnAccion.textContent = 'Ver mis reservas';
+                } else {
+                    btnAccion.textContent = 'Ver detalle';
+                }
+                
+                btnAccion.href = n.url;
+                
+                // Al hacer clic, marcamos como leída y dejamos que el navegador navegue
+                btnAccion.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Evita que el clic marque la tarjeta entera
+                    marcarLeida(n.id, true); // El 'true' significa "estoy redirigiendo"
+                });
+                
+                contenido.appendChild(btnAccion);
+            }
+            // 👆 FIN DEL CAMBIO 👆
+
             item.appendChild(iconoWrapper);
             item.appendChild(contenido);
             lista.appendChild(item);
@@ -89,13 +114,18 @@ async function cargarWidget(suffix) {
     }
 }
 
-async function marcarLeida(id) {
+// 👇 FUNCIÓN MODIFICADA PARA ACEPTAR EL PARÁMETRO 'redirigiendo' 👇
+async function marcarLeida(id, redirigiendo = false) {
     const url = URL_LEER.replace(':id', id);
     await fetch(url, {
         method: 'POST',
-        headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' }
+        headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+        keepalive: true // Permite que la petición termine si el usuario cambia de página rápido
     });
-    cargarTodo();
+    
+    if (!redirigiendo) {
+        cargarTodo(); // Solo recarga el panel si NO estamos redirigiendo
+    }
 }
 
 async function marcarTodas() {

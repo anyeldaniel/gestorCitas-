@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnAbono = document.getElementById('btn-modalidad-abono');
     const btnTotal = document.getElementById('btn-modalidad-total');
     const inputMonto = document.getElementById('input-monto');
+    const inputTipoPago = document.getElementById('input-tipo-pago');
     const displayMonto = document.getElementById('display-monto');
     const restanteText = document.getElementById('restante-text');
     const btnText = document.getElementById('btn-text');
@@ -32,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btnAbono.classList.add('seleccionado');
             btnTotal.classList.remove('seleccionado');
             inputMonto.value = montoAbonoVal;
+            inputTipoPago.value = 'abono';
             displayMonto.innerText = formatMoney(montoAbonoVal);
             btnText.innerText = `Confirmar y pagar $${formatMoney(montoAbonoVal)}`;
             restanteText.innerText = `Restante en el local: $${formatMoney(montoTotalVal - montoAbonoVal)}`;
@@ -40,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btnTotal.classList.add('seleccionado');
             btnAbono.classList.remove('seleccionado');
             inputMonto.value = montoTotalVal;
+            inputTipoPago.value = 'total';
             displayMonto.innerText = formatMoney(montoTotalVal);
             btnText.innerText = `Confirmar y pagar $${formatMoney(montoTotalVal)}`;
             restanteText.style.display = 'none';

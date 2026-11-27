@@ -145,6 +145,7 @@ Route::middleware(['auth', 'role:admin,recepcion'])->group(function () {
         Route::post('/aprobar-pago/{id}', [PagoController::class, 'aprobarPago'])->name('recepcion.aprobar.pago');
         Route::post('/rechazar-pago/{id}', [PagoController::class, 'rechazarPago'])->name('recepcion.rechazar.pago');
         Route::post('/definir-reembolso/{id}', [PagoController::class, 'definirReembolso'])->name('recepcion.definir.reembolso');
+        Route::post('/reembolso-completado/{id}', [PagoController::class, 'marcarReembolsado'])->name('recepcion.marcar.reembolsado');
     });
 
     Route::get('/sala-espera', [SalaEsperaController::class, 'index'])->name('sala.espera');

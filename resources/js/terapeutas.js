@@ -6,7 +6,6 @@ document.addEventListener("DOMContentLoaded", function() {
     console.log('✅ Módulo de terapeutas cargado');
 
     // --- LECTURA DE MENSAJES DE ÉXITO (SweetAlert) ---
-    // Esto atrapa el mensaje que Laravel envía al guardar o editar un especialista
     const mensajeExito = document.getElementById("dashboard-mensaje-exito");
     if (mensajeExito) {
         const texto = mensajeExito.dataset.mensaje;
@@ -25,6 +24,21 @@ document.addEventListener("DOMContentLoaded", function() {
     const passwordInput = document.getElementById('password');
     const passwordConfirmationInput = document.getElementById('password_confirmation');
 
+    // ✅ FUNCIÓN AUXILIAR: Fuerza el ocultamiento del feedback de contraseña
+    window.ocultarFeedbackPassword = function() {
+        const feedbackBox = document.getElementById('password-feedback-especialista');
+        const strengthText = document.getElementById('especialista-strength-text');
+        
+        if (feedbackBox) feedbackBox.style.display = 'none';
+        if (strengthText) strengthText.style.display = 'none';
+        
+        // Limpiar los checks por si acaso
+        ['especialista-length-req', 'especialista-alpha-req', 'especialista-special-req'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = '';
+        });
+    };
+
     const actualizarRequisitosEspecialista = () => {
         if (!passwordInput) return true;
 
@@ -37,7 +51,27 @@ document.addEventListener("DOMContentLoaded", function() {
         const feedbackBox = document.getElementById('password-feedback-especialista');
         const strengthText = document.getElementById('especialista-strength-text');
 
-        if (feedbackBox) feedbackBox.style.display = pwd.length > 0 ? 'block' : 'none';
+        // ✅ CORRECCIÓN CLAVE: Detectar si el campo de contraseña es visible
+        const campoPassword = document.getElementById('campo-password');
+        const campoPasswordVisible = campoPassword && campoPassword.style.display !== 'none';
+
+        // ✅ Si el campo NO es visible (modo edición), ocultamos todo y salimos
+        if (!campoPasswordVisible) {
+            if (feedbackBox) feedbackBox.style.display = 'none';
+            if (strengthText) strengthText.style.display = 'none';
+            return true;
+        }
+
+        // Si el campo es visible pero está vacío, ocultamos el feedback
+        if (pwd.length === 0) {
+            if (feedbackBox) feedbackBox.style.display = 'none';
+            if (strengthText) strengthText.style.display = 'none';
+            return false;
+        }
+
+        // Si hay texto y el campo es visible, mostramos el feedback
+        if (feedbackBox) feedbackBox.style.display = 'block';
+        if (strengthText) strengthText.style.display = 'block';
 
         const updateRequirement = (elementId, isValid, text) => {
             const element = document.getElementById(elementId);
@@ -51,6 +85,7 @@ document.addEventListener("DOMContentLoaded", function() {
         updateRequirement('especialista-special-req', hasSpecial, 'Un carácter especial (@, $, !, %, etc.)');
 
         const isValid = isLongEnough && hasLetters && hasNumbers && hasSpecial;
+        
         if (strengthText) {
             strengthText.textContent = isValid ? 'Estado: Contraseña Muy Segura' : 'Estado: Contraseña Poco Segura';
             strengthText.style.color = isValid ? '#198754' : '#dc3545';
@@ -69,14 +104,11 @@ document.addEventListener("DOMContentLoaded", function() {
         form.addEventListener('submit', function(e) {
             sincronizarEspecialidades();
             
-            // ✅ FORZAR EL ORIGEN JUSTO ANTES DE ENVIAR
             const origenInput = document.getElementById('form-origen');
             if (origenInput) {
-                // Si existe el buscador, estamos en la vista de terapeutas
                 if (document.getElementById('buscador-terapeutas')) {
                     origenInput.value = 'terapeutas';
                 } else {
-                    // Si no, estamos en el dashboard
                     origenInput.value = 'dashboard';
                 }
             }
@@ -108,7 +140,6 @@ function getBaseUrl() {
     return baseUrl;
 }
 
-//cambié la función del buscador para los terapeutas, para que el paginador pueda funcionar correctamente y no se rompa al filtrar, además de que ahora respeta el orden inicial de los terapeutas y los ordena correctamente según el criterio seleccionado. 
 function initBuscadorTerapeutas() {
     const input       = document.getElementById('buscador-terapeutas');
     const selectOrden = document.getElementById('orden-terapeutas');
@@ -389,7 +420,6 @@ window.verTerapeutaDetalle = function(id) {
     if (!tarjeta) { alert('Terapeuta no encontrado'); return; }
 
     const nombre = tarjeta.querySelector('.terapeuta-nombre')?.textContent.trim() || 'Sin nombre';
-    //Aquí estoy cambiando la forma en que se obtienen las especialidades para que sea más robusta y no dependa de un solo lugar, buscando primero en el dataset y luego en el contenido de la tarjeta. :D
     const especialidades = (
         tarjeta.dataset.especialidades ||
         tarjeta.querySelector('.tag-especialidad')?.textContent ||
@@ -407,7 +437,6 @@ window.verTerapeutaDetalle = function(id) {
         document.getElementById('view-terapeuta-email').textContent = email;
         document.getElementById('view-terapeuta-descripcion').textContent = descripcion;
 
-        //Con esto me aseguro de que las especialidades se muestren correctamente, incluso si no hay ninguna registrada, mostrando un mensaje amigable en ese caso. Att: Andrés
         const espContainer = document.getElementById('view-terapeuta-especialidades');
         if (especialidades && especialidades !== 'Sin especialidad' && especialidades !== 'Especialista en Bienestar') {
             const espArray = especialidades.split(',').map(e => e.trim()).filter(Boolean);
@@ -488,6 +517,9 @@ window.abrirModalAgregar = function() {
     document.getElementById('password_confirmation').required = true;
     document.getElementById('password_confirmation').value = '';
 
+    // ✅ LIMPIAR FEEDBACK AL ABRIR REGISTRO
+    if (typeof window.ocultarFeedbackPassword === 'function') window.ocultarFeedbackPassword();
+
     modal.showModal();
 };
 
@@ -513,6 +545,9 @@ window.editarTerapeuta = function(id) {
     document.getElementById('password').value = '';
     document.getElementById('password_confirmation').required = false;
     document.getElementById('password_confirmation').value = '';
+
+    // ✅ OCULTAR FEEDBACK AL EDITAR
+    if (typeof window.ocultarFeedbackPassword === 'function') window.ocultarFeedbackPassword();
 
     let nombre = '', email = '', telefono = '', descripcion = '', especialidades = '';
 
@@ -568,6 +603,9 @@ window.editarTerapeutaDesdeDashboard = function(id, nombre, email, telefono, esp
     document.getElementById('password_confirmation').required = false;
     document.getElementById('password_confirmation').value = '';
 
+    // ✅ OCULTAR FEEDBACK AL EDITAR DESDE DASHBOARD
+    if (typeof window.ocultarFeedbackPassword === 'function') window.ocultarFeedbackPassword();
+
     document.getElementById('nombre').value = nombre || '';
     document.getElementById('email').value = email || '';
     document.getElementById('telefono').value = telefono || '';
@@ -592,14 +630,9 @@ window.editarTerapeutaDesdeDashboard = function(id, nombre, email, telefono, esp
     modal.showModal();
 };
 
-/**
- * Eliminar especialista
- * Usa fetch para mostrar SweetAlert y luego recargar la página.
- */
 window.eliminarTerapeuta = function(id) {
     const modal = document.getElementById('modal-confirmacion-custom');
     
-    // Fallback por si el modal de confirmación no existe en la vista actual
     if (!modal) {
         if (confirm('¿Estás seguro de eliminar este especialista?')) {
             const token = document.querySelector('input[name="_token"]')?.value || '';
@@ -639,9 +672,8 @@ window.eliminarTerapeuta = function(id) {
         formData.append('_token', token);
         formData.append('_method', 'DELETE');
 
-        // Enviamos la petición con fetch
         fetch(`${getBaseUrl()}/admin/usuario/${id}`, {
-            method: 'POST', // POST simulando DELETE por el _method
+            method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': token,
                 'Accept': 'application/json'
@@ -653,7 +685,6 @@ window.eliminarTerapeuta = function(id) {
             return response.json().catch(() => ({}));
         })
         .then(() => {
-            // Mostramos el SweetAlert de éxito
             if (typeof Swal !== 'undefined') {
                 Swal.fire({
                     icon: 'success',
@@ -706,7 +737,7 @@ window.sincronizarEspecialidades = function() {
     const hidden = document.getElementById('especialidades_hidden');
     if (hidden) hidden.value = lista.join(',');
 };
-//Aquí estoy modificando las alertas para que ya no se vean feas, agregué una función para mostrar alertas de manera más bonita y amigable, usando SweetAlert si está disponible, o un alert normal como fallback. :D att. Andrés
+
 window.mostrarAlertaTerapeuta = function(titulo, mensaje, campoEnfocar = null) {
     const modalTerapeuta = document.getElementById('modal-terapeuta');
     const estabaAbierto = modalTerapeuta && modalTerapeuta.open;
@@ -744,7 +775,6 @@ window.validarContrasenas = function() {
     const errorPassDiv = document.getElementById('error-password');
     const errorEmailDiv = document.getElementById('error-email');
 
-    // Limpiar errores previos
     if (pass) pass.classList.remove('input-error');
     if (confirm) confirm.classList.remove('input-error');
     if (emailInput) emailInput.classList.remove('input-error');
@@ -758,7 +788,6 @@ window.validarContrasenas = function() {
         errorEmailDiv.textContent = '';
     }
 
-    // 1. Validación de formato básico de correo
     if (emailInput && emailInput.value.trim() !== '') {
         const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!regexEmail.test(emailInput.value.trim())) {
@@ -772,11 +801,9 @@ window.validarContrasenas = function() {
         }
     }
 
-    // Si no hay campos de contraseña obligatorios (ej. modo edición)
     if (!pass || !confirm) return true;
     if (pass.value === '' && confirm.value === '') return true;
 
-    // 2. Validación completa de contraseña
     const hasLetters = /[a-zA-Z]/.test(pass.value);
     const hasNumbers = /[0-9]/.test(pass.value);
     const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(pass.value);
@@ -801,7 +828,6 @@ window.validarContrasenas = function() {
         return false;
     }
 
-    // 3. Validación de coincidencia de contraseñas
     if (pass.value !== confirm.value) {
         pass.classList.add('input-error');
         confirm.classList.add('input-error');
@@ -859,9 +885,7 @@ window.Syncro.editEsp = function(id, nombre, email, telefono, especialidades, de
     }
 };
 window.Syncro.delEsp = function(id) { if (typeof window.eliminarTerapeuta === 'function') window.eliminarTerapeuta(id); };
-// ============================================
-// VISOR DE FOTO COMPLETA (LIGHTBOX)
-// ============================================
+
 window.abrirVisorFoto = function(url, nombre) {
     const visor = document.getElementById('visor-foto-terapeuta');
     const imagen = document.getElementById('visor-foto-imagen');
@@ -874,7 +898,6 @@ window.abrirVisorFoto = function(url, nombre) {
     }
 };
 
-// Permitir cerrar con la tecla Escape
 document.addEventListener('DOMContentLoaded', () => {
     const visor = document.getElementById('visor-foto-terapeuta');
     if (visor) {
@@ -884,12 +907,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-// ============================================
-// MODAL DE RESEÑAS - CONTROLADOR CON PAGINACIÓN
-// ============================================
+
 let resenasActuales = [];
 let paginaActualResenas = 1;
-const LIMITE_RESENAS_POR_PAGINA = 3; // 👈 Aquí puedes cambiar cuántas reseñas se ven por página
+const LIMITE_RESENAS_POR_PAGINA = 3;
 
 window.verResenasTerapeuta = function(btn) {
     if (typeof event !== 'undefined' && event) {
@@ -911,10 +932,9 @@ window.verResenasTerapeuta = function(btn) {
     }
     
     titulo.textContent = `Reseñas de ${nombre}`;
-    paginaActualResenas = 1; // Reiniciar a la primera página
+    paginaActualResenas = 1;
     renderizarPaginaResenas();
 
-    // Forzar visualización centrada con flex
     modal.style.setProperty('display', 'flex', 'important');
     modal.classList.add('is-open');
 };
@@ -942,7 +962,6 @@ window.renderizarPaginaResenas = function() {
         return;
     }
 
-    // Calcular índices para el slice
     const totalResenas = resenasActuales.length;
     const totalPaginas = Math.ceil(totalResenas / LIMITE_RESENAS_POR_PAGINA);
     
@@ -953,7 +972,6 @@ window.renderizarPaginaResenas = function() {
     const fin = inicio + LIMITE_RESENAS_POR_PAGINA;
     const resenasPagina = resenasActuales.slice(inicio, fin);
 
-    // Renderizar las reseñas de la página actual
     resenasPagina.forEach(resena => {
         const puntuacion = parseInt(resena.puntuacion || 0);
         const tarjeta = document.createElement('div');
@@ -996,7 +1014,6 @@ window.renderizarPaginaResenas = function() {
         contenedor.appendChild(tarjeta);
     });
 
-    // Agregar barra de paginación si hay más de una página
     if (totalPaginas > 1) {
         const paginador = document.createElement('div');
         paginador.className = 'modal-paginador-container';
