@@ -16,8 +16,11 @@ class ReservaPagoFlowTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_reserving_keeps_the_selection_in_session_without_creating_a_cita(): void
+    public function test_reserving_creates_a_pending_cita_and_redirects_to_checkout_with_cita_id(): void
     {
+        Mail::fake();
+        Notification::fake();
+
         $cliente = $this->crearUsuario('cliente');
         $trabajador = $this->crearUsuario('trabajador');
         $servicio = $this->crearServicio();
@@ -28,13 +31,28 @@ class ReservaPagoFlowTest extends TestCase
             'hora' => '10:00',
         ];
 
-        $this->actingAs($cliente)
-            ->post(route('clientes.reserva.store'), $reserva)
-            ->assertRedirect(route('checkout.view'))
-            ->assertSessionHas('reserva_pendiente.cliente_id', $cliente->id);
+        $response = $this->actingAs($cliente)
+            ->post(route('clientes.reserva.store'), $reserva);
 
-        $this->assertDatabaseCount('citas', 0);
+        // El flujo nuevo crea la cita directamente
+        $this->assertDatabaseCount('citas', 1);
         $this->assertDatabaseCount('pagos', 0);
+
+        $cita = Cita::query()->sole();
+
+        $response->assertRedirect(route('checkout.view', ['cita_id' => $cita->id]));
+
+        $this->assertSame($cliente->id, $cita->cliente_id);
+        $this->assertSame($trabajador->id, $cita->trabajador_id);
+        $this->assertSame($servicio->id, $cita->servicio_id);
+        $this->assertSame('pendiente', $cita->estado);
+        $this->assertSame(80, (int) $cita->monto_total);
+
+        $this->assertDatabaseHas('cita_servicio', [
+            'cita_id' => $cita->id,
+            'servicio_id' => $servicio->id,
+            'trabajador_id' => $trabajador->id,
+        ]);
     }
 
     public function test_submitting_payment_creates_pending_cita_services_and_review_payment_together(): void
