@@ -3,8 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 
 return new class extends Migration
 {
@@ -25,15 +23,6 @@ return new class extends Migration
             $table->rememberToken(); // para mantener la sesion iniciada
             $table->timestamps(); // fechas de registro
         });
-
-        DB::table('usuarios')-> insert([ //Usuario administrador
-            'nombre' => 'administrador',
-            'correo' => 'syncrostyle732@gmail.com',
-            'contraseña' => Hash:: make ('admin1829'),
-            'rol' => 'admin',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();

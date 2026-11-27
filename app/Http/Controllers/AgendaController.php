@@ -187,6 +187,13 @@ class AgendaController extends Controller
         $cita = Cita::with(['cliente', 'servicio'])->findOrFail($id);
         $nuevoEstado = $request->estado;
 
+        if ($cita->estado === 'pendiente' || $nuevoEstado === 'confirmada') {
+            return response()->json([
+                'ok'      => false,
+                'mensaje' => 'Las citas pendientes se confirman exclusivamente desde Verificar Pagos; no puedes cambiar su estado desde Agenda.',
+            ], 422);
+        }
+
         if ($cita->estaCancelada()) {
             return response()->json([
                 'ok'      => false,
@@ -210,7 +217,6 @@ class AgendaController extends Controller
 
         // Flujo estricto de transiciones permitidas
         $transicionesPermitidas = [
-            'pendiente'  => ['confirmada'],
             'confirmada' => ['en curso', 'completada'],
             'en curso'   => ['completada'],
         ];

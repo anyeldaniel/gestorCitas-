@@ -1,4 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
+
+    const formularioFiltrosAgenda = document.querySelector('.agenda-filtros');
+    const selectorFechaAgenda = formularioFiltrosAgenda?.querySelector('input[name="fecha"]');
+
+    selectorFechaAgenda?.addEventListener('change', () => {
+        formularioFiltrosAgenda.requestSubmit();
+    });
     
     /* =========================================================
        1. LÓGICA PARA DESPLEGAR Y OCULTAR LOS DETALLES DE LA CITA
@@ -129,6 +136,10 @@ document.addEventListener('DOMContentLoaded', () => {
             boton.addEventListener('click', function(e) {
                 e.preventDefault();
                 urlCambioEstado = this.dataset.url;
+                const estadosPermitidos = JSON.parse(this.dataset.estados || '[]');
+                modalEstado.querySelectorAll('[data-estado]').forEach(opcion => {
+                    opcion.style.display = estadosPermitidos.includes(opcion.dataset.estado) ? '' : 'none';
+                });
                 modalEstado.showModal();
             });
         });
@@ -146,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // Petición al servidor
                     const response = await fetch(urlCambioEstado, {
-                        method: 'POST', // Cambia a 'PUT' si tu ruta en Laravel lo requiere
+                        method: 'PATCH',
                         headers: {
                             'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': csrfToken || '',
@@ -155,10 +166,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         body: JSON.stringify({ estado: nuevoEstado })
                     });
 
+                    const resultado = await response.json();
+
                     if (response.ok) {
                         window.location.reload(); // Recargar para reflejar el nuevo estado
                     } else {
-                        alert('Hubo un error al cambiar el estado de la cita.');
+                        alert(resultado.mensaje || 'Hubo un error al cambiar el estado de la cita.');
                     }
                 } catch (error) {
                     console.error('Error:', error);
