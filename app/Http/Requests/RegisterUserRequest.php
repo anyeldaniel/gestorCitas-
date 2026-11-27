@@ -15,6 +15,14 @@ class RegisterUserRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'email'    => $this->email ? strtolower(trim($this->email)) : null,
+            'telefono' => $this->telefono ? preg_replace('/\D+/', '', (string) $this->telefono) : null,
+        ]);
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -25,7 +33,7 @@ class RegisterUserRequest extends FormRequest
         return [
             'username'     => ['required', 'string', 'max:100', 'min:3', 'regex:/^[\pL\s\-\'.]+$/u'],
             'email'    => 'required|string|email|max:255|unique:usuarios,correo',
-            'telefono' => 'required|digits_between:7,20',
+            'telefono' => 'required|string|min:7|max:20|unique:usuarios,telefono',
             'password' => [
                 'required',
                 'string',
@@ -54,7 +62,7 @@ class RegisterUserRequest extends FormRequest
 
                 'telefono.required' => 'El número de teléfono es obligatorio.',
                 'telefono.digits_between' => 'El número de teléfono debe contener entre 7 y 20 dígitos.',
-                
+                'telefono.unique' => 'Este número de teléfono ya está registrado.',
 
                 'password.required' => 'La contraseña es obligatoria.',
                 'password.min'      => 'La contraseña debe tener al menos 8 caracteres.',
@@ -64,7 +72,5 @@ class RegisterUserRequest extends FormRequest
                 'confirmPassword.same'     => 'La confirmación de la contraseña debe coincidir con la contraseña.',
             ];
         }
-
-
 
 }

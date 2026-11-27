@@ -40,6 +40,14 @@ class AdminController extends Controller
         return view('admin.dashboard', compact('trabajadores', 'recepcionistas', 'totalCitas', 'ingresosEstimados'));
     }
 
+    private function normalizarContacto(Request $request): void
+    {
+        $request->merge([
+            'email'    => $request->filled('email') ? strtolower(trim($request->input('email'))) : $request->input('email'),
+            'telefono' => $request->filled('telefono') ? preg_replace('/\D+/', '', (string) $request->input('telefono')) : $request->input('telefono'),
+        ]);
+    }
+
     public function reportes() { return view('admin.reportes'); }
 
     public function reportesDatos(Request $request)
@@ -94,10 +102,11 @@ class AdminController extends Controller
 
     public function CreateTrabajador(Request $request)
     {
+        $this->normalizarContacto($request);
         $validatedData = $request->validate([
             'nombre'         => 'required|string|min:3|max:100',
             'email'          => 'required|string|email|max:255|unique:usuarios,correo',
-            'telefono'       => 'required|string|min:7|max:20',
+            'telefono'       => 'required|string|min:7|max:20|unique:usuarios,telefono',
             'descripcion'    => 'nullable|string|max:500',
             'password'       => [
                 'required',
@@ -117,6 +126,7 @@ class AdminController extends Controller
             'nombre.min'         => 'El nombre debe tener al menos 3 caracteres.',
             'email.required'     => 'El correo es obligatorio.',
             'email.unique'       => 'Este correo ya está registrado.',
+            'telefono.unique' => 'Este número de teléfono ya está registrado.',
             'telefono.required'  => 'El teléfono es obligatorio.',
             'telefono.min'       => 'El teléfono debe tener al menos 7 caracteres.',
             'password.required'  => 'La contraseña es obligatoria.',
@@ -168,7 +178,7 @@ class AdminController extends Controller
         $validatedData = $request->validate([
             'nombre'   => 'required|string|max:255',
             'email'    => 'required|email|unique:usuarios,correo',
-            'telefono' => 'required|string',
+            'telefono' => 'required|string|min:7|max:20|unique:usuarios,telefono',
             'password' => [
                 'required',
                 'string',
@@ -187,6 +197,8 @@ class AdminController extends Controller
             'password.regex' => 'La contraseña debe incluir letras, números y un carácter especial.',
             'password.confirmed' => 'Las contraseñas no coinciden.',
             'password_confirmation.required' => 'Debes confirmar la contraseña.',
+            'email.unique'    => 'Este correo ya está registrado.',
+            'telefono.unique' => 'Este número de teléfono ya está registrado.',
         ]);
 
         User::create([
@@ -229,7 +241,7 @@ class AdminController extends Controller
         $validatedData = $request->validate([
             'nombre'      => 'required|string|max:255',
             'email'       => 'required|email|unique:usuarios,correo,' . $id,
-            'telefono'    => 'required|string',
+            'telefono' => 'required|string|min:7|max:20|unique:usuarios,telefono,' . $id,
             'descripcion' => 'nullable|string',
             'password'    => [
                 'nullable',
@@ -291,7 +303,7 @@ class AdminController extends Controller
         $validatedData = $request->validate([
             'nombre'   => 'required|string|max:255',
             'email'    => 'required|email|unique:usuarios,correo,' . $id,
-            'telefono' => 'required|string',
+            'telefono' => 'required|string|min:7|max:20|unique:usuarios,telefono,' . $id,
             'password' => [
                 'nullable',
                 'string',
