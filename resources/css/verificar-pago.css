@@ -1277,7 +1277,7 @@ dialog.modal-contenedor-alerta-critica::backdrop {
 }
 
 /* ==========================================================================
-   MODAL DETALLE DE TRANSACCIÓN
+   MODAL DETALLE DE TRANSACCIÓN (RESPONSIVE)
    ========================================================================== */
 
 dialog.modal-detalle {
@@ -1291,6 +1291,9 @@ dialog.modal-detalle {
     padding: 2.5rem 2.5rem 1.5rem;
     border-bottom: 1px solid #efe9e1;
     position: relative;
+    /* Aseguramos que el header del detalle no se desborde */
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 .detalle-estado-fecha {
@@ -1298,6 +1301,7 @@ dialog.modal-detalle {
     align-items: center;
     gap: 1rem;
     margin-top: 0.5rem;
+    flex-wrap: wrap; /* Permite que el estado y la fecha se apilen si no caben */
 }
 
 .detalle-fecha-texto {
@@ -1323,6 +1327,8 @@ dialog.modal-detalle {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap; /* Permite que el label y el monto se apilen en pantallas muy pequeñas */
+    gap: 0.5rem;
 }
 
 .detalle-label {
@@ -1356,6 +1362,7 @@ dialog.modal-detalle {
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
+    min-width: 0; /* Evita que el contenido desborde la columna */
 }
 
 .detalle-dato-label {
@@ -1373,6 +1380,7 @@ dialog.modal-detalle {
     font-size: 0.95rem;
     font-weight: 500;
     color: #2d2a26;
+    word-break: break-word; /* Permite que textos largos se rompan y no desborden */
 }
 
 .detalle-seccion-cita-header {
@@ -1380,6 +1388,8 @@ dialog.modal-detalle {
     justify-content: space-between;
     align-items: center;
     margin-top: 0.5rem;
+    flex-wrap: wrap; /* Permite que el título y el badge se apilen */
+    gap: 0.5rem;
 }
 
 .detalle-badge-reserva {
@@ -1407,6 +1417,7 @@ dialog.modal-detalle {
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
+    min-width: 0;
 }
 
 .detalle-cliente-card {
@@ -1417,10 +1428,121 @@ dialog.modal-detalle {
     padding: 1rem 1.25rem;
     border-radius: 12px;
     border: 1px solid #efe6db;
+    /* Flex wrap para que el avatar y el texto no se aplasten */
+    flex-wrap: wrap;
 }
 
 .pie-alerta-botones .btn-confirmar-accion.btn-accion-autorizar {
     background: #3d2c1e;
     color: #ffffff;
     min-width: 150px;
+}
+
+/* --------------------------------------------------------------------------
+   AJUSTES RESPONSIVE PARA EL MODAL DE DETALLE
+   -------------------------------------------------------------------------- */
+
+/* Tablets y pantallas medianas */
+@media (max-width: 640px) {
+    dialog.modal-detalle {
+        width: 95%;
+        max-height: 95vh;
+    }
+
+    .modal-detalle-header {
+        padding: 1.5rem 1.5rem 1rem;
+    }
+
+    .modal-pago-cerrar {
+        top: 1rem;
+        right: 1rem;
+        width: 32px;
+        height: 32px;
+    }
+
+    .titulo-alerta-critica {
+        font-size: 1.8rem;
+    }
+
+    .modal-detalle-body {
+        padding: 1.5rem;
+        max-height: 65vh;
+    }
+
+    .detalle-tarjeta-datos {
+        grid-template-columns: 1fr; /* Una sola columna para los datos de pago */
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .detalle-dato-col {
+        flex-direction: row; /* Etiqueta y valor en línea para ahorrar espacio */
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding-bottom: 0.5rem;
+    }
+    
+    .detalle-dato-col:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .detalle-cita-grid {
+        grid-template-columns: 1fr; /* Una sola columna para los datos de la cita */
+        gap: 1rem;
+    }
+
+    .detalle-seccion-pago {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .detalle-monto-grande {
+        font-size: 1.5rem;
+    }
+    
+    .pie-alerta-botones {
+        padding: 1rem 1.5rem;
+        flex-direction: column-reverse; /* Botones apilados, el de confirmar arriba */
+    }
+
+    .pie-alerta-botones .btn-cancelar-alerta,
+    .pie-alerta-botones .btn-confirmar-accion {
+        width: 100%;
+        min-width: unset;
+    }
+}
+
+/* Móviles pequeños */
+@media (max-width: 400px) {
+    .modal-detalle-header {
+        padding: 1.25rem 1.25rem 0.75rem;
+    }
+
+    .titulo-alerta-critica {
+        font-size: 1.5rem;
+    }
+
+    .modal-detalle-body {
+        padding: 1.25rem;
+    }
+
+    .detalle-cliente-card {
+        padding: 0.75rem;
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .detalle-estado-fecha {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .detalle-seccion-cita-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }

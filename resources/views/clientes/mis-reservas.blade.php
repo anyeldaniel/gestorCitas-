@@ -148,8 +148,8 @@
             </article>
         </aside>
     </header>
-<!--Acá estoy modificando el código para que se vea la próxima cita con paginadorr para mayor orden y claridad.-->
-<!-- PRÓXIMA CITA -->
+
+    <!-- PRÓXIMA CITA -->
     <section class="proxima-cita-section">
         <header class="section-header">
             <div class="section-title">
@@ -374,6 +374,13 @@
                                 </div>
                             @endif
                         </div>
+
+                        @if(!$estaPagado && $enRevision == 0)
+                            {{-- AQUÍ SE AGREGÓ $cita->id PARA ENVIAR EL PARÁMETRO A LA RUTA --}}
+                            <a href="{{ route('checkout.view', $cita->id) }}" class="btn-completar-pago">
+                                COMPLETAR PAGO <span>→</span>
+                            </a>
+                        @endif
                     </aside>
 
                 </div>
@@ -397,7 +404,7 @@
         @endif
     </section>
 
-<!-- HISTORIAL -->
+    <!-- HISTORIAL -->
     <section class="historial-section">
         <header class="section-header">
             <div class="section-title">
