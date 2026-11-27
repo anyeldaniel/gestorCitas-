@@ -126,6 +126,7 @@ class AgendaController extends Controller
             $dia = $lunes->copy()->addDays($i);
             $conteoSemana[$dia->toDateString()] = (clone $base)
                 ->whereDate('fecha', $dia->toDateString())
+                ->where('estado', '!=', 'cancelada')
                 ->count();
         }
 

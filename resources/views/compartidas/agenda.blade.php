@@ -136,6 +136,20 @@
         {{-- COLUMNA PRINCIPAL --}}
         <div class="agenda-columna-principal">
 
+            @if(session('success') || session('error') || $errors->any())
+                <div role="{{ session('error') || $errors->any() ? 'alert' : 'status' }}" style="margin-bottom: 1rem;">
+                    @if(session('success'))
+                        <p>{{ session('success') }}</p>
+                    @endif
+                    @if(session('error'))
+                        <p>{{ session('error') }}</p>
+                    @endif
+                    @foreach($errors->all() as $error)
+                        <p>{{ $error }}</p>
+                    @endforeach
+                </div>
+            @endif
+
             {{-- CABECERA --}}
             <header class="agenda-header">
                 <div class="agenda-header-texto">

@@ -864,19 +864,19 @@
 /* ESTILO DEL BOTÓN "VER DETALLE" */
 .modulo-vista .btn-ver-detalle {
     background: transparent;
-    color: var(--primary-brown); /* Color marrón de la imagen */
+    color: var(--primary-brown);
     border: none;
     cursor: pointer;
     font-family: var(--font-body);
     font-size: 0.82rem;
     font-weight: 600;
     padding: 0.35rem 0.5rem;
-    white-space: nowrap; /* Evita que se rompa en dos líneas */
+    white-space: nowrap;
     transition: color 0.2s ease;
 }
 
 .modulo-vista .btn-ver-detalle:hover {
-    color: var(--primary-brown-ink); /* Marrón más oscuro al pasar el mouse */
+    color: var(--primary-brown-ink);
     text-decoration: underline;
 }
 
@@ -983,7 +983,7 @@
 }
 
 /* ==========================================================================
-   MODAL DE CONFIRMACIÓN - DISEÑO PREMIUM
+   MODAL DE CONFIRMACIÓN (AUTORIZAR / RECHAZAR PAGO) - DISEÑO PREMIUM
    ========================================================================== */
 
 dialog.modal-contenedor-alerta-critica {
@@ -1014,6 +1014,9 @@ dialog.modal-contenedor-alerta-critica::backdrop {
     display: flex;
     flex-direction: column;
     background: #fcf9f5;
+    max-height: 90vh;
+    height: 100%;
+    overflow: hidden;
 }
 
 /* --- HEADER DEL MODAL --- */
@@ -1024,6 +1027,7 @@ dialog.modal-contenedor-alerta-critica::backdrop {
     gap: 1rem;
     padding: 2.5rem 2.5rem 1.5rem;
     position: relative;
+    flex-shrink: 0;
 }
 
 .modal-pago-header__texto {
@@ -1104,13 +1108,22 @@ dialog.modal-contenedor-alerta-critica::backdrop {
     border-color: #8b5e3c;
 }
 
-/* --- CUERPO DEL MODAL --- */
+/* --- CUERPO DEL MODAL (CON SCROLL INTERNO) --- */
 .modal-pago-body {
     padding: 0 2.5rem 1.5rem;
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
+    overflow-y: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: 60vh;
+    -webkit-overflow-scrolling: touch;
 }
+
+.modal-pago-body::-webkit-scrollbar { width: 6px; }
+.modal-pago-body::-webkit-scrollbar-track { background: transparent; }
+.modal-pago-body::-webkit-scrollbar-thumb { background: #d6ccc2; border-radius: 10px; }
 
 .modal-pago-resumen {
     display: flex;
@@ -1151,6 +1164,7 @@ dialog.modal-contenedor-alerta-critica::backdrop {
     font-size: 1.05rem;
     font-weight: 600;
     color: #2d2a26;
+    word-break: break-word;
 }
 
 .modal-pago-resumen__info span {
@@ -1158,6 +1172,7 @@ dialog.modal-contenedor-alerta-critica::backdrop {
     font-size: 0.82rem;
     color: #7a736c;
     line-height: 1.3;
+    word-break: break-word;
 }
 
 .modal-pago-resumen__meta {
@@ -1170,6 +1185,7 @@ dialog.modal-contenedor-alerta-critica::backdrop {
     padding-left: 1.5rem;
     min-height: 40px;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .modal-pago-resumen__meta strong {
@@ -1226,6 +1242,7 @@ dialog.modal-contenedor-alerta-critica::backdrop {
     padding: 1.5rem 2.5rem 2rem;
     background: #fcf9f5;
     border-top: 1px solid #efe9e1;
+    flex-shrink: 0;
 }
 
 .btn-cancelar-alerta,
@@ -1277,7 +1294,107 @@ dialog.modal-contenedor-alerta-critica::backdrop {
 }
 
 /* ==========================================================================
-   MODAL DETALLE DE TRANSACCIÓN
+   AJUSTES RESPONSIVE Y SCROLL INTERNO (AUTORIZAR / RECHAZAR PAGO)
+   ========================================================================== */
+
+@media (max-width: 640px) {
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) {
+        width: 95%;
+        max-height: 92vh;
+        border-radius: 20px;
+    }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .modal-pago-card {
+        max-height: 92vh;
+    }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .modal-pago-header {
+        padding: 1.5rem 1.5rem 1rem;
+    }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .modal-pago-header__texto {
+        max-width: calc(100% - 2.75rem);
+        gap: 0.45rem;
+    }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .modal-pago-subtitulo {
+        max-width: 100%;
+        font-size: 0.88rem;
+    }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .modal-pago-body {
+        padding: 0.5rem 1.5rem 1.25rem;
+        max-height: 62vh;
+        gap: 1rem;
+    }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .modal-pago-resumen {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.9rem;
+        padding: 1rem 1.15rem;
+    }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .modal-pago-resumen__meta {
+        align-items: flex-start;
+        text-align: left;
+        border-left: none;
+        border-top: 1px solid #e2d6c8;
+        padding-left: 0;
+        padding-top: 0.75rem;
+        width: 100%;
+        min-height: unset;
+    }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .modal-nota-info {
+        align-items: flex-start;
+        padding: 0.9rem 1rem;
+    }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .pie-alerta-botones {
+        padding: 1rem 1.5rem 1.25rem;
+        flex-direction: column-reverse;
+        gap: 0.65rem;
+    }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .pie-alerta-botones .btn-cancelar-alerta,
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .pie-alerta-botones .btn-confirmar-accion {
+        width: 100%;
+        min-width: unset;
+    }
+}
+
+@media (max-width: 400px) {
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .modal-pago-header {
+        padding: 1.25rem 1.25rem 0.75rem;
+    }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .modal-pago-body {
+        padding: 0.5rem 1.25rem 1rem;
+        max-height: 60vh;
+    }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .modal-pago-resumen {
+        padding: 0.85rem 1rem;
+    }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .cliente-avatar-modal {
+        width: 40px;
+        height: 40px;
+        font-size: 0.8rem;
+    }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .modal-pago-resumen__meta strong {
+        font-size: 1.35rem;
+    }
+
+    dialog.modal-contenedor-alerta-critica:not(.modal-detalle) .pie-alerta-botones {
+        padding: 0.85rem 1.25rem 1.1rem;
+    }
+}
+
+/* ==========================================================================
+   MODAL DETALLE DE TRANSACCIÓN (RESPONSIVE)
    ========================================================================== */
 
 dialog.modal-detalle {
@@ -1291,6 +1408,8 @@ dialog.modal-detalle {
     padding: 2.5rem 2.5rem 1.5rem;
     border-bottom: 1px solid #efe9e1;
     position: relative;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 .detalle-estado-fecha {
@@ -1298,6 +1417,7 @@ dialog.modal-detalle {
     align-items: center;
     gap: 1rem;
     margin-top: 0.5rem;
+    flex-wrap: wrap;
 }
 
 .detalle-fecha-texto {
@@ -1323,6 +1443,8 @@ dialog.modal-detalle {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }
 
 .detalle-label {
@@ -1356,6 +1478,7 @@ dialog.modal-detalle {
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
+    min-width: 0;
 }
 
 .detalle-dato-label {
@@ -1373,6 +1496,7 @@ dialog.modal-detalle {
     font-size: 0.95rem;
     font-weight: 500;
     color: #2d2a26;
+    word-break: break-word;
 }
 
 .detalle-seccion-cita-header {
@@ -1380,6 +1504,8 @@ dialog.modal-detalle {
     justify-content: space-between;
     align-items: center;
     margin-top: 0.5rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }
 
 .detalle-badge-reserva {
@@ -1407,6 +1533,7 @@ dialog.modal-detalle {
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
+    min-width: 0;
 }
 
 .detalle-cliente-card {
@@ -1417,6 +1544,7 @@ dialog.modal-detalle {
     padding: 1rem 1.25rem;
     border-radius: 12px;
     border: 1px solid #efe6db;
+    flex-wrap: wrap;
 }
 
 .pie-alerta-botones .btn-confirmar-accion.btn-accion-autorizar {
@@ -1425,6 +1553,295 @@ dialog.modal-detalle {
     min-width: 150px;
 }
 
+/* --------------------------------------------------------------------------
+   AJUSTES RESPONSIVE PARA EL MODAL DE DETALLE
+   -------------------------------------------------------------------------- */
+
+/* Tablets y pantallas medianas */
+@media (max-width: 640px) {
+    dialog.modal-detalle {
+        width: 95%;
+        max-height: 95vh;
+    }
+
+    .modal-detalle-header {
+        padding: 1.5rem 1.5rem 1rem;
+    }
+
+    .modal-pago-cerrar {
+        top: 1rem;
+        right: 1rem;
+        width: 32px;
+        height: 32px;
+    }
+
+    .titulo-alerta-critica {
+        font-size: 1.8rem;
+    }
+
+    .modal-detalle-body {
+        padding: 1.5rem;
+        max-height: 65vh;
+    }
+
+    .detalle-tarjeta-datos {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .detalle-dato-col {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding-bottom: 0.5rem;
+    }
+
+    .detalle-dato-col:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .detalle-cita-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .detalle-seccion-pago {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .detalle-monto-grande {
+        font-size: 1.5rem;
+    }
+
+    .pie-alerta-botones {
+        padding: 1rem 1.5rem;
+        flex-direction: column-reverse;
+    }
+
+    .pie-alerta-botones .btn-cancelar-alerta,
+    .pie-alerta-botones .btn-confirmar-accion {
+        width: 100%;
+        min-width: unset;
+    }
+}
+
+/* Móviles pequeños */
+@media (max-width: 400px) {
+    .modal-detalle-header {
+        padding: 1.25rem 1.25rem 0.75rem;
+    }
+
+    .titulo-alerta-critica {
+        font-size: 1.5rem;
+    }
+
+    .modal-detalle-body {
+        padding: 1.25rem;
+    }
+
+    .detalle-cliente-card {
+        padding: 0.75rem;
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .detalle-estado-fecha {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .detalle-seccion-cita-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* ==========================================================================
+   RESPONSIVE: TARJETAS DE PAGO (AUTORIZAR / RECHAZAR) EN MÓVIL
+   Convierte cada fila de la tabla en una tarjeta apilada en pantallas ≤ 768px
+   ========================================================================== */
+
+@media (max-width: 768px) {
+
+    /* El wrapper deja de hacer scroll horizontal porque la tabla se apila */
+    .modulo-vista .tabla-responsive-wrapper {
+        overflow-x: visible;
+    }
+
+    /* La tabla deja de tener ancho mínimo y se comporta como bloque */
+    .modulo-vista .tabla-transacciones {
+        min-width: 0;
+        width: 100%;
+        display: block;
+    }
+
+    /* Ocultamos el thead (los encabezados no tienen sentido en modo tarjeta) */
+    .modulo-vista .tabla-transacciones thead {
+        display: none;
+    }
+
+    .modulo-vista .tabla-transacciones tbody {
+        display: block;
+        width: 100%;
+    }
+
+    /* Cada fila se convierte en una tarjeta */
+    .modulo-vista .tabla-transacciones tbody tr {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            "fecha    estado"
+            "cliente  cliente"
+            "banco    monto"
+            "ref      ref"
+            "acciones acciones";
+        gap: 0.85rem 1rem;
+        padding: 1.25rem;
+        margin: 0 0 1rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border-light);
+        border-radius: 14px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .modulo-vista .tabla-transacciones tbody tr:last-child {
+        margin-bottom: 0;
+    }
+
+    .modulo-vista .tabla-transacciones tbody tr:hover {
+        background: var(--bg-card); /* evita el hover de escritorio */
+    }
+
+    /* Todas las celdas pasan a comportarse como bloques dentro del grid */
+    .modulo-vista .tabla-transacciones td {
+        display: block;
+        padding: 0;
+        border: none;
+        font-size: 0.88rem;
+        min-width: 0;
+    }
+
+    /* Asignación de áreas del grid */
+    .modulo-vista .tabla-transacciones td.celda-fecha        { grid-area: fecha; }
+    .modulo-vista .tabla-transacciones td:nth-child(6)       { grid-area: estado; justify-self: end; align-self: start; }
+    .modulo-vista .tabla-transacciones td.celda-cliente      { grid-area: cliente; }
+    .modulo-vista .tabla-transacciones td.celda-banco        { grid-area: banco; }
+    .modulo-vista .tabla-transacciones td.celda-monto        { grid-area: monto; justify-self: end; text-align: right; }
+    .modulo-vista .tabla-transacciones td.celda-referencia   { grid-area: ref; }
+    .modulo-vista .tabla-transacciones td.celda-acciones     { grid-area: acciones; }
+
+    /* La celda de cliente ocupa todo el ancho y respira mejor */
+    .modulo-vista .tabla-transacciones td.celda-cliente .celda-cliente {
+        width: 100%;
+    }
+
+    /* La referencia se muestra como etiqueta de ancho completo */
+    .modulo-vista .tabla-transacciones td.celda-referencia code {
+        display: block;
+        width: 100%;
+        text-align: left;
+    }
+
+    /* ---- BOTONES DE ACCIÓN RESPONSIVE ---- */
+    .modulo-vista .celda-acciones {
+        display: flex;
+        flex-wrap: wrap;          /* Permite que los botones bajen de línea si no caben */
+        justify-content: flex-end;
+        align-items: center;
+        gap: 0.6rem;
+        padding-top: 0.85rem;
+        margin-top: 0.25rem;
+        border-top: 1px dashed var(--border-light);
+        width: 100%;
+    }
+
+    /* El botón de autorizar crece para ocupar el espacio disponible */
+    .modulo-vista .btn-autorizar {
+        flex: 1 1 auto;
+        justify-content: center;
+        min-height: 42px;
+        height: auto;
+        padding: 0.6rem 1rem;
+        font-size: 0.72rem;
+    }
+
+    /* Los botones de icono (rechazar) mantienen tamaño táctil cómodo */
+    .modulo-vista .btn-accion-icono {
+        width: 42px;
+        height: 42px;
+        flex: 0 0 auto;
+    }
+
+    /* El botón "Ver detalle" se alinea a la izquierda y ocupa su espacio */
+    .modulo-vista .btn-ver-detalle {
+        flex: 0 0 auto;
+        padding: 0.6rem 0.25rem;
+        font-size: 0.8rem;
+        text-align: left;
+    }
+
+    /* El texto "Procesado" se alinea a la izquierda */
+    .modulo-vista .texto-procesado {
+        justify-content: flex-start;
+        padding: 0;
+        font-size: 0.8rem;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Ajuste fino para teléfonos muy pequeños (≤ 420px)
+   -------------------------------------------------------------------------- */
+@media (max-width: 420px) {
+
+    .modulo-vista .tabla-transacciones tbody tr {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "fecha"
+            "estado"
+            "cliente"
+            "banco"
+            "monto"
+            "ref"
+            "acciones";
+        gap: 0.7rem;
+        padding: 1rem;
+    }
+
+    /* En una sola columna, el estado y el monto se alinean a la izquierda */
+    .modulo-vista .tabla-transacciones td:nth-child(6),
+    .modulo-vista .tabla-transacciones td.celda-monto {
+        justify-self: start;
+        text-align: left;
+    }
+
+    /* Los botones de acción se distribuyen en fila completa */
+    .modulo-vista .celda-acciones {
+        justify-content: space-between;
+    }
+
+    .modulo-vista .btn-autorizar {
+        flex: 1 1 100%;
+        order: 2;               /* El botón autorizar va abajo, ancho completo */
+    }
+
+    .modulo-vista .btn-accion-icono {
+        order: 1;               /* El botón rechazar va arriba, a la izquierda */
+    }
+
+    .modulo-vista .btn-ver-detalle,
+    .modulo-vista .texto-procesado {
+        order: 1;
+    }
+    
+}
+
+/* Regla proveniente de la rama "ramaerrores" para ocultar filas filtradas */
 .modulo-vista .tabla-transacciones tbody tr.fila-oculta {
     display: none;
 }

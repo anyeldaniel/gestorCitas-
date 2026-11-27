@@ -212,9 +212,142 @@ body {
     color: var(--gris-texto);
     border-top: 1px solid var(--color-borde);
 }
+/* ==========================================================================
+   LATERALES BOTÁNICOS EDITORIALES (DENTRO DEL CONTENEDOR, SIN LLEGAR AL FOOTER)
+   ========================================================================== */
+.dash-lateral {
+    display: none;
+}
 
+@media (min-width: 1580px) {
+    .dashboard-admin {
+        position: relative;
+        max-width: 1220px;
+        margin: 0 auto;
+    }
+
+    /* Líneas divisorias sutiles que enmarcan el panel central (con position absolute para respetar el final del contenido) */
+    .dashboard-admin::before,
+    .dashboard-admin::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 1px;
+        background-color: rgba(229, 220, 211, 0.75);
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .dashboard-admin::before {
+        left: -50px;
+    }
+
+    .dashboard-admin::after {
+        right: -50px;
+    }
+
+    /* Contenedores absolutos en los márgenes exteriores del panel */
+    .dash-lateral {
+        position: absolute;
+        width: 150px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        pointer-events: none;
+        user-select: none;
+        z-index: 2;
+    }
+
+    .dash-lateral--izq {
+        left: -200px; /* Ubicado en el margen izquierdo fuera de la tarjeta */
+        top: 90px;
+    }
+
+    .dash-lateral--der {
+        right: -200px; /* Ubicado en el margen derecho fuera de la tarjeta */
+        top: 60px;
+    }
+
+    /* Ilustración SVG pura de la rama izquierda */
+    .dash-lateral-rama {
+        width: 90px;
+        height: 310px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 340' fill='none' stroke='%23c4b3a1' stroke-width='1.15' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M50 15 V325'/%3E%3Cpath d='M50 75 C28 75 14 58 10 38 C30 42 46 58 50 75 Z'/%3E%3Cpath d='M50 145 C72 145 86 128 90 108 C70 112 54 128 50 145 Z'/%3E%3Cpath d='M50 215 C28 215 14 198 10 178 C30 182 46 198 50 215 Z'/%3E%3Cpath d='M50 275 C72 275 86 258 90 238 C70 242 54 258 50 275 Z'/%3E%3Ccircle cx='50' cy='145' r='2.5' fill='%238b5e3c' stroke='none'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: contain;
+    }
+
+    .dash-lateral-rama--corta {
+        height: 230px;
+        margin-top: 1.25rem;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 250' fill='none' stroke='%23c4b3a1' stroke-width='1.15' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M50 10 V240'/%3E%3Cpath d='M50 65 C28 65 14 48 10 28 C30 32 46 48 50 65 Z'/%3E%3Cpath d='M50 130 C72 130 86 113 90 93 C70 97 54 113 50 130 Z'/%3E%3Cpath d='M50 195 C28 195 14 178 10 158 C30 162 46 178 50 195 Z'/%3E%3C/svg%3E");
+    }
+
+    /* Texto vertical izquierdo */
+    .dash-lateral-vertical {
+        writing-mode: vertical-rl;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.62rem;
+        font-weight: 500;
+        letter-spacing: 0.28em;
+        color: #9c8876;
+        margin-top: 1rem;
+        text-transform: uppercase;
+    }
+
+    /* Emblema circular superior derecho */
+    .dash-lateral-emblema {
+        width: 105px;
+        height: 105px;
+        margin-bottom: 1.25rem;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 110 110' fill='none'%3E%3Ccircle cx='55' cy='55' r='48' stroke='%23cbbba9' stroke-width='1' stroke-dasharray='2 4'/%3E%3Ccircle cx='55' cy='55' r='37' stroke='%23cbbba9' stroke-width='1'/%3E%3Cpath d='M55 32 C55 47 63 55 78 55 C63 55 55 63 55 78 C55 63 47 55 32 55 C47 55 55 47 55 32 Z' stroke='%238b5e3c' stroke-width='1.35' stroke-linejoin='round'/%3E%3Ccircle cx='55' cy='55' r='3' fill='%238b5e3c'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: contain;
+    }
+
+    /* Bloque de texto "PAUSA DEL DÍA" */
+    .dash-lateral-pausa {
+        width: 100%;
+        padding: 1.35rem 0.5rem;
+        border-top: 1px solid #e5dcd3;
+        border-bottom: 1px solid #e5dcd3;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .dash-pausa-tag {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        color: #8b5e3c;
+        text-transform: uppercase;
+    }
+
+    .dash-pausa-frase {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.45rem;
+        font-weight: 600;
+        line-height: 1.15;
+        color: #3d2b1f;
+        margin: 0.15rem 0;
+    }
+
+    .dash-pausa-guion {
+        width: 22px;
+        height: 1.5px;
+        background-color: #8b5e3c;
+        margin-top: 0.25rem;
+    }
+}
 /* ============================================
-   ESTILOS TERAPEUTAS - VISTA ELEGANTE (REDISEÑO)
+   ESTILOS TERAPEUTAS 
    ============================================ */
 
 :root {

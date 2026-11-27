@@ -71,7 +71,7 @@ class ReservaController extends Controller
         $citaOcupada = Cita::where('fecha', $request->fecha)
             ->where('hora', $request->hora)
             ->where('trabajador_id', $primerEspecialistaId)
-            ->whereIn('estado', ['pendiente', 'confirmada', 'revision'])
+            ->whereIn('estado', ['pendiente', 'confirmada', 'en curso'])
             ->first();
 
         if ($citaOcupada) {
@@ -83,7 +83,7 @@ class ReservaController extends Controller
                 ->whereDoesntHave('citas', function ($query) use ($request) {
                     $query->where('fecha', $request->fecha)
                           ->where('hora', $request->hora)
-                          ->whereIn('estado', ['pendiente', 'confirmada', 'revision']);
+                    ->whereIn('estado', ['pendiente', 'confirmada', 'en curso']);
                 })
                 ->get();
 

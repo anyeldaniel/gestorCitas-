@@ -17,7 +17,7 @@
     $proximaCita = $citasPendientes->first();
 
     // MODIFICADO PARA PAGINAR DE 6 EN 6
-    $historialColeccion = $citas->where('estado', 'completada')->sortByDesc('fecha');
+    $historialColeccion = $citas->whereIn('estado', ['completada', 'cancelada'])->sortByDesc('fecha');
     $paginaActual = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage() ?: 1;
     $porPagina = 6;
     $historialPaginado = new \Illuminate\Pagination\LengthAwarePaginator(
@@ -35,7 +35,7 @@
 
         return max(0, (float) $cita->monto_total - (float) $totalPagado);
     });
-    $visitasRealizadas = $historialColeccion->count();
+    $visitasRealizadas = $citas->where('estado', 'completada')->count();
 
     // ==========================================
     // LÓGICA DINÁMICA DE TIPS Y DESCRIPCIÓN
@@ -148,8 +148,8 @@
             </article>
         </aside>
     </header>
-<!--Acá estoy modificando el código para que se vea la próxima cita con paginadorr para mayor orden y claridad.-->
-<!-- PRÓXIMA CITA -->
+
+    <!-- PRÓXIMA CITA -->
     <section class="proxima-cita-section">
         <header class="section-header">
             <div class="section-title">
@@ -374,6 +374,7 @@
                                 </div>
                             @endif
                         </div>
+
                     </aside>
 
                 </div>
@@ -397,12 +398,12 @@
         @endif
     </section>
 
-<!-- HISTORIAL -->
+    <!-- HISTORIAL -->
     <section class="historial-section">
         <header class="section-header">
             <div class="section-title">
                 <span>Tu historial</span>
-                <h2>Rituales que ya disfrutaste</h2>
+                <h2>Tus citas anteriores</h2>
             </div>
             <span class="historial-count">{{ $visitasRealizadas }} visitas completadas</span>
         </header>
@@ -411,7 +412,13 @@
             @forelse($historialPaginado as $cita)
                 @php 
                     $fechaHist = \Carbon\Carbon::parse($cita->fecha); 
-                    $yaCalifico = \App\Models\Resena::where('user_id', auth()->id())->where('cita_id', $cita->id)->exists();
+                    $esCancelada = $cita->estado === 'cancelada';
+                    $yaCalifico = !$esCancelada && \App\Models\Resena::where('user_id', auth()->id())->where('cita_id', $cita->id)->exists();
+                    $pagosReembolso = $cita->pagos
+                        ->where('estado_pago', 'aprobado')
+                        ->whereIn('estado_reembolso', ['por_definir', 'pendiente', 'reembolsado']);
+                    $reembolsosPendientes = $pagosReembolso->where('estado_reembolso', 'pendiente');
+                    $reembolsosCompletados = $pagosReembolso->where('estado_reembolso', 'reembolsado');
                 @endphp
                 
                 <article class="historial-card">
@@ -421,22 +428,40 @@
                     </time>
                     
                     <div class="historial-info">
-                        <span class="badge-completado">Completada</span>
+                        @if($esCancelada)
+                            <span class="badge badge-pendiente">Cancelada</span>
+                        @else
+                            <span class="badge-completado">Completada</span>
+                        @endif
                         <h4>{{ $cita->servicio->nombre_servicio ?? 'Tratamiento' }}</h4>
                         <p>{{ $cita->trabajador->nombre ?? 'Especialista' }} - {{ $cita->servicio->duracion_minutos ?? 60 }} min</p>
+
+                        @if($esCancelada && $cita->motivo_cancelacion)
+                            <p>Motivo: {{ $cita->motivo_cancelacion }}</p>
+                        @endif
+
+                        @if($esCancelada && $pagosReembolso->contains('estado_reembolso', 'por_definir'))
+                            <p>Reembolso por definir por administración.</p>
+                        @endif
+                        @if($esCancelada && $reembolsosPendientes->isNotEmpty())
+                            <p>Reembolso pendiente: ${{ number_format((float) $reembolsosPendientes->sum('monto_reembolso'), 2) }}</p>
+                        @endif
+                        @if($esCancelada && $reembolsosCompletados->isNotEmpty())
+                            <p>Reembolso completado: ${{ number_format((float) $reembolsosCompletados->sum('monto_reembolso'), 2) }}</p>
+                        @endif
                         
-                        @if(!$yaCalifico)
+                        @if(!$esCancelada && !$yaCalifico)
                             <button type="button" class="btn-calificar" 
                                     onclick="abrirModalResena({{ $cita->id }}, '{{ $cita->trabajador->nombre ?? 'Especialista' }}')">
                                 ⭐ Calificar atención
                             </button>
-                        @else
+                        @elseif(!$esCancelada)
                             <span class="badge-calificado">✓ Ya calificaste esta cita</span>
                         @endif
                     </div>
 
                     <div class="historial-precio">
-                        <span>Total</span>
+                        <span>{{ $esCancelada ? 'Total de la cita' : 'Total' }}</span>
                         <strong>${{ number_format($cita->monto_total, 0) }}</strong>
                     </div>
                 </article>
@@ -448,7 +473,7 @@
             @if($historialPaginado->hasPages())
                 <div class="historial-pagination-container">
                     <div class="historial-pagination-info">
-                        Mostrando del {{ $historialPaginado->firstItem() ?? 0 }} al {{ $historialPaginado->lastItem() ?? 0 }} de {{ $historialPaginado->total() }} rituales
+                        Mostrando del {{ $historialPaginado->firstItem() ?? 0 }} al {{ $historialPaginado->lastItem() ?? 0 }} de {{ $historialPaginado->total() }} registros del historial
                     </div>
                     <div class="historial-pagination-buttons">
                         {{-- Botón Anterior --}}

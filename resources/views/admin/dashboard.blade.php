@@ -10,6 +10,24 @@
 <main class="dashboard-admin">
 
     <!-- ==========================================
+         LATERALES DECORATIVOS ZEN (SOLO ESCRITORIO)
+         ========================================== -->
+    <aside class="dash-lateral dash-lateral--izq" aria-hidden="true">
+        <div class="dash-lateral-rama"></div>
+        <span class="dash-lateral-vertical">BIENESTAR EN CADA DETALLE</span>
+    </aside>
+
+    <aside class="dash-lateral dash-lateral--der" aria-hidden="true">
+        <div class="dash-lateral-emblema"></div>
+        <div class="dash-lateral-pausa">
+            <span class="dash-pausa-tag">PAUSA DEL DÍA</span>
+            <p class="dash-pausa-frase">Respira.<br>Todo fluye.</p>
+            <span class="dash-pausa-guion"></span>
+        </div>
+        <div class="dash-lateral-rama dash-lateral-rama--corta"></div>
+    </aside>
+
+    <!-- ==========================================
          HEADER ESTILO IMAGEN 1
          ========================================== -->
     <header class="dash-header">

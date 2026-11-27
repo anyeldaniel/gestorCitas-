@@ -44,7 +44,14 @@ class PagoController extends Controller
         ->orderByDesc('created_at')
         ->get();
 
-        return view('compartidas.verificar-pago', compact('pagos'));
+        $pagosAutorizados = $pagos
+            ->where('estado_pago', 'aprobado')
+            ->whereNull('estado_reembolso');
+        $aprobadosHoy = $pagosAutorizados
+            ->filter(fn (Pago $pago) => $pago->created_at?->gte(Carbon::today()))
+            ->count();
+
+        return view('compartidas.verificar-pago', compact('pagos', 'pagosAutorizados', 'aprobadosHoy'));
     }
 
     /**
@@ -196,6 +203,32 @@ class PagoController extends Controller
         ]);
     }
 
+    public function marcarReembolsado(Request $request, int $id): JsonResponse
+    {
+        abort_unless(in_array($request->user()->rol, ['admin', 'recepcion']), 403);
+
+        $pago = DB::transaction(function () use ($id) {
+            $pago = Pago::query()->lockForUpdate()->findOrFail($id);
+
+            if ($pago->estado_reembolso !== 'pendiente' || $pago->estado_pago !== 'aprobado') {
+                throw ValidationException::withMessages([
+                    'pago' => 'Solo se puede completar un reembolso pendiente de un pago aprobado.',
+                ]);
+            }
+
+            $pago->update(['estado_reembolso' => 'reembolsado']);
+
+            return $pago->load('cita.cliente');
+        });
+
+        NotificacionService::reembolsoCompletado($pago);
+
+        return response()->json([
+            'ok' => true,
+            'mensaje' => 'El reembolso se marcó como completado y se notificó al cliente.',
+        ]);
+    }
+
     /**
      * Mostrar la pantalla de cobro al cliente.
      */
@@ -331,7 +364,7 @@ class PagoController extends Controller
                     ->where('fecha', $reserva['fecha'])
                     ->where('hora', $reserva['hora'])
                     ->where('trabajador_id', $reserva['trabajador_id'])
-                    ->whereIn('estado', ['pendiente', 'confirmada','en curso', 'revision'])
+                    ->whereIn('estado', ['pendiente', 'confirmada', 'en curso'])
                     ->lockForUpdate()
                     ->first();
 

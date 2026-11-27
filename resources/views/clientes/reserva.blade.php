@@ -2,7 +2,9 @@
 
 @section('title', 'Reservar Cita - The Beauty Room')
 
-@vite(['resources/css/reserva.css'])
+@push('styles')
+    @vite(['resources/css/reserva.css'])
+@endpush
 
 @section('content')
 <main class="modulo-reserva" id="modulo-reserva" 
@@ -43,8 +45,10 @@
     <form class="reserva-panel" action="{{ route('clientes.reserva.store') }}" method="POST" id="form-reserva">
         @csrf
 
-        {{-- Input oculto para cuando el usuario elija un terapeuta alternativo --}}
-        <input type="hidden" name="trabajador_id_alternativo" id="input-alternativo" value="">
+        {{-- Solo se renderiza el input oculto si NO hay radios alternativos activos para evitar duplicados --}}
+        @if(!(session('terapeutas_alternativos') && session('terapeutas_alternativos')->count() > 0))
+            <input type="hidden" name="trabajador_id_alternativo" id="input-alternativo" value="">
+        @endif
         <input type="hidden" name="fecha" id="input-fecha" value="{{ old('fecha') }}">
         <input type="hidden" name="hora" id="input-hora" value="{{ old('hora') }}">
 
@@ -188,5 +192,8 @@
     </form>
 </main>
 @endsection
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-@vite(['resources/js/reserva.js'])
+
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @vite(['resources/js/reserva.js'])
+@endpush
