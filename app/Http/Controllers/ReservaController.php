@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Models\Cita;
 use App\Models\Servicio;
 use App\Models\User;
+use App\Services\NotificacionService;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Log;
 
 class ReservaController extends Controller
 {
@@ -26,14 +29,12 @@ class ReservaController extends Controller
             'duracion' => $servicio->duracion_minutos ?? 60,
         ];
 
-        // Servicios agrupados por especialidad (Agregamos la relación especialistas)
         $serviciosAgrupados = Servicio::with(['especialidad', 'especialistas'])
             ->get()
             ->groupBy(function ($item) {
                 return $item->especialidad ? $item->especialidad->nombre_especialidad : 'Otros Servicios';
             });
 
-        // Solo ofrecer usuarios registrados con el rol de trabajador
         $terapeutas = User::where('id', '!=', auth()->id())
             ->where('rol', 'trabajador')
             ->orderBy('nombre')
@@ -47,21 +48,19 @@ class ReservaController extends Controller
      */
     public function store(Request $request)
     {
-        // VALIDACIÓN ORIGINAL DE TU SISTEMA
+        // 1. VALIDACIÓN (fusionada: base remota + refuerzos de rol y fecha)
         $request->validate([
-        'servicios'                     => 'required|array|min:1',
-        'servicios.*'                   => 'exists:servicios,id',
-        'trabajadores_por_servicio'     => 'required|array',
-        'trabajadores_por_servicio.*'   => 'integer|exists:usuarios,id,rol,trabajador',
-        'trabajador_id_alternativo'     => 'nullable|integer|exists:usuarios,id,rol,trabajador',
-        'fecha'                         => 'required|date|after_or_equal:today',
-        'hora'                          => 'required',
-]);
+            'servicios'                     => 'required|array|min:1',
+            'servicios.*'                   => 'exists:servicios,id',
+            'trabajadores_por_servicio'     => 'required|array',
+            'trabajadores_por_servicio.*'   => 'integer|exists:usuarios,id,rol,trabajador',
+            'trabajador_id_alternativo'     => 'nullable|integer|exists:usuarios,id,rol,trabajador',
+            'fecha'                         => 'required|date|after_or_equal:today',
+            'hora'                          => 'required',
+        ]);
 
-        // Servicios seleccionados
         $servicios = Servicio::whereIn('id', $request->servicios)->get();
-
-        // Guardamos el arreglo original que envía el formulario
+        $montoTotal = $servicios->sum('precio');
         $trabajadoresArray = $request->trabajadores_por_servicio;
 
         // Si el cliente seleccionó una alternativa sugerida por el sistema anti-choques
@@ -70,11 +69,10 @@ class ReservaController extends Controller
             $trabajadoresArray[$firstKey] = $request->trabajador_id_alternativo;
         }
 
-        // Extraemos los IDs principales para la validación de solapamiento
         $primerEspecialistaId = reset($trabajadoresArray);
         $primerServicioId = $servicios->first()->id;
 
-        // SISTEMA ANTI-CHOQUES (OVERLAPPING)
+        // 2. SISTEMA ANTI-CHOQUES
         $citaOcupada = Cita::where('fecha', $request->fecha)
             ->where('hora', $request->hora)
             ->where('trabajador_id', $primerEspecialistaId)
@@ -82,36 +80,81 @@ class ReservaController extends Controller
             ->first();
 
         if ($citaOcupada) {
-            // Si el horario está ocupado, buscamos alternativas de terapeutas libres
             $terapeutasAlternativos = User::where('rol', 'trabajador')
                 ->where('id', '!=', $primerEspecialistaId)
-                ->whereHas('servicios', function($query) use ($primerServicioId) {
+                ->whereHas('servicios', function ($query) use ($primerServicioId) {
                     $query->where('servicio_id', $primerServicioId);
                 })
-                ->whereDoesntHave('citas', function($query) use ($request) {
+                ->whereDoesntHave('citas', function ($query) use ($request) {
                     $query->where('fecha', $request->fecha)
                           ->where('hora', $request->hora)
                           ->whereIn('estado', ['pendiente', 'confirmada', 'revision']);
                 })
                 ->get();
 
-            // Abortamos y mostramos las alternativas en la vista sin borrar datos
+            // Si es petición AJAX, devolvemos JSON para el SweetAlert
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'message' => 'El especialista seleccionado ya tiene una reserva asignada en este horario.',
+                    'alternativas' => $terapeutasAlternativos
+                ], 422);
+            }
+
+            // Fallback tradicional
             return back()->withInput()->withErrors([
                 'hora' => 'El especialista seleccionado ya tiene una reserva asignada en este horario.'
             ])->with('terapeutas_alternativos', $terapeutasAlternativos);
         }
 
-        session()->put('reserva_pendiente', [
-            'cliente_id' => auth()->id(),
-            'fecha' => $request->fecha,
-            'hora' => $request->hora,
+        // 3. GUARDADO DE LA CITA PRINCIPAL
+        $cita = Cita::create([
+            'cliente_id'    => auth()->id(),
             'trabajador_id' => $primerEspecialistaId,
-            'servicio_id' => $primerServicioId,
-            'trabajadores_por_servicio' => $trabajadoresArray,
+            'servicio_id'   => $primerServicioId,
+            'cabina_id'     => null,
+            'monto_total'   => $montoTotal,
+            'fecha'         => $request->fecha,
+            'hora'          => $request->hora,
+            'estado'        => 'pendiente',
         ]);
 
+        // Guardar TODOS los servicios en la tabla pivote
+        foreach ($trabajadoresArray as $servicioId => $especialistaId) {
+            $cita->servicios()->attach($servicioId, [
+                'trabajador_id' => $especialistaId
+            ]);
+        }
+
+        // Notificaciones (Manejadas con try/catch para no romper la reserva si falla el correo)
+        try {
+            NotificacionService::citaNueva($cita);
+
+            $cliente = auth()->user();
+            if ($cliente) {
+                // $cliente->notify(new \App\Notifications\NuevaCitaNotification($cita));
+            }
+            $terapeutasNotificar = array_unique(array_values($trabajadoresArray));
+            foreach ($terapeutasNotificar as $terapeutaId) {
+                $terapeuta = User::find($terapeutaId);
+                if ($terapeuta) {
+                    // $terapeuta->notify(new \App\Notifications\NuevaCitaNotification($cita));
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error("Error al enviar notificación: " . $e->getMessage());
+        }
+
+        // 4. RESPUESTA FINAL (Soporta AJAX y tradicional)
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => '¡Cita apartada con éxito! Redirigiendo al pago...',
+                'redirect_url' => route('checkout.view', ['cita_id' => $cita->id])
+            ]);
+        }
+
         return redirect()
-            ->route('checkout.view')
+            ->route('checkout.view', ['cita_id' => $cita->id])
             ->with('success', 'Cita apartada. Asignamos a tus especialistas seleccionados.');
     }
 
@@ -120,7 +163,6 @@ class ReservaController extends Controller
      */
     public function misReservas()
     {
-        // Agregamos 'servicios' para poder leer los especialistas de la tabla pivote
         $citas = Cita::with(['servicio', 'trabajador', 'pagos', 'servicios'])
                     ->where('cliente_id', auth()->id())
                     ->orderBy('fecha', 'DESC')
@@ -136,11 +178,7 @@ class ReservaController extends Controller
     {
         $servicio = Servicio::find($id);
         if (!$servicio) {
-            return response()->json(
-        $servicio->especialistas()
-        ->where('rol', 'trabajador')
-        ->get(['usuarios.id', 'usuarios.nombre', 'usuarios.foto', 'usuarios.descripcion'])
-);
+            return response()->json([]);
         }
         return response()->json($servicio->especialistas);
     }

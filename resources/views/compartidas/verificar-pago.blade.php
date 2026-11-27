@@ -141,7 +141,10 @@
                         @php
                             $cliente = $pago->cita->cliente ?? null;
                             $nombreCliente = $cliente ? $cliente->nombre : 'Cliente Eliminado';
-                            $iniciales = strtoupper(substr($nombreCliente, 0, 2));
+                            
+                            // Lógica para obtener "YP" (Inicial del Nombre + Inicial del Apellido)
+                            $partesNombre = explode(' ', trim($nombreCliente));
+                            $iniciales = strtoupper(substr($partesNombre[0], 0, 1) . (isset($partesNombre[1]) ? substr($partesNombre[1], 0, 1) : ''));
                             
                             $estadoClass = 'estado-pendiente';
                             $estadoTexto = 'Pendiente';
@@ -221,6 +224,28 @@
                                     @else
                                         <span class="texto-procesado">Procesado</span>
                                     @endif
+                                    
+                                    <!-- Botón para abrir el modal de detalle -->
+                                    <button type="button" class="btn-ver-detalle" 
+                                            data-cliente="{{ $nombreCliente }}"
+                                            data-correo="{{ $cliente->correo ?? 'Sin correo' }}"
+                                            data-iniciales="{{ $iniciales }}"
+                                            data-metodo="{{ $pago->metodoBancoLabel() }}"
+                                            data-banco="{{ $pago->banco_origen ?? '' }}"
+                                            data-referencia="{{ $pago->referencia ?? 'N/A' }}"
+                                            data-monto="${{ number_format($pago->monto_anticipado, 2) }}"
+                                            data-fecha="{{ $pago->created_at->format('d M Y · h:i A') }}"
+                                            data-estado="{{ $estadoTexto }}"
+                                            
+                                            {{-- Ajustado a las propiedades de tu base de datos --}}
+                                            data-servicio="{{ $pago->cita->servicio->nombre_servicio ?? 'No asignado' }}"
+                                            data-duracion="{{ $pago->cita->servicio->duracion_minutos ?? '0' }} minutos"
+                                            data-fecha-cita="{{ $pago->cita->fecha ? \Carbon\Carbon::parse($pago->cita->fecha)->translatedFormat('l, d \d\e F \d\e Y') : 'No definida' }}"
+                                            data-horario="{{ $pago->cita->hora ?? 'No definida' }}"
+                                            data-especialista="{{ $pago->cita->trabajador->nombre ?? 'Por asignar' }}"
+                                            data-contacto="{{ $cliente->telefono ?? 'Sin teléfono' }}">
+                                        Ver detalle
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -244,19 +269,28 @@
     </section>
 </main>
 
-<!-- Modal de Confirmación (Fuera del main para semántica correcta) -->
+<!-- ========================================== -->
+<!-- MODAL 1: CONFIRMACIÓN DE PAGO              -->
+<!-- ========================================== -->
 <dialog id="modal-confirmacion" class="modal-contenedor-alerta-critica">
     <div class="modal-pago-card">
         <header class="modal-pago-header">
             <div class="modal-pago-header__texto">
+                <div class="modal-icono-escudo" id="modal-icono-escudo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M9 12l2 2 4-4"></path></svg>
+                </div>
                 <span id="modal-kicker" class="modal-pago-kicker">VERIFICACIÓN DE PAGO</span>
-                <h3 id="modal-titulo" class="titulo-alerta-critica">¿Quieres rechazar pago?</h3>
+                <h3 id="modal-titulo" class="titulo-alerta-critica">¿Quieres autorizar este pago?</h3>
+                <p class="modal-pago-subtitulo" id="modal-subtitulo">Revisa los datos antes de confirmar. Esta acción dejará la reserva aprobada.</p>
             </div>
-            <button type="button" id="btn-modal-cerrar-x" class="modal-pago-cerrar" aria-label="Cerrar modal">&times;</button>
+            <button type="button" id="btn-modal-cerrar-x" class="modal-pago-cerrar" aria-label="Cerrar modal">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
         </header>
 
         <div class="modal-pago-body">
             <div id="modal-resumen-pago" class="modal-pago-resumen">
+                <div class="cliente-avatar-modal" id="modal-avatar-iniciales">YP</div>
                 <div class="modal-pago-resumen__info">
                     <strong id="modal-pago-cliente">Cliente</strong>
                     <span id="modal-pago-detalle">Método · Referencia</span>
@@ -267,13 +301,21 @@
                 </div>
             </div>
 
-            <p id="modal-mensaje" class="mensaje-alerta-descripcion"></p>
+            <div class="modal-nota-info" id="modal-nota-info">
+                <div class="nota-icono">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                </div>
+                <p id="modal-mensaje-nota">La reserva de <strong>Cliente</strong> quedará confirmada al aprobar el pago.</p>
+            </div>
 
+            <p id="modal-mensaje" class="mensaje-alerta-descripcion hidden"></p>
             <textarea id="motivo-rechazo" class="textarea-motivo hidden" rows="3" minlength="5" maxlength="500" placeholder="Escribe el motivo del rechazo aquí..."></textarea>
+            
             <div id="campos-reembolso-pago" class="textarea-motivo hidden">
                 <p>Indica cuánto se reembolsará por cada pago aprobado:</p>
                 <div id="lista-reembolsos-pago"></div>
             </div>
+            
             <label id="campo-monto-reembolso" class="textarea-motivo hidden">
                 Importe del reembolso
                 <input id="monto-reembolso" type="number" min="0.01" step="0.01" required>
@@ -282,7 +324,99 @@
 
         <footer class="pie-alerta-botones">
             <button type="button" id="btn-modal-cancelar" class="btn-cancelar-alerta">Cancelar</button>
-            <button type="button" id="btn-modal-confirmar" class="btn-confirmar-accion">Rechazar pago</button>
+            <button type="button" id="btn-modal-confirmar" class="btn-confirmar-accion btn-accion-autorizar">Autorizar pago</button>
+        </footer>
+    </div>
+</dialog>
+
+<!-- ========================================== -->
+<!-- MODAL 2: DETALLE DE LA TRANSACCIÓN         -->
+<!-- ========================================== -->
+<dialog id="modal-detalle-pago" class="modal-contenedor-alerta-critica modal-detalle">
+    <div class="modal-pago-card">
+        
+        <header class="modal-detalle-header">
+            <div class="modal-pago-header__texto">
+                <span class="modal-pago-kicker">DETALLE DE LA TRANSACCIÓN</span>
+                <h3 id="detalle-titulo" class="titulo-alerta-critica">Cita de Cliente</h3>
+                <p class="detalle-estado-fecha">
+                    <span id="detalle-badge-estado" class="estado-autorizado">Autorizado</span>
+                    <span id="detalle-fecha" class="detalle-fecha-texto">27 nov 2026 · 01:13</span>
+                </p>
+            </div>
+            <button type="button" id="btn-detalle-cerrar-x" class="modal-pago-cerrar" aria-label="Cerrar modal">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+        </header>
+
+        <div class="modal-detalle-body">
+            
+            <div class="detalle-seccion-pago">
+                <span class="detalle-label">INFORMACIÓN DEL PAGO</span>
+                <span class="detalle-monto-grande" id="detalle-monto">$0,00</span>
+            </div>
+
+            <div class="detalle-tarjeta-datos">
+                <span class="detalle-dato-col">
+                    <span class="detalle-dato-label">MÉTODO / BANCO</span>
+                    <strong id="detalle-metodo">Pago móvil · Banesco</strong>
+                </span>
+                <span class="detalle-dato-col">
+                    <span class="detalle-dato-label">REFERENCIA</span>
+                    <strong id="detalle-referencia">#000000</strong>
+                </span>
+                <span class="detalle-dato-col">
+                    <span class="detalle-dato-label">RESULTADO</span>
+                    <strong id="detalle-resultado">Autorizado</strong>
+                </span>
+            </div>
+
+            <div class="detalle-seccion-cita-header">
+                <span class="detalle-label">DETALLES DE LA CITA</span>
+                <span class="detalle-badge-reserva" id="detalle-reserva-estado">Reserva confirmada</span>
+            </div>
+
+            <div class="detalle-tarjeta-cita">
+                <div class="detalle-cita-grid">
+                    <span class="detalle-cita-item">
+                        <span class="detalle-dato-label">SERVICIO</span>
+                        <strong id="detalle-servicio">Masaje Anti-estrés</strong>
+                    </span>
+                    <span class="detalle-cita-item">
+                        <span class="detalle-dato-label">DURACIÓN</span>
+                        <strong id="detalle-duracion">75 minutos</strong>
+                    </span>
+                    <span class="detalle-cita-item">
+                        <span class="detalle-dato-label">FECHA</span>
+                        <strong id="detalle-fecha-cita">Jueves, 26 de noviembre de 2026</strong>
+                    </span>
+                    <span class="detalle-cita-item">
+                        <span class="detalle-dato-label">HORARIO</span>
+                        <strong id="detalle-horario">14:30 - 15:45</strong>
+                    </span>
+                    <span class="detalle-cita-item">
+                        <span class="detalle-dato-label">ESPECIALISTA</span>
+                        <strong id="detalle-especialista">Por asignar</strong>
+                    </span>
+                    <span class="detalle-cita-item">
+                        <span class="detalle-dato-label">CONTACTO</span>
+                        <strong id="detalle-contacto">04123691316</strong>
+                    </span>
+                </div>
+            </div>
+
+            <div class="detalle-cliente-card">
+                <div class="cliente-avatar-modal" id="detalle-cliente-iniciales" style="width: 40px; height: 40px; font-size: 0.75rem;">YP</div>
+                <div class="modal-pago-resumen__info">
+                    <strong id="detalle-cliente-nombre">Yenni Perez</strong>
+                    <span id="detalle-cliente-correo">yennifervueda19@gmail.com</span>
+                </div>
+            </div>
+
+        </div>
+
+        <footer class="pie-alerta-botones">
+            <button type="button" id="btn-detalle-cerrar" class="btn-confirmar-accion btn-accion-autorizar">Cerrar detalle</button>
         </footer>
     </div>
 </dialog>

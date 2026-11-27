@@ -216,14 +216,13 @@
     border-color: currentColor;
 }
 
-/* ---- CAMBIO REALIZADO AQUÍ ---- */
 .stat-icono {
     flex-shrink: 0;
     width: 44px;
     height: 44px;
     border-radius: 12px;
-    background: currentColor; /* Toma el color de la tarjeta (verde, marrón, etc.) */
-    color: inherit;           /* NO sobrescribe el color del padre */
+    background: currentColor;
+    color: inherit;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -236,9 +235,8 @@
     width: 22px;
     height: 22px;
     stroke-width: 2.2;
-    color: #ffffff; /* El icono sí es blanco */
+    color: #ffffff;
 }
-/* ---- FIN DEL CAMBIO ---- */
 
 .stat-info {
     display: flex;
@@ -352,7 +350,6 @@
     transform: translateY(-2px);
 }
 
-/* Widget Clima - Formato Horizontal */
 .widget-clima {
     display: flex;
     flex-direction: row;
@@ -398,7 +395,6 @@
     font-weight: 600;
 }
 
-/* Widget Tip - Tipografía más grande */
 .widget-tip {
     background: linear-gradient(135deg, #fdfbf7 0%, #f7f4ee 100%);
     padding: 1.5rem 1.5rem;
@@ -419,7 +415,7 @@
 
 .tip-texto {
     font-family: var(--font-display);
-    font-size: 1.15rem; /* Aumentado para mejor legibilidad */
+    font-size: 1.15rem;
     font-style: italic;
     color: #6d4a2f;
     line-height: 1.6;
@@ -427,7 +423,6 @@
     font-weight: 500;
 }
 
-/* Widget Top Terapeutas */
 .widget-top {
     padding: 1.25rem 1.5rem;
 }
@@ -986,9 +981,10 @@
 
 .cita-acciones {
     display: flex;
-    flex-direction: column;
-    gap: 0.45rem;
-    align-items: stretch;
+    flex-direction: row; /* Modificado para que los botones estén en fila horizontal */
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: flex-end;
     min-width: 140px;
 }
 
@@ -1099,10 +1095,7 @@ dialog.modal-alerta-centro {
     max-width: 580px;
     width: calc(100% - 2rem);
     color: var(--text-main);
-    
-    /* ---- CAMBIO REALIZADO AQUÍ PARA CENTRAR EL MODAL ---- */
-    margin: auto; /* Centra el modal horizontal y verticalmente */
-    /* ----------------------------------------------------- */
+    margin: auto;
 }
 
 dialog.modal-alerta-centro {
@@ -1405,6 +1398,119 @@ dialog::backdrop {
 }
 
 /* ==========================================================================
+   NUEVOS ESTILOS: DESPLEGABLE DE LA TARJETA
+   ========================================================================== */
+.cita-detalles {
+    /* Obliga al desplegable a ocupar todas las columnas del Grid de la tarjeta */
+    grid-column: 1 / -1; 
+    
+    /* Margen negativo para compensar el padding de la tarjeta y que llegue a los bordes */
+    margin: 1.15rem -1.4rem -1.15rem -1.4rem;
+    
+    background-color: #fcf9f9; 
+    border-top: 1px solid #f2e8e8;
+    padding: 24px;
+    box-sizing: border-box;
+    animation: slideDown 0.3s ease-out;
+    border-radius: 0 0 12px 12px;
+}
+
+.alerta-cancelada-detalle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #c94a4a;
+    font-size: 0.95rem;
+    margin-bottom: 24px;
+    font-weight: 500;
+}
+
+.alerta-cancelada-detalle i {
+    width: 18px;
+    height: 18px;
+}
+
+.detalles-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 24px 16px !important;
+    width: 100% !important;
+}
+
+.detalle-item {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    text-align: left !important;
+}
+
+.detalle-item .etiqueta-mini {
+    font-size: 0.7rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    color: var(--text-muted) !important;
+    font-weight: 600 !important;
+    margin: 0 !important;
+    white-space: nowrap !important;
+}
+
+.detalle-item strong {
+    font-size: 0.95rem !important;
+    color: var(--text-main) !important;
+    font-weight: 500 !important;
+}
+
+.detalle-item.detalle-full {
+    grid-column: 1 / -1 !important;
+    background: #ffffff !important;
+    padding: 16px !important;
+    border-radius: 8px !important;
+    border: 1px solid var(--border-color) !important;
+    margin-top: 8px !important;
+}
+
+.detalle-item p {
+    margin: 0 !important;
+    font-size: 0.9rem !important;
+    color: var(--text-muted) !important;
+}
+
+.btn-expandir {
+    background: transparent !important;
+    border: none !important;
+    outline: none !important; 
+    box-shadow: none !important;
+    cursor: pointer !important;
+    padding: 8px !important;
+    border-radius: 50% !important;
+    color: var(--text-muted) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s !important;
+}
+
+.btn-expandir:hover {
+    background: rgba(0, 0, 0, 0.05) !important;
+    color: var(--text-main) !important;
+}
+
+.btn-expandir i {
+    transition: transform 0.3s ease !important;
+    width: 22px !important;
+    height: 22px !important;
+}
+
+.btn-expandir.is-expanded i {
+    transform: rotate(180deg) !important;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
    RESPONSIVE
    ========================================================================== */
 @media (max-width: 1024px) {
@@ -1467,6 +1573,15 @@ dialog::backdrop {
         flex-direction: column;
         align-items: flex-start;
         gap: 0.5rem;
+    }
+
+    /* Ajuste para el desplegable en tablet */
+    .cita-detalles {
+        margin: 1.1rem -1.2rem -1.1rem -1.2rem;
+    }
+
+    .detalles-grid { 
+        grid-template-columns: repeat(2, 1fr) !important; 
     }
 }
 
@@ -1586,6 +1701,16 @@ dialog::backdrop {
     .agenda-columna-principal {
         padding: 1rem;
         border-radius: 14px;
+    }
+
+    /* Ajuste para el desplegable en celular */
+    .cita-detalles {
+        margin: 1.1rem -1.1rem -1.1rem -1.1rem;
+        padding: 16px;
+    }
+
+    .detalles-grid { 
+        grid-template-columns: 1fr !important; 
     }
 }
 

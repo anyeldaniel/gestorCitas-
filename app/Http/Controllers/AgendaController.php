@@ -12,7 +12,7 @@ use App\Services\CancelacionCitaService;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\CitaCancelada;
 use App\Mail\ReembolsoPorDefinir;
-use Illuminate\Support\Facades\Log; // <-- Agregado para manejar los logs de error
+use Illuminate\Support\Facades\Log;
 
 class AgendaController extends Controller
 {
@@ -61,10 +61,17 @@ class AgendaController extends Controller
                 ->with('info', 'Tu agenda personal está en "Mis reservas".');
         }
 
-        // Fecha seleccionada (por defecto hoy).
-        $fecha = $request->filled('fecha')
-            ? Carbon::parse($request->fecha)->toDateString()
-            : Carbon::today()->toDateString();
+        // 👇 CORRECCIÓN: Evitamos que las zonas horarias resten un día 👇
+        $fechaInput = $request->input('fecha');
+
+        if ($fechaInput) {
+            // Tomamos solo los primeros 10 caracteres (YYYY-MM-DD) ignorando horas y zonas horarias
+            $fechaStr = substr($fechaInput, 0, 10);
+            $fecha = Carbon::parse($fechaStr)->toDateString();
+        } else {
+            $fecha = Carbon::today()->toDateString();
+        }
+        // 👆 FIN DE LA CORRECCIÓN 👆
 
         // Rango lunes → sábado de la semana de esa fecha.
         $diaSemana  = Carbon::parse($fecha)->dayOfWeekIso; // 1 = lunes
@@ -273,7 +280,7 @@ class AgendaController extends Controller
 
         $cita = Cita::with(['cliente', 'servicio'])->findOrFail($id);
 
-        // 👈 NUEVO: verificar también la tabla pivote cita_servicio
+        // Verificar también la tabla pivote cita_servicio
         // (para multi-servicio, el trabajador puede no ser el $cita->trabajador_id principal)
         $esTrabajadorDeLaCita = $user->rol === 'trabajador' && (
             $cita->trabajador_id === $user->id ||
@@ -307,7 +314,7 @@ class AgendaController extends Controller
         // 2. Correo electrónico
         Mail::to($cita->cliente->correo)->send(new CitaCancelada($cita, $data['motivo']));
 
-        // 3. NUEVO: Notificación Push al cliente
+        // 3. Notificación Push al cliente
         try {
             $cliente = \App\Models\User::find($cita->cliente_id);
             if ($cliente) {

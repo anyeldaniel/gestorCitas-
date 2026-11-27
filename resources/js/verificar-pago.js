@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputFecha = document.getElementById('input-fecha-pagos');
     const footerContador = document.getElementById('footer-contador');
 
-    // Referencias del Modal
+    // Referencias del Modal de Confirmación
     const modal = document.getElementById('modal-confirmacion');
     const modalKicker = document.getElementById('modal-kicker');
     const modalTitulo = document.getElementById('modal-titulo');
@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (inputFecha) inputFecha.addEventListener('change', aplicarFiltros);
 
     // =====================================================================
-    // 2. Lógica del Modal (Abrir y Cerrar)
+    // 2. Lógica del Modal de Confirmación (Abrir y Cerrar)
     // =====================================================================
     document.querySelectorAll('.btn-autorizar:not(.btn-definir-reembolso)').forEach(boton => {
         boton.addEventListener('click', (e) => {
@@ -280,5 +280,99 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btnConfirmar) {
             btnConfirmar.disabled = false;
         }
+    }
+
+    // =====================================================================
+    // 4. Lógica del Modal de Detalle (Ver Detalle)
+    // =====================================================================
+    const modalDetallePago = document.getElementById('modal-detalle-pago');
+    const botonesDetalle = document.querySelectorAll('.btn-ver-detalle');
+    const btnCerrarDetalleX = document.getElementById('btn-detalle-cerrar-x');
+    const btnCerrarDetalleFooter = document.getElementById('btn-detalle-cerrar');
+
+    if (botonesDetalle.length) {
+        botonesDetalle.forEach(boton => {
+            boton.addEventListener('click', function() {
+                // Extraemos los datos del botón usando los atributos data-*
+                const cliente = this.dataset.cliente;
+                const correo = this.dataset.correo;
+                const iniciales = this.dataset.iniciales;
+                const metodo = this.dataset.metodo;
+                const banco = this.dataset.banco;
+                const referencia = this.dataset.referencia;
+                const monto = this.dataset.monto;
+                const fecha = this.dataset.fecha;
+                const estado = this.dataset.estado;
+                const servicio = this.dataset.servicio;
+                const duracion = this.dataset.duracion;
+                const fechaCita = this.dataset.fechaCita;
+                const horario = this.dataset.horario;
+                const especialista = this.dataset.especialista;
+                const contacto = this.dataset.contacto;
+
+                // Rellenamos el HTML del modal de detalle
+                document.getElementById('detalle-titulo').textContent = `Cita de ${cliente}`;
+                document.getElementById('detalle-fecha').textContent = fecha;
+                document.getElementById('detalle-monto').textContent = monto;
+                
+                // Método y banco (concatenamos si hay banco)
+                const metodoCompleto = banco ? `${metodo} · ${banco}` : metodo;
+                document.getElementById('detalle-metodo').textContent = metodoCompleto;
+                document.getElementById('detalle-referencia').textContent = `#${referencia}`;
+                document.getElementById('detalle-resultado').textContent = estado;
+
+                // Detalles de la cita
+                document.getElementById('detalle-servicio').textContent = servicio;
+                document.getElementById('detalle-duracion').textContent = duracion;
+                document.getElementById('detalle-fecha-cita').textContent = fechaCita;
+                document.getElementById('detalle-horario').textContent = horario;
+                document.getElementById('detalle-especialista').textContent = especialista;
+                document.getElementById('detalle-contacto').textContent = contacto;
+
+                // Datos del cliente final
+                document.getElementById('detalle-cliente-iniciales').textContent = iniciales;
+                document.getElementById('detalle-cliente-nombre').textContent = cliente;
+                document.getElementById('detalle-cliente-correo').textContent = correo;
+
+                // Lógica para los colores del badge de estado
+                const badgeEstado = document.getElementById('detalle-badge-estado');
+                badgeEstado.className = 'estado-autorizado'; // Clase base
+                
+                const estadoLower = estado.toLowerCase();
+                if (estadoLower.includes('rechazado')) {
+                    badgeEstado.className = 'estado-rechazado';
+                } else if (estadoLower.includes('pendiente') || estadoLower.includes('reembolso')) {
+                    badgeEstado.className = 'estado-pendiente';
+                } else {
+                    badgeEstado.className = 'estado-autorizado';
+                }
+
+                // Abrimos el modal
+                if (modalDetallePago) {
+                    modalDetallePago.showModal();
+                }
+            });
+        });
+    }
+
+    // Lógica para cerrar el modal de detalle
+    if (btnCerrarDetalleX) {
+        btnCerrarDetalleX.addEventListener('click', () => {
+            if (modalDetallePago) modalDetallePago.close();
+        });
+    }
+
+    if (btnCerrarDetalleFooter) {
+        btnCerrarDetalleFooter.addEventListener('click', () => {
+            if (modalDetallePago) modalDetallePago.close();
+        });
+    }
+
+    if (modalDetallePago) {
+        modalDetallePago.addEventListener('click', (e) => {
+            if (e.target === modalDetallePago) {
+                modalDetallePago.close();
+            }
+        });
     }
 });

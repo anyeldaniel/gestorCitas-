@@ -423,13 +423,13 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: 0 0 0 3px rgba(139, 94, 60, 0.08);
 }
 
-.servicio-item input[type="radio"] {
+.servicio-item input[type="checkbox"] {
     appearance: none;
     -webkit-appearance: none;
     width: 18px;
     height: 18px;
     border: 2px solid var(--border-color);
-    border-radius: 50%;
+    border-radius: 4px;
     position: relative;
     flex-shrink: 0;
     cursor: pointer;
@@ -437,16 +437,21 @@ h1, h2, h3, h4, h5, h6 {
     margin: 0;
 }
 
-.servicio-item input[type="radio"]:checked {
+.servicio-item input[type="checkbox"]:checked {
     border-color: var(--primary-brown);
+    background: var(--primary-brown);
 }
 
-.servicio-item input[type="radio"]:checked::after {
+.servicio-item input[type="checkbox"]:checked::after {
     content: '';
     position: absolute;
-    inset: 3px;
-    border-radius: 50%;
-    background: var(--primary-brown);
+    left: 5px;
+    top: 2px;
+    width: 4px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
 }
 
 .servicio-info {
@@ -484,6 +489,21 @@ h1, h2, h3, h4, h5, h6 {
 
 .servicio-item.activo .servicio-precio {
     color: var(--primary-brown);
+}
+
+.categoria-servicios { margin-bottom: 1.5rem; }
+.categoria-servicios:last-child { margin-bottom: 0; }
+
+.categoria-titulo {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--primary-brown);
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px dashed var(--border-light);
 }
 
 /* ==========================================================================
@@ -744,6 +764,9 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--text-muted);
 }
 
+/* ==========================================================================
+   CAMPOS DEL CLIENTE Y ESPECIALISTAS
+   ========================================================================== */
 .campos-cliente {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -789,6 +812,82 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: 0 0 0 3px rgba(139, 94, 60, 0.12);
 }
 
+.especialistas-container {
+    grid-column: span 2;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 5px;
+}
+
+.label-titulo {
+    font-family: var(--font-ui);
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+}
+
+.msg-vacio {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.grupo-especialista {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.grupo-especialista label {
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    color: var(--text-soft);
+    font-weight: 500;
+}
+
+.select-especialista {
+    width: 100%;
+    padding: 0.7rem 2.5rem 0.7rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--bg-card);
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    color: var(--text-main);
+    transition: var(--transition);
+    outline: none;
+    height: 42px;
+    cursor: pointer;
+    min-width: 0;
+    
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a8580' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1em;
+}
+
+.select-especialista:focus {
+    border-color: var(--primary-brown);
+    box-shadow: 0 0 0 3px rgba(139, 94, 60, 0.12);
+}
+
+.select-especialista:disabled {
+    background-color: var(--bg-soft);
+    color: var(--text-muted);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* ==========================================================================
+   RESUMEN Y BOTÓN CONFIRMAR
+   ========================================================================== */
 .resumen-precio {
     display: flex;
     align-items: center;
@@ -868,6 +967,61 @@ h1, h2, h3, h4, h5, h6 {
     transform: translateX(3px);
 }
 
+.btn-confirmar.cargando {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* ==========================================================================
+   MODAL SWEETALERT (PERSONALIZACIÓN)
+   ========================================================================== */
+.swal2-popup {
+    font-family: var(--font-body) !important;
+    border-radius: 16px !important;
+    padding: 2rem !important;
+}
+
+.swal2-title {
+    font-family: var(--font-display) !important;
+    color: var(--text-main) !important;
+    font-size: 1.8rem !important;
+}
+
+.alternativas-swal-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 15px;
+    text-align: left;
+}
+
+.alternativa-swal-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 15px;
+    background: var(--bg-soft);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+}
+
+.alternativa-swal-label:hover {
+    background: var(--bg-card);
+    border-color: var(--primary-brown);
+    box-shadow: var(--shadow-sm);
+}
+
+.alternativa-swal-label input[type="radio"] {
+    accent-color: var(--primary-brown);
+    width: 18px;
+    height: 18px;
+    margin: 0;
+}
+
 /* ==========================================================================
    ANIMACIONES
    ========================================================================== */
@@ -887,26 +1041,43 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ==========================================================================
-   RESPONSIVE
+   RESPONSIVE (TABLETS Y MÓVILES)
    ========================================================================== */
+
+/* Tablets horizontales / Laptops pequeñas */
 @media (max-width: 1100px) {
-    .reserva-grid { grid-template-columns: 1fr 1fr; }
+    .reserva-grid { 
+        grid-template-columns: 1fr 1fr; 
+    }
     .columna-horas {
         grid-column: span 2;
         border-top: 1px solid var(--border-light);
         border-right: none;
     }
-    .panel-footer { grid-template-columns: 1fr 1fr; }
-    .resumen-precio { padding-left: 0; border-left: none; }
+    .panel-footer { 
+        grid-template-columns: 1fr 1fr; 
+    }
+    .resumen-precio { 
+        padding-left: 0; 
+        border-left: none; 
+        border-top: 1px solid var(--border-color);
+        padding-top: 1rem;
+        justify-content: space-between;
+    }
+    .btn-confirmar {
+        grid-column: span 2;
+        justify-content: center;
+    }
 }
 
+/* Tablets verticales y móviles grandes */
 @media (max-width: 768px) {
     .modulo-reserva { padding: 1rem 0.5rem 2rem; }
     .reserva-header { flex-direction: column; align-items: flex-start; }
     .pasos-container { grid-template-columns: 1fr; }
     .paso-numero { font-size: 3.5rem; }
-    .reserva-grid { grid-template-columns: 1fr; }
     
+    .reserva-grid { grid-template-columns: 1fr; }
     .columna-servicios,
     .columna-calendario,
     .columna-horas {
@@ -918,7 +1089,7 @@ h1, h2, h3, h4, h5, h6 {
     
     .panel-footer { 
         grid-template-columns: 1fr; 
-        gap: 1rem; 
+        gap: 1.25rem; 
         padding: 1.25rem 1rem;
     }
     .campos-cliente { 
@@ -932,7 +1103,6 @@ h1, h2, h3, h4, h5, h6 {
     }
     
     .resumen-precio {
-        justify-content: space-between;
         padding-left: 0;
         border-left: none;
         border-top: 1px solid var(--border-color);
@@ -940,92 +1110,30 @@ h1, h2, h3, h4, h5, h6 {
         width: 100%;
     }
     .resumen-info { text-align: left; }
-    .btn-confirmar { width: 100%; justify-content: center; }
+    .btn-confirmar { 
+        grid-column: span 1;
+        width: 100%; 
+        justify-content: center; 
+    }
 }
 
+/* Móviles pequeños */
 @media (max-width: 480px) {
     .reserva-header h1 { font-size: 2rem; }
     .panel-header h2 { font-size: 1.55rem; }
     .columna-header h3 { font-size: 1.2rem; }
     .columna-numero { font-size: 1.35rem; }
     
-    /* Reducción adicional de espacios en pantallas muy pequeñas para evitar desbordes */
     .columna-servicios,
     .columna-calendario,
     .columna-horas {
         padding: 1rem 0.75rem;
     }
-}
-
-/* ==========================================================================
-   CATEGORÍAS Y SCROLL
-   ========================================================================== */
-.categoria-servicios {
-    margin-bottom: 1.5rem;
-}
-
-.categoria-servicios:last-child {
-    margin-bottom: 0;
-}
-
-.categoria-titulo {
-    font-family: var(--font-ui);
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--primary-brown);
-    margin-bottom: 0.75rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px dashed var(--border-light);
-}
-
-/* ==========================================================================
-   SELECT DE ESPECIALISTA PREMIUM
-   ========================================================================== */
-.label-especialista {
-    grid-column: span 2;
-    width: 100%;
-}
-
-.select-especialista {
-    width: 100%;
-    padding: 0.7rem 2.5rem 0.7rem 1rem;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    background-color: var(--bg-card);
-    font-family: var(--font-body);
-    font-size: 0.88rem;
-    color: var(--text-main);
-    transition: var(--transition);
-    outline: none;
-    height: 42px;
-    cursor: pointer;
-    min-width: 0;
     
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a8580' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 1rem center;
-    background-size: 1em;
-}
-
-.select-especialista:focus {
-    border-color: var(--primary-brown);
-    box-shadow: 0 0 0 3px rgba(139, 94, 60, 0.12);
-}
-
-.select-especialista:disabled {
-    background-color: var(--bg-soft);
-    color: var(--text-muted);
-    cursor: not-allowed;
-    opacity: 0.7;
-}
-
-@media (max-width: 768px) {
-    .label-especialista {
-        grid-column: span 1;
+    .swal2-popup {
+        padding: 1.25rem !important;
+    }
+    .swal2-title {
+        font-size: 1.5rem !important;
     }
 }

@@ -34,9 +34,15 @@ class PagoController extends Controller
     {
         abort_unless(in_array(auth()->user()->rol, ['admin', 'recepcion']), 403);
 
-        $pagos = Pago::with(['cita.cliente', 'cita.servicio', 'cita.pagos'])
-            ->orderByDesc('created_at')
-            ->get();
+        // CORRECCIÓN: Agregamos 'cita.trabajador' a las relaciones cargadas
+        $pagos = Pago::with([
+            'cita.cliente', 
+            'cita.servicio', 
+            'cita.trabajador', // <-- AGREGA ESTO
+            'cita.pagos'
+        ])
+        ->orderByDesc('created_at')
+        ->get();
 
         return view('compartidas.verificar-pago', compact('pagos'));
     }
@@ -273,14 +279,7 @@ class PagoController extends Controller
             ]);
 
 
-            // Antes se simulaba la respuesta del banco; ahora recepción revisa el pago manualmente.
-            // $resultado = $this->simularApiC2P($request->banco, $request->telefono, $request->token);
-            // if ($resultado['status'] !== 'aprobado') {
-            //     return back()->withErrors([
-            //         'pago_fallido' => 'Transacción C2P rechazada: ' . $resultado['mensaje'],
-            //     ]);
-            // }
-            // $estadoPago = 'aprobado';
+        
 
 
 
@@ -453,13 +452,5 @@ class PagoController extends Controller
         return $this->procesarPago($request);
     }
 
-    // Esta era solo una prueba local; no confirmaba el pago con el banco.
-    // private function simularApiC2P(string $banco, string $telefono, string $token): array
-    // {
-    //     if ($token === '123456') {
-    //         return ['status' => 'aprobado', 'mensaje' => 'Operación exitosa'];
-    //     }
-    //
-    //     return ['status' => 'rechazado', 'mensaje' => 'Fondos insuficientes o token inválido'];
-    // }
+   
 }
