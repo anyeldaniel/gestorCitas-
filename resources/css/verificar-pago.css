@@ -1840,3 +1840,8 @@ dialog.modal-detalle {
     }
     
 }
+
+/* Regla proveniente de la rama "ramaerrores" para ocultar filas filtradas */
+.modulo-vista .tabla-transacciones tbody tr.fila-oculta {
+    display: none;
+}
