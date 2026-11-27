@@ -13,13 +13,15 @@ class NuevaCitaNotification extends Notification
     use Queueable;
 
     protected $cita;
+    protected bool $esPagoTotal;
 
     /**
      * Recibimos el objeto Cita para personalizar el mensaje.
      */
-    public function __construct(Cita $cita)
+    public function __construct(Cita $cita, bool $esPagoTotal = false)
     {
         $this->cita = $cita;
+        $this->esPagoTotal = $esPagoTotal;
     }
 
     /**
@@ -44,7 +46,9 @@ class NuevaCitaNotification extends Notification
             $mensaje = 'Tienes una nueva cita para el ' . $this->cita->fecha . ' a las ' . $this->cita->hora;
         } else {
             $titulo = '¡Reserva exitosa!';
-            $mensaje = 'Tu cita ha sido apartada. Por favor, completa el pago para confirmarla.';
+            $mensaje = $this->esPagoTotal
+                ? 'Tu cita ha sido apartada. Solo debes esperar la confirmación del equipo.'
+                : 'Tu cita ha sido apartada. El reporte de tu abono está pendiente de confirmación.';
         }
 
         return (new WebPushMessage)

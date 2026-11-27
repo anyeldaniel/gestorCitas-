@@ -6,9 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\Cita;
 use App\Models\Servicio;
 use App\Models\User;
-use App\Services\NotificacionService;
-use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Log;
 
 class ReservaController extends Controller
 {
@@ -44,11 +41,10 @@ class ReservaController extends Controller
     }
 
     /**
-     * Crear una nueva cita (multi-servicio).
+     * Validar la seleccion de cita y guardarla temporalmente para el checkout.
      */
     public function store(Request $request)
     {
-        // 1. VALIDACIÓN (fusionada: base remota + refuerzos de rol y fecha)
         $request->validate([
             'servicios'                     => 'required|array|min:1',
             'servicios.*'                   => 'exists:servicios,id',
@@ -60,13 +56,12 @@ class ReservaController extends Controller
         ]);
 
         $servicios = Servicio::whereIn('id', $request->servicios)->get();
-        $montoTotal = $servicios->sum('precio');
-        $trabajadoresArray = $request->trabajadores_por_servicio;
+        $trabajadoresArray = array_map('intval', $request->trabajadores_por_servicio);
 
         // Si el cliente seleccionó una alternativa sugerida por el sistema anti-choques
         if ($request->filled('trabajador_id_alternativo')) {
             $firstKey = array_key_first($trabajadoresArray);
-            $trabajadoresArray[$firstKey] = $request->trabajador_id_alternativo;
+            $trabajadoresArray[$firstKey] = (int) $request->trabajador_id_alternativo;
         }
 
         $primerEspecialistaId = reset($trabajadoresArray);
@@ -106,56 +101,28 @@ class ReservaController extends Controller
             ])->with('terapeutas_alternativos', $terapeutasAlternativos);
         }
 
-        // 3. GUARDADO DE LA CITA PRINCIPAL
-        $cita = Cita::create([
-            'cliente_id'    => auth()->id(),
-            'trabajador_id' => $primerEspecialistaId,
-            'servicio_id'   => $primerServicioId,
-            'cabina_id'     => null,
-            'monto_total'   => $montoTotal,
-            'fecha'         => $request->fecha,
-            'hora'          => $request->hora,
-            'estado'        => 'pendiente',
+        $checkoutUrl = route('checkout.view');
+
+        session()->put('reserva_pendiente', [
+            'cliente_id' => (int) auth()->id(),
+            'fecha' => $request->fecha,
+            'hora' => $request->hora,
+            'trabajador_id' => (int) $primerEspecialistaId,
+            'servicio_id' => (int) $primerServicioId,
+            'trabajadores_por_servicio' => $trabajadoresArray,
         ]);
 
-        // Guardar TODOS los servicios en la tabla pivote
-        foreach ($trabajadoresArray as $servicioId => $especialistaId) {
-            $cita->servicios()->attach($servicioId, [
-                'trabajador_id' => $especialistaId
-            ]);
-        }
-
-        // Notificaciones (Manejadas con try/catch para no romper la reserva si falla el correo)
-        try {
-            NotificacionService::citaNueva($cita);
-
-            $cliente = auth()->user();
-            if ($cliente) {
-                // $cliente->notify(new \App\Notifications\NuevaCitaNotification($cita));
-            }
-            $terapeutasNotificar = array_unique(array_values($trabajadoresArray));
-            foreach ($terapeutasNotificar as $terapeutaId) {
-                $terapeuta = User::find($terapeutaId);
-                if ($terapeuta) {
-                    // $terapeuta->notify(new \App\Notifications\NuevaCitaNotification($cita));
-                }
-            }
-        } catch (\Exception $e) {
-            Log::error("Error al enviar notificación: " . $e->getMessage());
-        }
-
-        // 4. RESPUESTA FINAL (Soporta AJAX y tradicional)
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => '¡Cita apartada con éxito! Redirigiendo al pago...',
-                'redirect_url' => route('checkout.view', ['cita_id' => $cita->id])
+                'message' => 'Selección guardada. Continúa al pago.',
+                'redirect_url' => $checkoutUrl,
             ]);
         }
 
         return redirect()
-            ->route('checkout.view', ['cita_id' => $cita->id])
-            ->with('success', 'Cita apartada. Asignamos a tus especialistas seleccionados.');
+            ->to($checkoutUrl)
+            ->with('success', 'Selección guardada. Continúa al pago.');
     }
 
     /**

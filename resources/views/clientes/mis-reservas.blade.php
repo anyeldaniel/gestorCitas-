@@ -28,7 +28,13 @@
         ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath()]
     );
     
-    $totalPendiente = $citas->whereIn('estado', ['pendiente', 'confirmada'])->sum('monto_total'); 
+    $totalPendiente = $citasPendientes->sum(function ($cita) {
+        $totalPagado = $cita->pagos
+            ->where('estado_pago', 'aprobado')
+            ->sum('monto_anticipado');
+
+        return max(0, (float) $cita->monto_total - (float) $totalPagado);
+    });
     $visitasRealizadas = $historialColeccion->count();
 
     // ==========================================
@@ -206,6 +212,13 @@
                     $enRevision = $cita->pagos->where('estado_pago', 'revision')->sum('monto_anticipado');
                     $montoRestante = $cita->monto_total - $totalPagado;
                     $estaPagado = $totalPagado >= $cita->monto_total;
+                    $pagoTotalEnRevision = !$estaPagado
+                        && (int) round((float) $enRevision * 100) >= (int) round((float) $cita->monto_total * 100);
+                    $estadoPagoTexto = $estaPagado
+                        ? 'Confirmado'
+                        : ($pagoTotalEnRevision
+                            ? 'CONFIRMACIÓN DE PAGO PENDIENTE'
+                            : '● PENDIENTE DE PAGO RESTANTE');
 
                     $nombresServicios = $cita->servicios->pluck('nombre_servicio')->join(' + ');
                     $tituloCita = $nombresServicios ?: ($cita->servicio->nombre_servicio ?? 'Tratamiento');
@@ -269,7 +282,7 @@
                                 <span class="ticket-ref">RESERVA #BR-{{ $fechaCarbon->format('Ymd') }}{{ $cita->id }}</span>
                                 <div class="ticket-badges">
                                     <span class="badge {{ $estaPagado ? 'badge-pagado' : 'badge-pendiente' }}">
-                                        {{ $estaPagado ? '✓ PAGADO' : '● PENDIENTE DE PAGO RESTANTE' }}
+                                        {{ $estadoPagoTexto }}
                                     </span>
                                     <span class="badge {{ $cita->estado === 'confirmada' ? 'badge-pagado' : 'badge-pendiente' }}">
                                         {{ $cita->estado === 'confirmada' ? '✓ CITA CONFIRMADA' : '● CITA PENDIENTE' }}
@@ -328,10 +341,28 @@
                     <!-- COLUMNA DERECHA: PAGO -->
                     <aside class="cita-pago-sidebar">
                         <div>
-                            <span class="pago-total-label">{{ $estaPagado ? 'TOTAL PAGADO' : 'TOTAL PENDIENTE' }}</span>
+                            <span class="pago-total-label">
+                                {{ $estaPagado ? 'TOTAL PAGADO' : ($pagoTotalEnRevision ? 'PAGO TOTAL REPORTADO' : 'TOTAL PENDIENTE') }}
+                            </span>
                             <p class="pago-total-monto">${{ number_format($estaPagado ? $totalPagado : $montoRestante, 2) }}</p>
+
+                            @if($pagoTotalEnRevision)
+                                <div class="pago-alerta">
+                                    <div class="pago-alerta-text">
+                                        <span>Recibimos tu comprobante. En espera de verificación por recepción.</span>
+                                    </div>
+                                </div>
+                            @endif
                             
-                            @if(!$estaPagado && $enRevision == 0)
+                            @if(!$estaPagado && !$pagoTotalEnRevision && ($enRevision > 0 || ($totalPagado > 0 && $montoRestante > 0)))
+                                <div class="pago-alerta">
+                                    <div class="pago-alerta-text">
+                                        <span>{{ $enRevision > 0 ? 'Tu abono está en verificación. El saldo restante se paga el día de tu cita en la sucursal.' : 'El saldo restante se paga el día de tu cita en la sucursal.' }}</span>
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if(!$estaPagado && $enRevision == 0 && $totalPagado == 0)
                                 <div class="pago-alerta">
                                     <span class="pago-alerta-icon">
                                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
@@ -343,12 +374,6 @@
                                 </div>
                             @endif
                         </div>
-
-                        @if(!$estaPagado && $enRevision == 0)
-                            <a href="{{ route('checkout.view') }}" class="btn-completar-pago">
-                                COMPLETAR PAGO <span>→</span>
-                            </a>
-                        @endif
                     </aside>
 
                 </div>

@@ -335,8 +335,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 // ÉXITO: Redirigir a la pasarela de pago
                 Swal.fire({
                     icon: 'success',
-                    title: '¡Reserva Confirmada!',
-                    text: data.message || 'Tu cita ha sido agendada con éxito.',
+                    title: '¡Horario seleccionado!',
+                    text: 'Continúa al pago.',
                     confirmButtonColor: '#5A6B5D',
                     confirmButtonText: 'Ir al pago'
                 }).then(() => {

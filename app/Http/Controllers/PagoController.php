@@ -82,10 +82,14 @@ class PagoController extends Controller
             $montoAbonoEsperado = $this->calcularMontoAbono($cita->load('servicio'));
             $montoAbonoRegistradoEnCentimos = (int) round((float) $pago->monto_anticipado * 100);
             $montoAbonoEsperadoEnCentimos = (int) round($montoAbonoEsperado * 100);
+            $montoTotalEsperadoEnCentimos = (int) round((float) $cita->monto_total * 100);
 
-            if ($montoAbonoRegistradoEnCentimos !== $montoAbonoEsperadoEnCentimos) {
+            if (!in_array($montoAbonoRegistradoEnCentimos, [
+                $montoAbonoEsperadoEnCentimos,
+                $montoTotalEsperadoEnCentimos,
+            ], true)) {
                 throw ValidationException::withMessages([
-                    'pago' => 'No se puede aprobar el pago porque el monto del abono no coincide con el esperado.',
+                    'pago' => 'No se puede aprobar el pago porque el monto no coincide con el abono ni con el total esperado.',
                 ]);
             }
 
@@ -268,7 +272,8 @@ class PagoController extends Controller
         }
 
         $data = $request->validate([
-            'metodo_pago' => 'required|in:c2p,transferencia,divisas_efectivo',
+            'tipo_pago' => 'required|in:abono,total',
+            'metodo_pago' => 'required|in:c2p,transferencia',
         ]);
 
         if ($data['metodo_pago'] === 'c2p') {
@@ -307,6 +312,7 @@ class PagoController extends Controller
 
         $montoTotal = (float) $servicios->sum('precio');
         $montoAbono = $this->calcularMontoAbonoDesdeDatos($montoTotal, $servicioPrincipal);
+        $montoPago = $data['tipo_pago'] === 'total' ? $montoTotal : $montoAbono;
 
         try {
             $cita = DB::transaction(function () use (
@@ -314,7 +320,7 @@ class PagoController extends Controller
                 $reserva,
                 $data,
                 $montoTotal,
-                $montoAbono
+                $montoPago
             ) {
                 User::query()
                     ->whereKey($reserva['trabajador_id'])
@@ -356,7 +362,7 @@ class PagoController extends Controller
 
                 Pago::create([
                     'cita_id'          => $cita->id,
-                    'monto_anticipado' => $montoAbono,
+                    'monto_anticipado' => $montoPago,
                     'metodo_pago'      => $data['metodo_pago'],
                     'banco_origen'     => $request->banco ?? null,
                     'referencia'       => $data['metodo_pago'] === 'c2p'
@@ -391,7 +397,8 @@ class PagoController extends Controller
 
         try {
             $cliente = $cita->cliente;
-            $cliente?->notify(new \App\Notifications\NuevaCitaNotification($cita));
+            $esPagoTotal = $data['tipo_pago'] === 'total';
+            $cliente?->notify(new \App\Notifications\NuevaCitaNotification($cita, $esPagoTotal));
 
             $terapeutasNotificar = array_unique(array_values($reserva['trabajadores_por_servicio']));
             foreach ($terapeutasNotificar as $terapeutaId) {
