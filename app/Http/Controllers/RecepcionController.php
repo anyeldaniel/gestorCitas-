@@ -25,7 +25,7 @@ class RecepcionController extends Controller
             ->orderBy('hora', 'asc')
             ->get();
 
-        // Agrupamos las citas por hora (Ej: "12:00 PM") para facilitar la visualización en la vista.
+        // Agrupamos las citas por hora 
         $citasPorHora = $citas->groupBy(function($cita) {
             return Carbon::parse($cita->hora)->format('h:i A');
         });

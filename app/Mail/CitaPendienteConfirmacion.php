@@ -18,7 +18,6 @@ class CitaPendienteConfirmacion extends Mailable
     {
     }
 
-    // Define el asunto que verá el cliente en su bandeja de entrada.
     public function envelope(): Envelope
     {
         return new Envelope(
@@ -26,7 +25,6 @@ class CitaPendienteConfirmacion extends Mailable
         );
     }
 
-    // Indica la plantilla Blade que construye el contenido del mensaje.
     public function content(): Content
     {
         return new Content(
@@ -34,7 +32,6 @@ class CitaPendienteConfirmacion extends Mailable
         );
     }
 
-    // Este aviso no incluye archivos adjuntos.
     public function attachments(): array
     {
         return [];

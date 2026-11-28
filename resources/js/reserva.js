@@ -225,7 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
         resumenDetalle.textContent = `${dia} ${MESES_CORTOS[mes]} · ${horaSeleccionada} · ${duracionTotal} min`;
     }
 
-    // MODAL DE ERRORES Y ALTERNATIVAS
+    // modal de errores y alternativas
     function mostrarError(mensaje, alternativas = null) {
         let htmlContent = `<p style="font-size:0.95rem; color:#4a4640; margin-bottom:10px;">${mensaje}</p>`;
         
@@ -279,9 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
     actualizarSeleccionServicios();
     renderSelectoresEspecialistas();
 
-    // =====================================================================
-    // ENVÍO DEL FORMULARIO POR AJAX
-    // =====================================================================
+    // envio del formulario por ajax
     if (form) {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();

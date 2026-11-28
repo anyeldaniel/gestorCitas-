@@ -1,6 +1,4 @@
-/* =========================================
-   WIDGET BASE (La Campana)
-   ========================================= */
+/*widget de la campana */
 .notif-widget {
     position: relative;
     display: inline-flex;
@@ -35,9 +33,7 @@
     display: block;
 }
 
-/* =========================================
-   BADGE (Contador rojo)
-   ========================================= */
+/* contador rojo */
 .notif-badge {
     position: absolute;
     top: 0;
@@ -56,9 +52,7 @@
     pointer-events: none;
 }
 
-/* =========================================
-   PANEL DESPLEGABLE (Contenedor principal)
-   ========================================= */
+/* panel desplegable*/
 .notif-panel {
     position: absolute;
     right: 0;
@@ -82,9 +76,7 @@
     to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* =========================================
-   CABECERA DEL PANEL
-   ========================================= */
+/*cabecera de panel */
 .notif-panel-header {
     display: flex;
     justify-content: space-between;
@@ -125,9 +117,7 @@
 }
 .notif-btn-mini:hover { opacity: 0.7; }
 
-/* =========================================
-   LISTA E ITEMS
-   ========================================= */
+/* lista de items */
 .notif-lista {
     list-style: none;
     margin: 0;
@@ -170,9 +160,6 @@
     flex-shrink: 0;
 }
 
-/* =========================================
-   ICONOS CON FONDO DE COLOR SUAVE
-   ========================================= */
 .notif-icono-wrapper {
     flex-shrink: 0;
     width: 40px;
@@ -195,9 +182,7 @@
     display: block;
 }
 
-/* =========================================
-   TEXTOS
-   ========================================= */
+/* textos*/
 .notif-contenido {
     flex: 1;
     min-width: 0;
@@ -239,7 +224,7 @@
 
 }
 
-/* 👇 NUEVO: ESTILOS DEL BOTÓN DE ACCIÓN 👇 */
+/* estilos de boton de accion */
 .notif-btn-accion {
     display: inline-block;
     margin-top: 0.6rem;
@@ -260,7 +245,6 @@
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(139, 94, 60, 0.3);
 }
-/* 👆 FIN DEL NUEVO BOTÓN 👆 */
 
 /* ESTADO VACÍO */
 .notif-vacio {
@@ -270,9 +254,7 @@
     font-size: .9rem;
 }
 
-/* =========================================
-   RESPONSIVE (MÓVIL CORREGIDO)
-   ========================================= */
+/*responsive */
 @media (max-width: 768px) {
     .notif-panel {
         position: fixed;
@@ -319,9 +301,7 @@
     }
 }
 
-/* =========================================
-   RESPONSIVE (MÓVIL PEQUEÑO)
-   ========================================= */
+/* responsive*/
 @media (max-width: 420px) {
     .notif-icono-wrapper {
         width: 36px;
@@ -339,9 +319,7 @@
     }
 }
 
-/* =========================================
-   ACCESIBILIDAD / PREFERENCIAS
-   ========================================= */
+/*accesibilada referencias */
 @media (prefers-reduced-motion: reduce) {
     .notif-campana,
     .notif-item,

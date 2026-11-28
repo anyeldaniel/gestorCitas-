@@ -5,7 +5,6 @@
 document.addEventListener("DOMContentLoaded", function() {
     console.log('✅ Módulo de terapeutas cargado');
 
-    // --- LECTURA DE MENSAJES DE ÉXITO (SweetAlert) ---
     // Esto atrapa el mensaje que Laravel envía al guardar o editar un especialista
     const mensajeExito = document.getElementById("dashboard-mensaje-exito");
     if (mensajeExito) {
@@ -69,7 +68,7 @@ document.addEventListener("DOMContentLoaded", function() {
         form.addEventListener('submit', function(e) {
             sincronizarEspecialidades();
             
-            // ✅ FORZAR EL ORIGEN JUSTO ANTES DE ENVIAR
+            // forzar el origen antes de enviar
             const origenInput = document.getElementById('form-origen');
             if (origenInput) {
                 // Si existe el buscador, estamos en la vista de terapeutas
@@ -592,10 +591,7 @@ window.editarTerapeutaDesdeDashboard = function(id, nombre, email, telefono, esp
     modal.showModal();
 };
 
-/**
- * Eliminar especialista
- * Usa fetch para mostrar SweetAlert y luego recargar la página.
- */
+// eliminar especialista
 window.eliminarTerapeuta = function(id) {
     const modal = document.getElementById('modal-confirmacion-custom');
     
@@ -641,7 +637,7 @@ window.eliminarTerapeuta = function(id) {
 
         // Enviamos la petición con fetch
         fetch(`${getBaseUrl()}/admin/usuario/${id}`, {
-            method: 'POST', // POST simulando DELETE por el _method
+            method: 'POST', 
             headers: {
                 'X-CSRF-TOKEN': token,
                 'Accept': 'application/json'
@@ -758,7 +754,7 @@ window.validarContrasenas = function() {
         errorEmailDiv.textContent = '';
     }
 
-    // 1. Validación de formato básico de correo
+    // Validación de formato básico de correo
     if (emailInput && emailInput.value.trim() !== '') {
         const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!regexEmail.test(emailInput.value.trim())) {
@@ -776,7 +772,7 @@ window.validarContrasenas = function() {
     if (!pass || !confirm) return true;
     if (pass.value === '' && confirm.value === '') return true;
 
-    // 2. Validación completa de contraseña
+    // Validación completa de contraseña
     const hasLetters = /[a-zA-Z]/.test(pass.value);
     const hasNumbers = /[0-9]/.test(pass.value);
     const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(pass.value);
@@ -801,7 +797,7 @@ window.validarContrasenas = function() {
         return false;
     }
 
-    // 3. Validación de coincidencia de contraseñas
+    // Validación de coincidencia de contraseñas
     if (pass.value !== confirm.value) {
         pass.classList.add('input-error');
         confirm.classList.add('input-error');
@@ -859,9 +855,7 @@ window.Syncro.editEsp = function(id, nombre, email, telefono, especialidades, de
     }
 };
 window.Syncro.delEsp = function(id) { if (typeof window.eliminarTerapeuta === 'function') window.eliminarTerapeuta(id); };
-// ============================================
-// VISOR DE FOTO COMPLETA (LIGHTBOX)
-// ============================================
+//visor de foto
 window.abrirVisorFoto = function(url, nombre) {
     const visor = document.getElementById('visor-foto-terapeuta');
     const imagen = document.getElementById('visor-foto-imagen');
@@ -884,12 +878,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-// ============================================
-// MODAL DE RESEÑAS - CONTROLADOR CON PAGINACIÓN
-// ============================================
+// modal de reseñas con paginador
 let resenasActuales = [];
 let paginaActualResenas = 1;
-const LIMITE_RESENAS_POR_PAGINA = 3; // 👈 Aquí puedes cambiar cuántas reseñas se ven por página
+const LIMITE_RESENAS_POR_PAGINA = 3; 
 
 window.verResenasTerapeuta = function(btn) {
     if (typeof event !== 'undefined' && event) {

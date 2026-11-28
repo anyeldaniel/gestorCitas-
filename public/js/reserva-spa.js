@@ -2,16 +2,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const selectServicio = document.getElementById('servicio_id');
     const selectTrabajador = document.getElementById('trabajador_id');
 
-    // Función que va al servidor y actualiza la lista
+    // esta es la funcion que va al servidor para actualizar la lista
     function actualizarEspecialistas() {
         const servicioId = selectServicio.value;
 
         if (!servicioId) return;
 
-        // Le ponemos texto de "Cargando..." para que se vea profesional
+        // texto de cargando
         selectTrabajador.innerHTML = '<option value="aleatorio">Buscando especialistas...</option>';
 
-        // Hacemos la petición AJAX a la ruta que creamos en Laravel
         fetch(baseUrl + '/especialistas-por-servicio/' + servicioId)
             .then(response => response.json())
             .then(data => {
@@ -31,11 +30,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 selectTrabajador.innerHTML = '<option value="aleatorio">Cualquiera disponible</option>';
             });
     }
-
-    // Escuchar cada vez que el cliente cambia el servicio en el selector
+r
     selectServicio.addEventListener('change', actualizarEspecialistas);
 
-    // Si ya viene un servicio seleccionado desde el catálogo, filtra inmediatamente
     if (selectServicio.value) {
         actualizarEspecialistas();
     }

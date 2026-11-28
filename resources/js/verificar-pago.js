@@ -5,9 +5,7 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-    // =====================================================================
-    // 0. Sistema de Alertas (Modal Central)
-    // =====================================================================
+    // sistema de alertas
     function mostrarToast(mensaje, tipo = 'info', duracion = 3500) {
         const contenedor = document.getElementById('contenedor-toasts');
         if (!contenedor) {
@@ -97,9 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let filaActual = null;
     let pagosAprobadosActuales = [];
 
-    // =====================================================================
-    // 1. Lógica de Filtrado (Tabs, Búsqueda y Fecha)
-    // =====================================================================
+    // tabs, busqueda
     function aplicarFiltros() {
         const tabActivo = document.querySelector('.tab-estado.activo');
         const filtroEstado = tabActivo ? tabActivo.dataset.filtro : 'todos';
@@ -144,9 +140,7 @@ if (tabs.length) {
 
     // Aplicar filtro inicial al cargar la página
     aplicarFiltros();
-    // =====================================================================
-    // 2. Lógica del Modal de Confirmación (Abrir y Cerrar)
-    // =====================================================================
+    // =modal de confirmacion abrir y cerrar
     document.querySelectorAll('.btn-autorizar:not(.btn-definir-reembolso)').forEach(boton => {
         boton.addEventListener('click', (e) => {
             accionActual = 'autorizar';
@@ -280,9 +274,7 @@ if (tabs.length) {
         });
     }
 
-    // =====================================================================
-    // 3. Confirmar Acción (Fetch al Backend)
-    // =====================================================================
+    // confirmar accion
     if (btnConfirmar) {
         btnConfirmar.addEventListener('click', async () => {
             if (!filaActual) return;
@@ -387,9 +379,7 @@ if (tabs.length) {
         }
     }
 
-    // =====================================================================
-    // 4. Lógica del Modal de Detalle (Ver Detalle)
-    // =====================================================================
+    // modal detalle
     const modalDetallePago = document.getElementById('modal-detalle-pago');
     const botonesDetalle = document.querySelectorAll('.btn-ver-detalle');
     const btnCerrarDetalleX = document.getElementById('btn-detalle-cerrar-x');

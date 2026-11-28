@@ -1,7 +1,4 @@
-/* ============================================
-   REPORTES — Estilo institucional Spa
-   Paleta consistente con auth (beige/marrón)
-   ============================================ */
+/* reportes */
 
 :root {
     --spa-brown: #8b5e3c;
@@ -10,15 +7,15 @@
     --spa-cream: #fff9f0;
     --spa-cream-2: #fcfaf8;
     --spa-border: #e0dcd5;
-    --spa-ink: #1f1d1a;          /* más oscuro que antes (#2d2a26) */
-    --spa-ink-soft: #3a3632;     /* nuevo: para textos secundarios oscuros */
-    --spa-muted: #5c5c5c;        /* antes #7a7a7a, ahora más oscuro */
+    --spa-ink: #1f1d1a;          
+    --spa-ink-soft: #3a3632;     
+    --spa-muted: #5c5c5c;       
     --spa-shadow: 0 1px 3px rgba(45, 42, 38, 0.06),
                   0 8px 24px rgba(45, 42, 38, 0.06);
     --spa-radius: 10px;
 }
 
-/* ---------- Contenedor principal ---------- */
+/*contenedor principal*/
 .reportes-admin {
     background-color: var(--spa-cream);
     min-height: 100vh;
@@ -27,7 +24,7 @@
     color: var(--spa-ink);
 }
 
-/* ---------- Encabezado del módulo ---------- */
+/* encabezado de modulo */
 .reportes-admin .encabezado-modulo {
     max-width: 1280px;
     margin: 0 auto 32px;
@@ -49,18 +46,17 @@
     line-height: 1.5;
 }
 
-/* ---------- Layout de tres columnas ---------- */
+/* layout */
 .reportes-admin .distribucion-recepcion {
     max-width: 1280px;
     margin: 0 auto;
     display: grid;
-    /* Ajustado: 320px filtros, 1fr gráficas, 270px panel sugerencia */
+   
     grid-template-columns: 320px 1fr 270px; 
     gap: 28px;
     align-items: start;
 }
 
-/* ---------- Sidebar de filtros ---------- */
 .reportes-admin .bloque-registro {
     background: #ffffff;
     border: 1px solid var(--spa-border);
@@ -74,7 +70,7 @@
     gap: 4px;
 }
 
-/* ---------- Encabezado del sidebar de filtros ---------- */
+/* encabezado del slider */
 .reportes-admin .encabezado-registro {
     background: transparent;
     color: var(--spa-ink);
@@ -103,7 +99,7 @@
     margin: 0;
 }
 
-/* ---------- Campos del formulario ---------- */
+/* campos del formulario */
 .reportes-admin .campo-formulario {
     margin-bottom: 18px;
 }
@@ -144,7 +140,7 @@
     color: #b03024;
 }
 
-/* ---------- Botón ---------- */
+/* boton */
 .reportes-admin .btn-zen {
     display: inline-flex;
     align-items: center;
@@ -176,14 +172,14 @@
     transform: translateY(1px);
 }
 
-/* ---------- Panel de gráficas ---------- */
+/* panel de grafica */
 .reportes-admin .panel-graficas {
     display: grid;
     grid-template-columns: 1fr;
     gap: 24px;
 }
 
-/* ---------- Card de gráfica ---------- */
+/* card de grafica */
 .reportes-admin .contenedor-grafica {
     background: #ffffff;
     border: 1px solid var(--spa-border);
@@ -212,16 +208,14 @@
     line-height: 1.5;
 }
 
-/* ---------- Canvas ---------- */
+/* canvas */
 .reportes-admin .contenedor-grafica canvas {
     display: block;
     width: 100% !important;
     max-height: 340px;
 }
 
-/* ============================================
-   NUEVO PANEL LATERAL DERECHO (Sugerencia)
-   ============================================ */
+/*panel lateral derecho*/
 
 .reportes-admin .panel-sugerencia {
     background: #ffffff;
@@ -234,7 +228,6 @@
     display: flex;
     flex-direction: column;
     
-    /* EMPUJA EL PANEL HACIA LA DERECHA PARA SEPARARLO DE LAS GRÁFICAS */
     margin-left: 20px; 
 }
 
@@ -366,14 +359,13 @@
     color: var(--spa-brown-dark);
 }
 
-/* ---------- Responsive ---------- */
 @media (max-width: 1280px) {
     .reportes-admin .distribucion-recepcion {
         grid-template-columns: 300px 1fr 240px;
     }
     
     .reportes-admin .panel-sugerencia {
-        margin-left: 10px; /* Reducimos el margen en pantallas medianas para que no se desborde */
+        margin-left: 10px; 
     }
 }
 
@@ -387,7 +379,7 @@
     }
 
     .reportes-admin .panel-sugerencia {
-        display: none; /* Se oculta en vista móvil/tablet */
+        display: none; 
     }
 }
 

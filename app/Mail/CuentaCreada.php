@@ -15,9 +15,6 @@ class CuentaCreada extends Mailable
 {
     use Queueable, SerializesModels;
 
-    /**
-     * Create a new message instance.
-     */
     public function __construct(public User $user)
     {
         
@@ -29,7 +26,7 @@ class CuentaCreada extends Mailable
     public function envelope(): Envelope
     {
        return new Envelope(
-            subject: '¡Bienvenido a Syncrostyle! Confirmación de cuenta', // <-- CAMBIO 2: Asunto personalizado
+            subject: '¡Bienvenido a Syncrostyle! Confirmación de cuenta',
         );
     }
 
@@ -39,7 +36,7 @@ class CuentaCreada extends Mailable
     public function content(): Content
     {
        return new Content(
-            view: 'emails.bienvenida', // <-- CAMBIO 3: Ruta real de tu vista Blade
+            view: 'emails.bienvenida',
         );
     }
 

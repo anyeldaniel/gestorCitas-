@@ -79,7 +79,6 @@ async function cargarWidget(suffix) {
             contenido.appendChild(cabecera);
             contenido.appendChild(mensaje);
 
-            // 👇 AQUÍ ESTÁ EL CAMBIO DE ROLES Y EL BOTÓN 👇
             if (n.url) {
                 const btnAccion = document.createElement('a');
                 btnAccion.className = 'notif-btn-accion';
@@ -101,7 +100,7 @@ async function cargarWidget(suffix) {
                 
                 contenido.appendChild(btnAccion);
             }
-            // 👆 FIN DEL CAMBIO 👆
+            
 
             item.appendChild(iconoWrapper);
             item.appendChild(contenido);
@@ -114,7 +113,6 @@ async function cargarWidget(suffix) {
     }
 }
 
-// 👇 FUNCIÓN MODIFICADA PARA ACEPTAR EL PARÁMETRO 'redirigiendo' 👇
 async function marcarLeida(id, redirigiendo = false) {
     const url = URL_LEER.replace(':id', id);
     await fetch(url, {
@@ -192,9 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarTodo();
     setInterval(cargarTodo, 30000);
 
-    // ==========================================
-    // WEB PUSH (NOTIFICACIONES DEL SISTEMA)
-    // ==========================================
+    //notificaciones
     const isAuthenticated = bodyData.auth === 'true';
 
     if (isAuthenticated && 'serviceWorker' in navigator && 'PushManager' in window) {
@@ -209,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const vapidKey = bodyData.vapidKey;
             
             if (!vapidKey || vapidKey === '') {
-                console.warn('⚠️ La clave VAPID está vacía. Revisa tu .env y config/pwa.php');
+                console.warn(' La clave VAPID está vacía. Revisa tu .env y config/pwa.php');
                 return;
             }
 

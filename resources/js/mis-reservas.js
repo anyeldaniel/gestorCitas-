@@ -1,7 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // ========================================================
-    // 1. MODAL DE RESEÑAS
-    // ========================================================
+    // modal reseñas
     const overlay = document.getElementById('modal-resena-overlay');
     if (overlay) {
         const estrellas = document.querySelectorAll('.estrella-clic');
@@ -62,9 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ========================================================
-    // 2. FILTROS, ORDENAMIENTO Y PAGINACIÓN DE PRÓXIMAS CITAS
-    // ========================================================
+    // filtros, ordenamiento
     const contenedorProximas = document.getElementById('lista-proximas-citas');
     if (!contenedorProximas) return;
 
@@ -88,13 +84,13 @@ document.addEventListener('DOMContentLoaded', function() {
     function obtenerFichasOrdenadasYFiltradas() {
         const criterio = selectOrden ? selectOrden.value : 'fecha-asc';
 
-        // 1. Filtrar por estado de pago (todos | pendiente | pagado)
+        //filtrar por estado de pago
         const filtradas = fichasOriginales.filter(ficha => {
             if (estadoActivo === 'todos') return true;
             return ficha.dataset.pago === estadoActivo;
         });
 
-        // 2. Ordenar
+        //Ordenar
         filtradas.sort((a, b) => {
             const fechaA = `${a.dataset.fecha} ${a.dataset.hora}`;
             const fechaB = `${b.dataset.fecha} ${b.dataset.hora}`;

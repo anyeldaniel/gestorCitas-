@@ -12,7 +12,6 @@ class ServicioController extends Controller
 {
     public function index()
     {
-        // ⚠️ SI TU index() ORIGINAL TENÍA OTRO CUERPO, CONSÉRVALO.
         // Este es un placeholder que respeta la firma del diff.
         $servicios = Servicio::with('especialistas')->orderBy('id', 'desc')->get();
         $especialistas = User::whereIn('rol', ['trabajador', 'especialista', 'terapeuta'])
@@ -22,9 +21,7 @@ class ServicioController extends Controller
         return view('compartidas.catalogo', compact('servicios', 'especialistas'));
     }
 
-    /**
-     * Vista de administración del catálogo (formulario admin).
-     */
+    // vista de administracion de servicios
     public function create()
     {
         $servicios = Servicio::orderBy('id', 'desc')->get();
@@ -35,9 +32,7 @@ class ServicioController extends Controller
         return view('admin.servicios', compact('servicios', 'especialistas'));
     }
 
-    /**
-     * Guarda un nuevo servicio, incluyendo la imagen y especialistas.
-     */
+    // guardar nuevo servicio
     public function store(Request $request)
     {
         $datos = $request->validate([
@@ -60,7 +55,7 @@ class ServicioController extends Controller
         $especialistas = $datos['especialistas'] ?? [];
         unset($datos['especialistas']);
 
-        // Remapear porcentaje_agendado → porcentaje_abono (columna real en BD)
+        // Remapear porcentaje_agendado → porcentaje_abono
         if (isset($datos['porcentaje_agendado'])) {
             $datos['porcentaje_abono'] = $datos['porcentaje_agendado'];
             unset($datos['porcentaje_agendado']);
@@ -78,9 +73,7 @@ class ServicioController extends Controller
             ->with('success', '¡Tratamiento registrado exitosamente en The Beauty Room!');
     }
 
-    /**
-     * Actualiza un servicio existente (y reemplaza la imagen si suben una nueva).
-     */
+    // actualizar servicio
     public function update(Request $request, $id)
     {
         $servicio = Servicio::findOrFail($id);
@@ -104,7 +97,7 @@ class ServicioController extends Controller
             $datos['imagen'] = $request->file('imagen')->store('servicios', 'public');
         }
 
-        // Extraer especialistas (null = no venía en el form → detach)
+        // Extraer especialistas 
         $especialistas = $datos['especialistas'] ?? null;
         unset($datos['especialistas']);
 
@@ -128,17 +121,13 @@ class ServicioController extends Controller
             ->with('success', '¡Tratamiento actualizado exitosamente!');
     }
 
-    /**
-     * Elimina un servicio, sus citas asociadas y su imagen.
-     */
+    // esta funcion es para eliminar un servicio con todo y fotos
     public function destroy($id)
     {
         $servicio = Servicio::findOrFail($id);
 
-        // Borrar citas asociadas (necesario si hay FK constraint sin cascade)
         DB::table('citas')->where('servicio_id', $id)->delete();
 
-        // Borrar imagen física si existe
         if ($servicio->imagen && Storage::disk('public')->exists($servicio->imagen)) {
             Storage::disk('public')->delete($servicio->imagen);
         }

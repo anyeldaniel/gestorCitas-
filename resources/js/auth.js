@@ -3,10 +3,7 @@
  * Toda la lógica de la vista de autenticación (login + registro + reset + forgot).
  */
 
-// =============================================
-// FUNCIÓN GLOBAL: ojito para ver/ocultar contraseña
-// (Exactamente como tu código original)
-// =============================================
+// ojito de contraseña
 function togglePassword(inputId, iconElement) {
     const input = document.getElementById(inputId);
     if (!input) return;
@@ -32,9 +29,6 @@ function togglePassword(inputId, iconElement) {
 
 document.addEventListener('DOMContentLoaded', function () {
 
-    // =============================================
-    // 0. INICIALIZAR ÍCONOS LUCIDE
-    // =============================================
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
@@ -63,9 +57,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     };
 
-    // =============================================
-    // 1. TOGGLE ENTRE PANEL LOGIN / REGISTRO
-    // =============================================
+    // login registro
     const contenedor = document.getElementById('contenedor-principal');
     const btnPanelRegistro = document.getElementById('btn-panel-registro');
     const btnPanelLogin = document.getElementById('btn-panel-login');
@@ -95,10 +87,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-
-    // =============================================
-    // 2. OJITO (listener adicional, por si algún botón no usa onclick)
-    // =============================================
     document.querySelectorAll('.btn-ver-clave').forEach(boton => {
         boton.addEventListener('click', function () {
             const input = this.previousElementSibling;
@@ -119,9 +107,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 
-    // =============================================
-    // 3. VALIDACIÓN DE CONTRASEÑA EN VIVO (REGISTRO)
-    // =============================================
+    // validacion de contraseña
     const passwordInput = document.getElementById('password_reg');
     const emailInput = document.getElementById('email_reg');
     const registerForm = document.getElementById('form-registro');
@@ -171,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // --- 4. VALIDACIÓN AL ENVIAR EL REGISTRO ---
+    // enviar registro
     if (registerForm) {
         registerForm.addEventListener('submit', function (event) {
             const emailValue = emailInput ? emailInput.value.trim() : '';
@@ -209,12 +195,10 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
     
-    // =============================================
-    // 5. SWEETALERT2
-    // =============================================
+    
     if (typeof Swal !== 'undefined') {
 
-        // 5a. Loading al enviar el registro
+        //  Loading al enviar el registro
         if (registerForm) {
             registerForm.addEventListener('submit', function () {
                 if (event.defaultPrevented) return;
@@ -231,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
 
-        // 5b. Datos que vienen del Blade (sin lógica en el Blade)
+        // Datos que vienen del Blade (sin lógica en el Blade)
         const config = document.getElementById('auth-config');
 
         if (config) {
@@ -254,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        // 5c. NUEVA ALERTA: Recuperación de contraseña (Forgot Password)
+        // alerta recuperar contraseña
         const tarjetaForgot = document.querySelector('.tarjeta-unica');
         
         if (tarjetaForgot) {
@@ -271,7 +255,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     }
-            // 5d. Contraseña restablecida con éxito (Reset Password)
+            // Contraseña restablecida con éxito (Reset Password)
         const resetConfig = document.getElementById('reset-config');
         
         if (resetConfig && resetConfig.dataset.success === '1') {
@@ -291,9 +275,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
 
-    // =============================================
-    // 6. LÓGICA DE RESET PASSWORD (ESTADO DE LA NUEVA CLAVE)
-    // =============================================
+    // reset pasword
     const resetPasswordInput = document.getElementById('password');
     const resetPasswordConfirmationInput = document.getElementById('password_confirmation');
     const resetPasswordForm = document.getElementById('reset-password-form');

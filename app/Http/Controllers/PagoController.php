@@ -25,20 +25,15 @@ use Illuminate\View\View;
 
 class PagoController extends Controller
 {
-    /**
-     * ============================================================
-     * Panel admin/recepción para verificar pagos.
-     * ============================================================
-     */
+    // verificar pagos
     public function index(): View
     {
         abort_unless(in_array(auth()->user()->rol, ['admin', 'recepcion']), 403);
 
-        // CORRECCIÓN: Agregamos 'cita.trabajador' a las relaciones cargadas
         $pagos = Pago::with([
             'cita.cliente', 
             'cita.servicio', 
-            'cita.trabajador', // <-- AGREGA ESTO
+            'cita.trabajador', 
             'cita.pagos'
         ])
         ->orderByDesc('created_at')
@@ -54,17 +49,12 @@ class PagoController extends Controller
         return view('compartidas.verificar-pago', compact('pagos', 'pagosAutorizados', 'aprobadosHoy'));
     }
 
-    /**
-     * Alias de compatibilidad para panel admin.
-     */
     public function mostrarVistaAdmin(): View
     {
         return $this->index();
     }
 
-    /**
-     * Aprobar un pago pendiente desde la recepción.
-     */
+    // aprobar pago
     public function aprobarPago(int $id): RedirectResponse
     {
         abort_unless(in_array(auth()->user()->rol, ['admin', 'recepcion']), 403);
@@ -229,9 +219,6 @@ class PagoController extends Controller
         ]);
     }
 
-    /**
-     * Mostrar la pantalla de cobro al cliente.
-     */
     public function checkout(): View|RedirectResponse
     {
         $reserva = session('reserva_pendiente');
@@ -289,9 +276,7 @@ class PagoController extends Controller
         ));
     }
 
-    /**
-     * Procesar el pago enviado por el cliente.
-     */
+    // procesar pago
     public function procesarPago(Request $request): RedirectResponse
     {
         $reserva = session('reserva_pendiente');

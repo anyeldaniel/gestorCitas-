@@ -2,7 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&display=swap');
 @import 'tailwindcss';
 
-/* --- Base --- */
+/*Base*/
 body { 
     @apply bg-[#fff9f0] text-[#2d2a26] font-sans antialiased; 
     font-family: 'Instrument Sans', sans-serif; 
@@ -15,7 +15,7 @@ body {
     body { padding-top: 64px; }
 }
 
-/* --- Header Profesional --- */
+/* Header */
 #main-header { 
     @apply bg-[#8b5e3c] text-white fixed top-0 w-full z-50 shadow-md transition-transform duration-300; 
 }
@@ -46,7 +46,7 @@ body {
     @apply border border-white/50 px-4 py-2 rounded text-[11px] font-bold uppercase tracking-widest hover:bg-white hover:text-[#8b5e3c] transition-all whitespace-nowrap; 
 }
 
-/* --- Menú Móvil Lateral (Solo en móviles) --- */
+/* menu movil lateral para tlf*/
 @media (max-width: 768px) {
     #mobile-menu { 
         @apply fixed top-0 right-0 h-full w-70 bg-[#8b5e3c] z-60 flex flex-col p-8 gap-6 shadow-2xl;
@@ -65,7 +65,7 @@ body {
     #mobile-menu { @apply hidden; }
 }
 
-/* --- Footer --- */
+/* Footer */
 footer { @apply bg-[#8b5e3c] text-[#e0dcd5] py-12 px-6 mt-auto; }
 
 .footer-section-title { 

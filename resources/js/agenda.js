@@ -7,9 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
         formularioFiltrosAgenda.requestSubmit();
     });
     
-    /* =========================================================
-       1. LÓGICA PARA DESPLEGAR Y OCULTAR LOS DETALLES DE LA CITA
-       ========================================================= */
+    /*desplegar y ocultar detalles de cita*/
     const botonesExpandir = document.querySelectorAll('[data-expandir-cita]');
 
     botonesExpandir.forEach(boton => {
@@ -31,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.setAttribute('aria-expanded', 'true');
             }
 
-            // --- CORRECCIÓN PARA EL ICONO ---
+            
             // Buscamos el SVG que Lucide ya renderizó dentro del botón
             const iconoSVG = this.querySelector('svg');
             if (iconoSVG) {
@@ -43,9 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    /* =========================================================
-       2. LÓGICA GENERAL PARA CERRAR MODALES
-       ========================================================= */
+    /* cerrar modales */
     const botonesCerrar = document.querySelectorAll('[data-close-modal]');
     
     botonesCerrar.forEach(boton => {
@@ -58,9 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    /* =========================================================
-       3. LÓGICA PARA EL MODAL DE DECLINAR / CANCELAR CITA
-       ========================================================= */
+    /* declinar o cancelar cita */
     const botonesDeclinar = document.querySelectorAll('[data-declinar]');
     const modalCancelar = document.getElementById('modal-cancelar-cita');
     const formCancelar = document.getElementById('form-cancelar-cita');
@@ -98,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (puedeDefinirReembolso && pagosAprobados.length > 0) {
                     camposReembolso.removeAttribute('hidden');
                     avisoPendiente.setAttribute('hidden', '');
-                    listaReembolsos.innerHTML = ''; // Limpiar contenido anterior
+                    listaReembolsos.innerHTML = ''; 
 
                     pagosAprobados.forEach(pago => {
                         listaReembolsos.innerHTML += `
@@ -122,9 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /* =========================================================
-       4. LÓGICA PARA EL MODAL DE CAMBIAR ESTADO
-       ========================================================= */
+    /* cambiar de estado */
     const botonesCambiarEstado = document.querySelectorAll('[data-cambiar-estado]');
     const modalEstado = document.getElementById('modal-cambiar-estado');
 

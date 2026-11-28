@@ -9,9 +9,7 @@
 @section('content')
 <main class="dashboard-admin">
 
-    <!-- ==========================================
-         LATERALES DECORATIVOS ZEN (SOLO ESCRITORIO)
-         ========================================== -->
+    <!-- laterales decorativos-->
     <aside class="dash-lateral dash-lateral--izq" aria-hidden="true">
         <div class="dash-lateral-rama"></div>
         <span class="dash-lateral-vertical">BIENESTAR EN CADA DETALLE</span>
@@ -27,9 +25,7 @@
         <div class="dash-lateral-rama dash-lateral-rama--corta"></div>
     </aside>
 
-    <!-- ==========================================
-         HEADER ESTILO IMAGEN 1
-         ========================================== -->
+    <!-- header-->
     <header class="dash-header">
         <div class="dash-header-info">
             <h1>Panel de control</h1>
@@ -71,13 +67,6 @@
         </div>
     @endif
 
-    <!-- ==========================================
-         KPI CARDS ESTILO IMAGEN 1
-         ========================================== -->
-
-    <!-- ==========================================
-         KPI CARDS ESTILO IMAGEN 1
-         ========================================== -->
     <section class="dash-kpis-grid">
         <!-- Citas Activas (Tarjeta Oscura) -->
         <article class="dash-kpi-card dash-kpi-card--dark">
@@ -122,12 +111,10 @@
         </article>
     </section>
 
-    <!-- ==========================================
-         DOBLE COLUMNA ESTILO IMAGEN 1
-         ========================================== -->
+    <!--doble columna -->
     <div class="dash-columnas-grid">
 
-        <!-- COLUMNA 1: RECEPCIONISTAS -->
+        <!-- columna recepcionistas -->
         <section class="dash-panel">
             <header class="dash-panel-header">
                 <div class="dash-panel-header-text">
@@ -185,7 +172,7 @@
             </footer>
         </section>
 
-        <!-- COLUMNA 2: ESPECIALISTAS -->
+        <!-- columna especialistas-->
         <section class="dash-panel">
             <header class="dash-panel-header">
                 <div class="dash-panel-header-text">
@@ -220,7 +207,7 @@
                                 @endforeach
                             @endif
 
-                            <!-- ETIQUETA DINÁMICA DE CITAS -->
+                            <!-- etiqueta de citas -->
                             <span class="dash-tag dash-tag--role">
                                 {{ $trab->citas_mes }} {{ $trab->citas_mes == 1 ? 'cita este mes' : 'citas este mes' }}
                             </span>
@@ -254,12 +241,10 @@
         </section>
     </div>
 
-    <!-- ==========================================
-         MODALES (SIN CAMBIOS)
-         ========================================== -->
+    <!-- modales-->
     @include('compartidas.modal-terapeuta', ['userRole' => $userRole ?? null])
 
-    <!-- MODAL RECEPCIONISTA -->
+    <!-- recpecionista -->
     <dialog id="modal-recepcionista" class="modal-zen">
         <header class="modal-header">
             <h2 id="modal-recepcionista-titulo">Agregar Nuevo Recepcionista</h2>
@@ -329,7 +314,7 @@
         </form>
     </dialog>
 
-<!-- MODAL CONFIRMACIÓN -->
+<!-- confirmacion -->
     <dialog id="modal-confirmacion-custom" class="modal-contenedor-alerta-critica">
         <article class="cuerpo-alerta-centrado">
             <h3 id="confirm-alerta-titulo" class="titulo-alerta-critica">¿Confirmar acción?</h3>

@@ -1,12 +1,8 @@
-/* ==========================================================================
-   VERIFICACIÓN DE PAGOS - PANEL FINANCIERO PREMIUM
-   ========================================================================== */
+/* verificacion de pago */
 
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
-/* ==========================================================================
-   VARIABLES GLOBALES (Scoped)
-   ========================================================================== */
+
 .modulo-vista {
     --bg-page: #fbf9f5;
     --bg-soft: #fcfaf8;
@@ -52,9 +48,7 @@
     --transition: all 0.3s var(--ease-zen);
 }
 
-/* ==========================================================================
-   BASE
-   ========================================================================== */
+/*base */
 .modulo-vista,
 .modulo-vista *,
 .modulo-vista *::before,
@@ -75,9 +69,7 @@
     margin: 0;
 }
 
-/* ==========================================================================
-   MÓDULO CONTENEDOR
-   ========================================================================== */
+
 .modulo-vista {
     max-width: 1280px;
     margin: 0 auto;
@@ -86,9 +78,7 @@
     color: var(--text-main);
 }
 
-/* ==========================================================================
-   HEADER
-   ========================================================================== */
+/* header*/
 .modulo-vista .encabezado-modulo {
     display: flex;
     justify-content: space-between;
@@ -196,9 +186,7 @@
     color: var(--text-main);
 }
 
-/* ==========================================================================
-   TARJETAS KPI (Métricas)
-   ========================================================================== */
+/*taejetas*/
 .modulo-vista .tarjetas-resumen-pagos {
     display: grid;
     grid-template-columns: 1.5fr 1fr 1fr;
@@ -317,9 +305,7 @@
     color: rgba(255, 255, 255, 0.7);
 }
 
-/* ==========================================================================
-   PANEL PRINCIPAL (Tabla)
-   ========================================================================== */
+/* panel princiapl */
 .modulo-vista .panel-pagos {
     background: var(--bg-card);
     border: 1px solid var(--border-light);
@@ -384,9 +370,7 @@
     animation: pulseDot 2s ease-in-out infinite;
 }
 
-/* ==========================================================================
-   FILTROS (Buscador y Fecha)
-   ========================================================================== */
+/* filtros */
 .modulo-vista .panel-pagos__filtros {
     padding: 0 2rem 1.25rem;
     display: flex;
@@ -487,9 +471,7 @@
     opacity: 0.55;
 }
 
-/* ==========================================================================
-   TABS DE ESTADO
-   ========================================================================== */
+/* tabs de estado*/
 .modulo-vista .panel-pagos__tabs {
     padding: 0 2rem;
     display: flex;
@@ -565,9 +547,7 @@
     color: #ffffff;
 }
 
-/* ==========================================================================
-   TABLA
-   ========================================================================== */
+
 .modulo-vista .tabla-responsive-wrapper {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -730,9 +710,7 @@
     letter-spacing: -0.01em;
 }
 
-/* ==========================================================================
-   BADGES DE ESTADO
-   ========================================================================== */
+
 .modulo-vista .estado-pendiente,
 .modulo-vista .estado-autorizado,
 .modulo-vista .estado-rechazado {
@@ -776,15 +754,13 @@
     color: var(--color-danger);
 }
 
-/* ==========================================================================
-   ACCIONES (Botones)
-   ========================================================================== */
+/* botones */
 .modulo-vista .celda-acciones {
     display: flex;
     align-items: center;
     justify-content: flex-end;
     gap: 0.75rem;
-    flex-wrap: nowrap; /* Evita que los botones salten de línea */
+    flex-wrap: nowrap;
 }
 
 .modulo-vista .btn-accion-icono {
@@ -861,7 +837,7 @@
     box-shadow: none !important;
 }
 
-/* ESTILO DEL BOTÓN "VER DETALLE" */
+/*estilo de boton ver detalle */
 .modulo-vista .btn-ver-detalle {
     background: transparent;
     color: var(--primary-brown);
@@ -893,9 +869,7 @@
     white-space: nowrap;
 }
 
-/* ==========================================================================
-   PIE DEL PANEL
-   ========================================================================== */
+/* pie de panel */
 .modulo-vista .panel-pagos__footer {
     padding: 1.25rem 2rem;
     border-top: 1px solid var(--border-light);
@@ -925,9 +899,7 @@
     color: var(--text-light);
 }
 
-/* ==========================================================================
-   ANIMACIONES Y RESPONSIVE
-   ========================================================================== */
+/* animaciones */
 @keyframes fadeInDown {
     from { opacity: 0; transform: translateY(-16px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -982,10 +954,6 @@
     .modulo-vista .btn-autorizar { padding: 0 0.75rem; font-size: 0.65rem; }
 }
 
-/* ==========================================================================
-   MODAL DE CONFIRMACIÓN (AUTORIZAR / RECHAZAR PAGO) - DISEÑO PREMIUM
-   ========================================================================== */
-
 dialog.modal-contenedor-alerta-critica {
     position: fixed;
     inset: 0;
@@ -1019,7 +987,6 @@ dialog.modal-contenedor-alerta-critica::backdrop {
     overflow: hidden;
 }
 
-/* --- HEADER DEL MODAL --- */
 .modal-pago-header {
     display: flex;
     justify-content: space-between;
@@ -1108,7 +1075,6 @@ dialog.modal-contenedor-alerta-critica::backdrop {
     border-color: #8b5e3c;
 }
 
-/* --- CUERPO DEL MODAL (CON SCROLL INTERNO) --- */
 .modal-pago-body {
     padding: 0 2.5rem 1.5rem;
     display: flex;
@@ -1292,10 +1258,7 @@ dialog.modal-contenedor-alerta-critica::backdrop {
     from { opacity: 0; transform: scale(0.96) translateY(10px); }
     to { opacity: 1; transform: scale(1) translateY(0); }
 }
-
-/* ==========================================================================
-   AJUSTES RESPONSIVE Y SCROLL INTERNO (AUTORIZAR / RECHAZAR PAGO)
-   ========================================================================== */
+ /*responmsive*/
 
 @media (max-width: 640px) {
     dialog.modal-contenedor-alerta-critica:not(.modal-detalle) {
@@ -1393,9 +1356,7 @@ dialog.modal-contenedor-alerta-critica::backdrop {
     }
 }
 
-/* ==========================================================================
-   MODAL DETALLE DE TRANSACCIÓN (RESPONSIVE)
-   ========================================================================== */
+/* modal */
 
 dialog.modal-detalle {
     max-width: 680px;
@@ -1553,10 +1514,6 @@ dialog.modal-detalle {
     min-width: 150px;
 }
 
-/* --------------------------------------------------------------------------
-   AJUSTES RESPONSIVE PARA EL MODAL DE DETALLE
-   -------------------------------------------------------------------------- */
-
 /* Tablets y pantallas medianas */
 @media (max-width: 640px) {
     dialog.modal-detalle {
@@ -1662,10 +1619,7 @@ dialog.modal-detalle {
     }
 }
 
-/* ==========================================================================
-   RESPONSIVE: TARJETAS DE PAGO (AUTORIZAR / RECHAZAR) EN MÓVIL
-   Convierte cada fila de la tabla en una tarjeta apilada en pantallas ≤ 768px
-   ========================================================================== */
+/*resposive tarjetas de pago */
 
 @media (max-width: 768px) {
 
@@ -1794,9 +1748,7 @@ dialog.modal-detalle {
     }
 }
 
-/* --------------------------------------------------------------------------
-   Ajuste fino para teléfonos muy pequeños (≤ 420px)
-   -------------------------------------------------------------------------- */
+/* ajuste de tlf peqieños */
 @media (max-width: 420px) {
 
     .modulo-vista .tabla-transacciones tbody tr {
@@ -1827,11 +1779,11 @@ dialog.modal-detalle {
 
     .modulo-vista .btn-autorizar {
         flex: 1 1 100%;
-        order: 2;               /* El botón autorizar va abajo, ancho completo */
+        order: 2;               
     }
 
     .modulo-vista .btn-accion-icono {
-        order: 1;               /* El botón rechazar va arriba, a la izquierda */
+        order: 1;              
     }
 
     .modulo-vista .btn-ver-detalle,
@@ -1846,9 +1798,7 @@ dialog.modal-detalle {
     display: none;
 }
 
-/* ==========================================================================
-   ALERTAS CENTRALES (TOASTS/MODALES)
-   ========================================================================== */
+/* alertas centrales */
 .contenedor-toasts {
     position: fixed;
     inset: 0;
@@ -1856,7 +1806,7 @@ dialog.modal-detalle {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(40, 30, 20, 0.45); /* Fondo oscuro translúcido */
+    background: rgba(40, 30, 20, 0.45); 
     backdrop-filter: blur(4px);
     opacity: 0;
     visibility: hidden;

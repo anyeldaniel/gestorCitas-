@@ -11,16 +11,14 @@ use Illuminate\Support\Collection;
 
 class NotificacionService
 {
-    /* ============ Helpers ============ */
+    // Helpers
 
     private static function adminsYRecepcion(): Collection
     {
         return User::whereIn('rol', ['admin', 'recepcion'])->get();
     }
 
-    /**
-     * Destinatarios internos: admin + recepción + trabajador asignado a la cita.
-     */
+    // destinatarios
     private static function destinatariosInternos(Cita $cita): Collection
     {
         return self::adminsYRecepcion()
@@ -52,14 +50,11 @@ class NotificacionService
         }
     }
 
-    /* ============ Eventos ============ */
+    //Eventos
 
-   /**
- * Nueva cita agendada → todos los trabajadores asignados + admin + recepción.
- */
+   // cita nueva agendada
 public static function citaNueva(Cita $cita): void
 {
-    // Recolecta todos los trabajadores de la tabla pivote cita_servicio
     $trabajadoresPivote = $cita->servicios()
         ->pluck('cita_servicio.trabajador_id')
         ->filter()
@@ -68,7 +63,6 @@ public static function citaNueva(Cita $cita): void
 
     $trabajadores = User::whereIn('id', $trabajadoresPivote)->get();
 
-    // Si no hay pivote (por si acaso), usa el trabajador principal
     if ($trabajadores->isEmpty() && $cita->trabajador) {
         $trabajadores = collect([$cita->trabajador]);
     }
@@ -90,9 +84,7 @@ public static function citaNueva(Cita $cita): void
     );
 }
 
-    /**
-     * Cita confirmada → cliente + trabajador.
-     */
+    // cita confirmada
     public static function citaConfirmada(Cita $cita): void
     {
         $destinatarios = collect([$cita->cliente, $cita->trabajador])
@@ -108,12 +100,10 @@ public static function citaNueva(Cita $cita): void
         );
     }
 
-   /**
- * Cita cancelada → cliente + TODOS los trabajadores asignados + admin + recepción.
- */
+   // cita cancelada
 public static function citaCancelada(Cita $cita, ?string $motivo = null): void
 {
-    // Todos los trabajadores del pivote (multi-servicio)
+    //multi-servicio
     $trabajadoresPivote = $cita->servicios()
         ->pluck('cita_servicio.trabajador_id')
         ->filter()
@@ -145,9 +135,7 @@ public static function citaCancelada(Cita $cita, ?string $motivo = null): void
     );
 }
 
-/**
- * Un trabajador canceló una cita con un pago aprobado y falta definir el reembolso.
- */
+// esto es por si un trabajador cancela una cita pagada y toca reembolso
 public static function reembolsoPorDefinir(Cita $cita): Collection
 {
     $destinatarios = self::adminsYRecepcion();
@@ -166,9 +154,7 @@ public static function reembolsoPorDefinir(Cita $cita): Collection
     return $destinatarios;
 }
 
-    /**
-     * Reembolso completado → cliente.
-     */
+    // reembolso completo
     public static function reembolsoCompletado(Pago $pago): void
     {
         $pago->loadMissing('cita.cliente');
@@ -189,9 +175,7 @@ public static function reembolsoPorDefinir(Cita $cita): Collection
         );
     }
 
-   /**
- * Cambio de estado genérico → cliente + TODOS los trabajadores asignados.
- */
+
 public static function cambioEstado(Cita $cita, string $nuevoEstado): void
 {
     $tipo = match ($nuevoEstado) {

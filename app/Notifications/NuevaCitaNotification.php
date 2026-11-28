@@ -15,30 +15,22 @@ class NuevaCitaNotification extends Notification
     protected $cita;
     protected bool $esPagoTotal;
 
-    /**
-     * Recibimos el objeto Cita para personalizar el mensaje.
-     */
+    // personalizar mensaje
     public function __construct(Cita $cita, bool $esPagoTotal = false)
     {
         $this->cita = $cita;
         $this->esPagoTotal = $esPagoTotal;
     }
 
-    /**
-     * Solo enviamos por WebPush (nada de correos para evitar el error SMTP).
-     */
     public function via($notifiable)
     {
         return [WebPushChannel::class];
     }
 
-    /**
-     * Definimos el contenido de la notificación Push.
-     */
+    // contenido de la notificacion
     public function toWebPush($notifiable, $notification)
     {
         // Verificamos si quien recibe la notificación es el terapeuta
-        // (Comparamos el ID del receptor con el ID del trabajador de la cita)
         $esTerapeuta = ($notifiable->id === $this->cita->trabajador_id);
         
         if ($esTerapeuta) {

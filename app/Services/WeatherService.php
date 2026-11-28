@@ -14,14 +14,12 @@ class WeatherService
             $key  = config('services.openweather.key');
             $city = config('services.openweather.city');
 
-            // 🔍 LOG 1: Ver qué está leyendo Laravel
             Log::info('OpenWeather DEBUG', [
                 'key_vacia' => empty($key),
                 'key_largo' => strlen($key ?? ''),
                 'city'      => $city,
             ]);
 
-            // Si la key está vacía, no perdemos tiempo con la petición
             if (empty($key)) {
                 Log::error('OpenWeather: La API key está vacía. Revisa el .env y ejecuta php artisan config:clear');
                 return $this->climaFallback($city);
@@ -35,7 +33,6 @@ class WeatherService
                     'lang'  => 'es',
                 ]);
 
-                // 🔍 LOG 2: Ver la respuesta completa
                 Log::info('OpenWeather RESPONSE', [
                     'status' => $response->status(),
                     'body'   => $response->body(),
@@ -55,7 +52,7 @@ class WeatherService
                     'ciudad' => $data['name'] . ', ' . ($data['sys']['country'] ?? ''),
                 ];
             } catch (\Exception $e) {
-                // 🔍 LOG 3: Ver excepciones (timeout, DNS, etc.)
+                
                 Log::error('OpenWeather EXCEPCIÓN: ' . $e->getMessage());
                 return $this->climaFallback($city);
             }

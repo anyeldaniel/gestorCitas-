@@ -16,25 +16,19 @@ class Resena extends Model
         'comentario',
     ];
 
-    /**
-     * Cliente que escribió la reseña.
-     */
+    // reseña que escribio el cliente
     public function cliente()
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    /**
-     * Terapeuta que recibió la reseña.
-     */
+    // reseña que recibio el terapeuta
     public function terapeuta()
     {
         return $this->belongsTo(User::class, 'terapeuta_id');
     }
 
-    /**
-     * Cita asociada a la reseña (opcional).
-     */
+    // ciota asociada a la reseña
     public function cita()
     {
         return $this->belongsTo(Cita::class, 'cita_id');

@@ -1,13 +1,10 @@
 "use strict";
 
-// 👇 Cambia este número cada vez que modifiques este archivo para forzar la actualización en los navegadores
 const CACHE_KEY = "syncrostyle-cache-v4"; 
 const IGNORED_PATHS = ['/api/', '/livewire/', '/_inertia/'];
 const OFFLINE_URL = "/offline.html";
 
-// ==========================================
-// 1. INSTALACIÓN Y ACTIVACIÓN (CACHÉ)
-// ==========================================
+// instalacion y actiuvacion cache
 self.addEventListener("install", (event) => {
     event.waitUntil(
         caches
@@ -32,9 +29,7 @@ self.addEventListener("activate", (event) => {
     );
 });
 
-// ==========================================
-// 2. ESTRATEGIAS DE RED (FETCH)
-// ==========================================
+//estrategias de red
 function isCacheable(response) {
     if (!response || response.status !== 200 || response.type === "opaque") {
         return false;
@@ -88,9 +83,7 @@ self.addEventListener("fetch", (event) => {
     );
 });
 
-// ==========================================
-// 3. LÓGICA DE WEB PUSH (NOTIFICACIONES)
-// ==========================================
+// notificaciones
 self.addEventListener('push', function(event) {
     let data = {};
     
@@ -103,7 +96,6 @@ self.addEventListener('push', function(event) {
         }
     }
 
-    // Si el paquete envía los datos dentro de una propiedad "notification", los extraemos
     const payload = data.notification || data;
 
     const title = payload.title || 'Syncrostyle';

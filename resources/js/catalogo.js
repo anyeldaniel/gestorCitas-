@@ -7,9 +7,6 @@ function initCatalogo() {
     const confirmModal = document.getElementById("modal-confirmacion-custom");
     const inputFoto = document.getElementById("servicio_foto");
 
-    // ==========================================================================
-    // DETECTAR MENSAJES DE SESIÓN (Para mostrarlos con SweetAlert al recargar)
-    // ==========================================================================
     const mensajeExitoOculto = document.getElementById("mensaje-exito-oculto");
     if (mensajeExitoOculto) {
         const textoMensaje = mensajeExitoOculto.dataset.mensaje;
@@ -30,9 +27,7 @@ function initCatalogo() {
         }
     }
 
-    // ==========================================================================
-    // UTILIDAD: CONSTRUIR BASE URL (con o sin /public)
-    // ==========================================================================
+    // base url
     function obtenerBaseUrl() {
         let baseUrl = window.location.origin;
         if (window.location.pathname.includes('/public')) {
@@ -41,9 +36,7 @@ function initCatalogo() {
         return baseUrl;
     }
 
-    // ==========================================================================
-    // UTILIDAD: MOSTRAR SWEETALERT CON FALLBACK
-    // ==========================================================================
+    // mostrar sweetalert
     function mostrarAlerta(tipo, titulo, texto) {
         if (typeof Swal !== 'undefined' && Swal && typeof Swal.fire === 'function') {
             return Swal.fire({
@@ -59,9 +52,7 @@ function initCatalogo() {
         return Promise.resolve({ isConfirmed: true });
     }
 
-    // ==========================================================================
-    // ALERTA DE CONFIRMACIÓN (Solo se usa para Eliminar)
-    // ==========================================================================
+    // alerta de confirmacion
     window.mostrarAlertaConfirmacion = function (titulo, mensaje, callbackAceptar) {
         if (!confirmModal) return;
 
@@ -84,9 +75,7 @@ function initCatalogo() {
         confirmModal.showModal();
     };
 
-    // ==========================================================================
-    // PREVISUALIZACIÓN DINÁMICA DE LA FOTO
-    // ==========================================================================
+    // previsualizacion de la foto
     window.previsualizarImagenServicio = function (input) {
         const preview = document.getElementById("previsualizacion-avatar-servicio");
         if (!preview) return;
@@ -110,9 +99,7 @@ function initCatalogo() {
         });
     }
 
-    // ==========================================================================
-    // MODALES (REGISTRO / EDICIÓN)
-    // ==========================================================================
+    // modales de registro y edicion
     let servicioEditandoId = null;
 
     window.abrirModalAgregarServicio = function() {
@@ -181,9 +168,7 @@ function initCatalogo() {
         modal.showModal();
     };
 
-    // ==========================================================================
-    // SUBMIT DEL FORMULARIO (CREAR / EDITAR)
-    // ==========================================================================
+    // formulario crear editar
     if (formServicio) {
         formServicio.addEventListener("submit", function(e) {
             e.preventDefault();
@@ -236,10 +221,8 @@ function initCatalogo() {
             .then((data) => {
                 console.log('[catalogo] Éxito:', data);
 
-                // ✅ CIERRA EL MODAL INMEDIATAMENTE
                 window.cerrarModalServicio();
 
-                // ✅ MUESTRA EL SWEETALERT VERDE
                 mostrarAlerta(
                     'success',
                     '¡Excelente!',
@@ -256,9 +239,7 @@ function initCatalogo() {
         });
     }
 
-    // ==========================================================================
-    // CONSULTA DETALLADA: FICHA TÉCNICA
-    // ==========================================================================
+    // ficha tecnica
     window.verServicioDetalle = function (id) {
         const tarjeta = document.querySelector(`.tarjeta-servicio-item[data-id="${id}"]`);
         if (!tarjeta) return;
@@ -300,9 +281,7 @@ function initCatalogo() {
         if (modalVer) modalVer.showModal();
     };
 
-    // ==========================================================================
-    // ADVERTENCIA DE ELIMINACIÓN (AHORA CON SWEETALERT Y FETCH)
-    // ==========================================================================
+    // advertencia de eliminacion
     window.eliminarServicio = function (id) {
         const tarjeta = document.querySelector(`.tarjeta-servicio-item[data-id="${id}"]`);
         const nombreServicio = tarjeta ? tarjeta.dataset.nombre : "este servicio";
@@ -360,9 +339,7 @@ function initCatalogo() {
         );
     };
 
-    // ==========================================================================
-    // MÁSCARA OSCURA Y ONBOARDING
-    // ==========================================================================
+
     document.querySelectorAll('dialog').forEach(modal => {
         modal.addEventListener('click', function (e) {
             const rect = modal.getBoundingClientRect();
@@ -448,11 +425,6 @@ function initCatalogo() {
     }
 }
 
-// ==========================================================================
-// ARRANQUE SEGURO (compatible con Vite/type="module")
-// Si el DOM ya cargó (caso típico con @vite + módulos ES), ejecuta ya.
-// Si todavía está cargando, espera DOMContentLoaded.
-// ==========================================================================
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initCatalogo);
 } else {

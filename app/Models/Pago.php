@@ -9,7 +9,7 @@ class Pago extends Model
 {
     use HasFactory;
 
-    protected $table = 'pagos'; // Conectando a tu tabla real
+    protected $table = 'pagos'; 
 
     protected $fillable = [
         'cita_id',
@@ -30,7 +30,7 @@ class Pago extends Model
         'monto_reembolso' => 'decimal:2',
     ];
 
-    // Relación: Un pago pertenece a una cita
+    // un pago que pertenefce a una cita
     public function cita()
     {
         return $this->belongsTo(Cita::class, 'cita_id');

@@ -3,9 +3,7 @@
  * CORREGIDO: Rutas dinámicas para funcionar con o sin /public/
  */
 
-// ============================================
-// FUNCIÓN AUXILIAR: DETECTAR URL BASE
-// ============================================
+// detectar url base
 function getBaseUrl() {
     let baseUrl = window.location.origin;
     if (window.location.pathname.includes('/public')) {
@@ -24,7 +22,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const formRecepcionista = document.getElementById("form-recepcionista");
 
-    // --- LECTURA DE MENSAJES DE ÉXITO (SweetAlert) ---
     const mensajeExito = document.getElementById("dashboard-mensaje-exito");
     if (mensajeExito) {
         const texto = mensajeExito.dataset.mensaje;
@@ -39,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // --- VALIDACIÓN DEL FORMULARIO RECEPCIONISTA ---
+    // validacion formulario recepcionista
     const recepPasswordInput = document.getElementById('recep_password');
     const recepPasswordConfirmationInput = document.getElementById('recep_password_confirmation');
 
@@ -178,16 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initPaginadoresDashboard();
 });
 
-// ============================================
-// PAGINADOR PROFESIONAL DEL DASHBOARD
-// ============================================
-/**
- * Inicializa los paginadores de las listas de recepcionistas y especialistas.
- * - 4 items por página por defecto (configurable).
- * - Oculta filas que no pertenecen a la página actual.
- * - Actualiza el texto "Página X de Y".
- * - Deshabilita los botones en los extremos.
- */
+// paginador
 function initPaginadoresDashboard() {
     const ITEMS_POR_PAGINA = 4;
 
@@ -265,14 +253,8 @@ function initPaginadoresDashboard() {
     configurarPaginador('lista-especialistas',  'paginador-especialistas');
 }
 
-// ============================================
-// FUNCIONES GLOBALES - RECEPCIONISTAS
-// ============================================
+// fuinciones
 
-/**
- * Abrir modal para agregar recepcionista
- * RUTA: POST /admin/crear-recepcionista
- */
 window.abrirModalRecepcionista = function() {
     const modal = document.getElementById('modal-recepcionista');
     const form = document.getElementById('form-recepcionista');
@@ -282,7 +264,7 @@ window.abrirModalRecepcionista = function() {
     document.getElementById('modal-recepcionista-titulo').textContent = 'Agregar Nuevo Recepcionista';
     form.reset();
 
-    // ✅ RUTA DINÁMICA
+    // ruta dinamica
     form.action = `${getBaseUrl()}/admin/crear-recepcionista`;
     delete form.dataset.idEditando;
 
@@ -315,10 +297,7 @@ window.abrirModalRecepcionista = function() {
     modal.showModal();
 };
 
-/**
- * Editar recepcionista
- * RUTA: PUT /admin/recepcionista/{id}/actualizar
- */
+// editar recepcionista
 window.editarRecepcionista = function(id, nombre, email, telefono) {
     const modal = document.getElementById('modal-recepcionista');
     const form = document.getElementById('form-recepcionista');
@@ -327,7 +306,6 @@ window.editarRecepcionista = function(id, nombre, email, telefono) {
 
     document.getElementById('modal-recepcionista-titulo').textContent = 'Editar Recepcionista';
 
-    // ✅ RUTA DINÁMICA
     form.action = `${getBaseUrl()}/admin/recepcionista/${id}/actualizar`;
     form.dataset.idEditando = id;
 
@@ -361,11 +339,7 @@ window.editarRecepcionista = function(id, nombre, email, telefono) {
     modal.showModal();
 };
 
-/**
- * Eliminar recepcionista
- * RUTA: DELETE /admin/usuario/{id}
- * (Unificada con la ruta de eliminar usuario)
- */
+
 window.eliminarRecepcionista = function(id) {
     const modal = document.getElementById('modal-confirmacion-custom');
     
@@ -415,7 +389,7 @@ window.eliminarRecepcionista = function(id) {
 
         // Enviamos la petición con fetch para poder mostrar el SweetAlert sin recargar de golpe
         fetch(`${getBaseUrl()}/admin/usuario/${id}`, {
-            method: 'POST', // Usamos POST simulando DELETE
+            method: 'POST', 
             headers: {
                 'X-CSRF-TOKEN': token,
                 'Accept': 'application/json'
@@ -463,9 +437,7 @@ window.eliminarRecepcionista = function(id) {
     };
 };
 
-// ============================================
-// PAGINACIÓN (COMPATIBILIDAD LEGACY)
-// ============================================
+// paginacion
 
 window.paginarBloque = function(contenedorId, numPagina, btnPrevId, btnNextId, infoId) {
     const contenedor = document.getElementById(contenedorId);
@@ -499,10 +471,6 @@ window.paginarBloque = function(contenedorId, numPagina, btnPrevId, btnNextId, i
 
     return numPagina;
 };
-
-// ============================================
-// SYNCRO - OBJETO DE COMPATIBILIDAD
-// ============================================
 
 window.Syncro = {
     init: function() {
@@ -547,7 +515,7 @@ window.Syncro = {
     },
 
     openEsp: function() {
-        console.log('✅ Syncro.openEsp ejecutado');
+        console.log(' Syncro.openEsp ejecutado');
         if (typeof window.abrirModalAgregar === 'function') {
             window.abrirModalAgregar();
         } else {
@@ -572,13 +540,6 @@ window.Syncro = {
     }
 };
 
-// ============================================
-// RE-INICIALIZAR PAGINADOR TRAS CAMBIOS DINÁMICOS
-// ============================================
-/**
- * Expone la función globalmente para que otros módulos
- * (ej. terapeutas.js tras eliminar) puedan refrescar el paginador.
- */
 window.refrescarPaginadoresDashboard = function() {
     initPaginadoresDashboard();
 };

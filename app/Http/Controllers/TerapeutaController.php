@@ -12,32 +12,25 @@ use Illuminate\Validation\Rule;
 
 class TerapeutaController extends Controller
 {
-    /**
-     * Vista pública de terapeutas con promedio de reseñas y especialidades dinámicas.
-     * GET /terapeutas
-     */
+    // Mostrar la lista de terapeutas con sus reseñas y especialidades
     public function index()
     {
-        // 1. Traemos a los trabajadores con sus reseñas Y los datos del cliente que la escribió
         $terapeutas = User::where('rol', 'trabajador')
             ->with(['resenasRecibidas' => function ($query) {
-                $query->with('cliente')->latest(); // Trae al cliente y ordena por fecha descendente
+                $query->with('cliente')->latest(); 
             }])
             ->get()
             ->map(function ($terapeuta) {
-                // 2. Calcular promedio y total de reseñas
+                
                 $terapeuta->promedio = round($terapeuta->resenasRecibidas->avg('puntuacion') ?? 0, 1);
                 $terapeuta->total_resenas = $terapeuta->resenasRecibidas->count();
 
-                // 3. 🆕 BUSCAR LAS ESPECIALIDADES REALES EN LA BD
-                // Hacemos el cruce de tablas igual que en AdminController
                 $listaEspecialidades = DB::table('especialidades')
                     ->join('trabajador_especialidad', 'especialidades.id', '=', 'trabajador_especialidad.especialidad_id')
                     ->where('trabajador_especialidad.usuario_id', $terapeuta->id)
                     ->pluck('especialidades.nombre_especialidad')
                     ->toArray();
 
-                // 4. Asignamos el string separado por comas al objeto (ej: "Masajista, Facial")
                 $terapeuta->especialidades = implode(', ', $listaEspecialidades);
 
                 return $terapeuta;
@@ -48,10 +41,7 @@ class TerapeutaController extends Controller
         return view('compartidas.terapeutas', compact('terapeutas', 'userRole'));
     }
 
-    /**
-     * Registrar un nuevo especialista (admin).
-     * POST /admin/crear-trabajador
-     */
+    // registrar especilista, esto solo lo hace el admin
     public function store(Request $request)
     {
         $request->validate([
@@ -80,7 +70,7 @@ class TerapeutaController extends Controller
 
         User::create([
             'nombre'      => $request->nombre,
-            'correo'      => $request->email, // se guarda en la columna "correo"
+            'correo'      => $request->email, 
             'telefono'    => $request->telefono,
             'descripcion' => $request->descripcion,
             'contraseña'  => Hash::make($request->password),
@@ -91,10 +81,6 @@ class TerapeutaController extends Controller
         return redirect()->back()->with('success', 'Especialista registrado correctamente.');
     }
 
-    /**
-     * Actualizar un especialista (admin).
-     * PUT /admin/trabajador/{id}
-     */
     public function update(Request $request, $id)
     {
         $terapeuta = User::findOrFail($id);
@@ -141,10 +127,7 @@ class TerapeutaController extends Controller
         return redirect()->back()->with('success', 'Especialista actualizado correctamente.');
     }
 
-    /**
-     * Eliminar un especialista (admin).
-     * DELETE /admin/usuario/{id}
-     */
+    // eliminar especilaista
     public function destroy($id)
     {
         $terapeuta = User::findOrFail($id);

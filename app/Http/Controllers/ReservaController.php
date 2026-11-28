@@ -9,9 +9,7 @@ use App\Models\User;
 
 class ReservaController extends Controller
 {
-    /**
-     * Muestra el formulario de reserva.
-     */
+    // formulario de reserva
     public function index(Request $request)
     {
         $servicio = null;
@@ -40,9 +38,7 @@ class ReservaController extends Controller
         return view('clientes.reserva', compact('servicioData', 'terapeutas', 'serviciosAgrupados'));
     }
 
-    /**
-     * Validar la seleccion de cita y guardarla temporalmente para el checkout.
-     */
+    // validad la cita y guardar temporalmente
     public function store(Request $request)
     {
         $request->validate([
@@ -58,7 +54,6 @@ class ReservaController extends Controller
         $servicios = Servicio::whereIn('id', $request->servicios)->get();
         $trabajadoresArray = array_map('intval', $request->trabajadores_por_servicio);
 
-        // Si el cliente seleccionó una alternativa sugerida por el sistema anti-choques
         if ($request->filled('trabajador_id_alternativo')) {
             $firstKey = array_key_first($trabajadoresArray);
             $trabajadoresArray[$firstKey] = (int) $request->trabajador_id_alternativo;
@@ -67,7 +62,7 @@ class ReservaController extends Controller
         $primerEspecialistaId = reset($trabajadoresArray);
         $primerServicioId = $servicios->first()->id;
 
-        // 2. SISTEMA ANTI-CHOQUES
+        // para que no choque con otra cita
         $citaOcupada = Cita::where('fecha', $request->fecha)
             ->where('hora', $request->hora)
             ->where('trabajador_id', $primerEspecialistaId)
@@ -87,7 +82,6 @@ class ReservaController extends Controller
                 })
                 ->get();
 
-            // Si es petición AJAX, devolvemos JSON para el SweetAlert
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'message' => 'El especialista seleccionado ya tiene una reserva asignada en este horario.',
@@ -125,9 +119,7 @@ class ReservaController extends Controller
             ->with('success', 'Selección guardada. Continúa al pago.');
     }
 
-    /**
-     * Mostrar las reservas y pagos del cliente autenticado.
-     */
+    // mostrar reservas del cliente
     public function misReservas()
     {
         $citas = Cita::with(['servicio', 'trabajador', 'pagos', 'servicios'])
@@ -138,9 +130,7 @@ class ReservaController extends Controller
         return view('clientes.mis-reservas', compact('citas'));
     }
 
-    /**
-     * Obtener especialistas disponibles para un servicio (Para peticiones AJAX).
-     */
+    // especialistas disponibles
     public function getEspecialistas($id)
     {
         $servicio = Servicio::find($id);

@@ -27,7 +27,7 @@ class CitaCancelada extends Mailable
             ->contains('estado_reembolso', 'por_definir');
     }
 
-    // Define el asunto que se verá en la bandeja del cliente.
+    // esto es lo que va aver el cliente
     public function envelope(): Envelope
     {
         return new Envelope(
@@ -35,7 +35,6 @@ class CitaCancelada extends Mailable
         );
     }
 
-    // Selecciona la plantilla Blade que forma el cuerpo del correo.
     public function content(): Content
     {
         return new Content(
@@ -43,7 +42,6 @@ class CitaCancelada extends Mailable
         );
     }
 
-    // Devuelve la lista de adjuntos; este correo no lleva ninguno.
     public function attachments(): array
     {
         return [];

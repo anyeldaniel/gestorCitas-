@@ -155,7 +155,7 @@ class AdminController extends Controller
             }
         }
 
-        // ✅ REDIRECCIÓN CONDICIONAL
+        // redireccion condicional
         $origen = $request->input('origen', 'dashboard');
         if ($origen === 'terapeutas') {
             return redirect()->route('terapeutas.index')->with('success', 'Especialista registrado exitosamente.');
@@ -277,7 +277,6 @@ class AdminController extends Controller
             }
         }
 
-        // ✅ REDIRECCIÓN CONDICIONAL
         $origen = $request->input('origen', 'dashboard');
         if ($origen === 'terapeutas') {
             return redirect()->route('terapeutas.index')->with('success', 'Especialista actualizado con éxito.');

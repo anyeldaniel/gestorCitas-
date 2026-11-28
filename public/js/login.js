@@ -1,25 +1,25 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // 1. LÓGICA DEL PANEL DESLIZANTE
+    // panel deslizante
     const btnNuevoLogin = document.getElementById('btn-panel-login');
     const btnNuevoRegistro = document.getElementById('btn-panel-registro');
     const contenedorPrincipal = document.getElementById('contenedor-principal');
 
     if (btnNuevoRegistro && contenedorPrincipal) {
-        // Al hacer clic en "Crear Cuenta", movemos el panel a la izquierda
+        // esro es para cuando se haga click en crear cuenta se mueva el apnel a la izquierda
         btnNuevoRegistro.addEventListener('click', function() {
             contenedorPrincipal.classList.add('activo');
         });
     }
 
     if (btnNuevoLogin && contenedorPrincipal) {
-        // Al hacer clic en "Iniciar Sesión", regresamos el panel a la derecha
+        // cuando se hace click en iniciar sesion el panel se mueve a la derecha
         btnNuevoLogin.addEventListener('click', function() {
             contenedorPrincipal.classList.remove('activo');
         });
     }
 });
 
-// 2. FUNCIÓN PARA VER/OCULTAR CONTRASEÑA (El ojito)
+// el ojito para ver contraseña
 // Esta función está fuera del DOMContentLoaded porque se llama directo desde el HTML (onclick)
 function togglePassword(inputId, iconElement) {
     const input = document.getElementById(inputId);

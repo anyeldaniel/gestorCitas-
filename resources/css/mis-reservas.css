@@ -1,6 +1,4 @@
-/* ==========================================================================
-   MIS RESERVAS - DASHBOARD PREMIUM (V9 - CON IMAGEN DE FONDO)
-   ========================================================================== */
+/*mis reservas */
 
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
@@ -53,9 +51,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; font-weight: 700; 
 .btn-nueva-reserva { font-family: var(--font-ui); padding: 0.6rem 1.4rem; border: 1px solid var(--text-main); border-radius: 50px; background: transparent; color: var(--text-main); font-size: 0.8rem; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease; }
 .btn-nueva-reserva:hover { background: var(--text-main); color: #ffffff; transform: translateY(-2px); }
 
-/* ==========================================================================
-   CONTROLES DE FILTRO, ORDENAMIENTO Y PAGINADOR DE PRÓXIMAS CITAS
-   ========================================================================== */
+/* controles de filtro, ordenamiento y poaginador*/
 .reservas-controles-bar {
     display: flex;
     justify-content: space-between;
@@ -195,9 +191,6 @@ h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; font-weight: 700; 
     }
 }
 
-/* ==========================================================================
-   GRID 3 COLUMNAS
-   ========================================================================== */
 .cita-layout-grid {
     display: grid;
     grid-template-columns: 320px 1fr 300px; 
@@ -206,7 +199,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; font-weight: 700; 
     align-items: stretch; 
 }
 
-/* --- COLUMNA IZQUIERDA: TIPS --- */
+/* columna izquierda */
 .tips-column { display: flex; flex-direction: column; gap: 1.5rem; }
 
 .card-tip-bienestar {
@@ -233,9 +226,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; font-weight: 700; 
 .prep-checkbox:checked::after { content: '✓'; color: white; display: block; text-align: center; font-size: 11px; line-height: 14px; }
 .check-item label { font-family: var(--font-body); font-size: 0.85rem; color: var(--text-soft); line-height: 1.4; cursor: pointer; transition: all 0.3s; }
 
-/* ==========================================================================
-   COLUMNA CENTRO: TICKET CON IMAGEN DE FONDO
-   ========================================================================== */
+/* columna centro*/
 .cita-ticket {
     display: flex; 
     background: var(--bg-card);
@@ -387,9 +378,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; font-weight: 700; 
 .historial-precio strong { font-family: var(--font-display); font-size: 1.6rem; color: var(--text-main); font-weight: 700; }
 .empty-state { font-family: var(--font-body); text-align: center; padding: 4rem 2rem; background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-light); color: var(--text-muted); grid-column: 1 / -1; width: 100%; box-sizing: border-box; }
 
-/* ============================================
-   MODAL DE RESEÑA
-   ============================================ */
+/* modal de reseña */
 .modal-resena-overlay {
     position: fixed;
     top: 0;
@@ -575,9 +564,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; font-weight: 700; 
     cursor: not-allowed;
 }
 
-/* ====================
-   PAGINADOR DE HISTORIAL
-   ==================== */
+/* paginador de historial */
 .historial-pagination-container {
     display: flex;
     justify-content: space-between;
@@ -642,9 +629,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; font-weight: 700; 
     padding: 0 0.5rem;
 }
 
-/* ==========================================================================
-   RESPONSIVIDAD
-   ========================================================================== */
+/*respinsividad */
 @media (max-width: 1150px) {
     .cita-layout-grid { grid-template-columns: 1fr 1fr; }
     .tips-column { grid-column: 1 / -1; flex-direction: row; }

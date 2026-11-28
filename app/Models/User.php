@@ -110,26 +110,18 @@ class User extends Authenticatable
         return $this->hasMany(Resena::class, 'terapeuta_id');
     }
 
-    /**
-     * Notificaciones del usuario (más recientes primero).
-     */
+    // notificaciones del usuario de mas reciente
     public function notificaciones(): HasMany
     {
         return $this->hasMany(Notificacion::class, 'user_id')->latest();
     }
 
-    /**
-     * Solo notificaciones no leídas.
-     */
+    // noticaciones no leidas
     public function notificacionesNoLeidas(): HasMany
     {
         return $this->notificaciones()->whereNull('leida_at');
     }
-
-    /**
-     * Alias de citas como trabajador (compatibilidad con josebackend).
-     * Equivalente a citasComoTrabajador().
-     */
+    
     public function citas()
     {
         return $this->hasMany(Cita::class, 'trabajador_id');

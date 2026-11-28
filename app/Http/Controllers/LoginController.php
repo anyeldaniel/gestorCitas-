@@ -21,21 +21,20 @@ class LoginController extends Controller
     public function RegistroController(RegisterUserRequest $request)
     {
 
-        // Verificamos si el usuario olvidó marcar la casilla del recaptcha.
+        // esto es para que el usuario marque el captcha
         if (!$request->input('g-recaptcha-response')) {
             return back()
                 ->withErrors(['captcha' => 'Por favor, marca la casilla de "No soy un robot".'])
                 ->withInput();
         }
 
-        // Se envía el código secreto a Google para verificar que sea un humano real.
+        // se verifica el captcha
         $response = Http::asForm()->timeout(10)->post('https://www.google.com/recaptcha/api/siteverify', [
             'secret' => config('services.recaptcha.secret_key'),
             'response' => $request->input('g-recaptcha-response'),
             'remoteip' => $request->ip(),
         ]);
 
-        // Si Google rechaza el código (es un bot o el tiempo expiró).
         if (!$response->successful() || $response->json('success') !== true) {
             Log::warning('Google rechazó la verificación reCAPTCHA durante el registro.', [
                 'error_codes' => $response->json('error-codes', []),
@@ -54,7 +53,7 @@ class LoginController extends Controller
             'nombre' => $validatedData['username'],
             'correo' => $validatedData['email'],
             'telefono' => $validatedData['telefono'],
-            'contraseña' => $validatedData['password'], // Se encripta en el modelo por el cast.
+            'contraseña' => $validatedData['password'], 
             'rol' => 'cliente',
         ]);
 
@@ -91,7 +90,7 @@ class LoginController extends Controller
             // Mapeo de roles según las rutas.
             $rutaDestino = match ($user->rol) {
                 'admin'         => 'admin.dashboard',
-                'recepcion'     => 'agenda', // Apunta al name('agenda') global tenemos en web.php
+                'recepcion'     => 'agenda', 
                 'trabajador'    => 'agenda',
                 'cliente'       => 'catalogo',
                 default         => 'login',
@@ -110,7 +109,7 @@ class LoginController extends Controller
             return redirect()->route($rutaDestino);
         }
 
-        // si el intento falla (clave o correo incorrectos).
+        // clave o correo incorrectos
         return back()->withErrors([
             'email' => 'Credenciales inválidas.',
         ])->withInput($request->only('email'));

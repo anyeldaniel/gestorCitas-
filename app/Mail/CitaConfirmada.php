@@ -18,7 +18,6 @@ class CitaConfirmada extends Mailable
     {
     }
 
-    // Define el asunto que se verá en la bandeja del cliente.
     public function envelope(): Envelope
     {
         return new Envelope(
@@ -26,7 +25,6 @@ class CitaConfirmada extends Mailable
         );
     }
 
-    // Selecciona la plantilla Blade que forma el cuerpo del correo.
     public function content(): Content
     {
         return new Content(

@@ -49,7 +49,7 @@ class CitaCanceladaNotification extends Notification
         }
 
         return (new WebPushMessage)
-            ->title('❌ Cita Cancelada')
+            ->title('Cita Cancelada')
             ->icon('/icons/icon-192x192.png')
             ->body($mensaje)
             ->action('Ver mis reservas', '/mis-reservas')

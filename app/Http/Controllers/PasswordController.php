@@ -13,21 +13,20 @@ class PasswordController extends Controller
 {
     public function VerifiCorreo(Request $request)
     {
-        // 1. Verificamos si el usuario olvidó marcar la casilla
+        // esto es para que el usuario marque el captcha
         if (!$request->input('g-recaptcha-response')) {
             return back()
                 ->withErrors(['captcha' => 'Por favor, marca la casilla de "No soy un robot".'])
                 ->withInput();
         }
 
-        // 2. Enviamos el código secreto a Google para verificar que sea un humano real
+        // se verifica el captcha
         $response = Http::asForm()->timeout(10)->post('https://www.google.com/recaptcha/api/siteverify', [
             'secret' => config('services.recaptcha.secret_key'),
             'response' => $request->input('g-recaptcha-response'),
             'remoteip' => $request->ip(),
         ]);
 
-        // 3. Si Google rechaza el código (es un bot o el tiempo expiró)
         if (!$response->successful() || $response->json('success') !== true) {
             Log::warning('Google rechazó la verificación reCAPTCHA durante la recuperación de contraseña.', [
                 'error_codes' => $response->json('error-codes', []),
@@ -104,17 +103,16 @@ class PasswordController extends Controller
             $resetCredentials,
             function ($user, $password) {
                 $user->contraseña = $password;
-                $user->setRememberToken(Str::random(60)); // Opcional: Genera un nuevo token de "remember me" para invalidar sesiones anteriores
+                $user->setRememberToken(Str::random(60));
                 $user->save();
             }
         );
         
         if ($status == Password::PASSWORD_RESET) {
-            // ¡Éxito! Redirigimos al login con el mensaje de éxito.
+            // redireccion al login
             return redirect()->route('login.view')->with('status', '¡Tu nueva clave se ha creado con éxito!');
         }
-
-        // Si falló (el token expiró, no coincide, etc.), lo devolvemos con error
+        
         return back()->withErrors(['email' => trans($status)])->withInput();
     }
 }

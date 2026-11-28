@@ -7,7 +7,7 @@ const mobileMenu = document.getElementById('mobile-menu');
 const hamburgerBtn = document.getElementById('hamburger-btn');
 const header = document.getElementById('main-header');
 
-// --- 1. Lógica del Menú Móvil ---
+// menu movil
 
 const closeMenu = () => {
     mobileMenu.classList.remove('active');
@@ -43,7 +43,7 @@ window.addEventListener('resize', () => {
     if (window.innerWidth > 768) closeMenu();
 });
 
-// --- 2. Lógica del Scroll (Ocultar/Mostrar Header) ---
+// scroll
 
 let lastScrollTop = 0;
 

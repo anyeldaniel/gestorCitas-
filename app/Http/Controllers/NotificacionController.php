@@ -26,7 +26,7 @@ class NotificacionController extends Controller
                 'leida'   => !is_null($n->leida_at),
                 'hace'    => $n->created_at->diffForHumans(),
                 'url'     => $this->generarUrl($n, $user),
-                'rol'     => $user->rol, // 👈 Enviamos el rol al frontend
+                'rol'     => $user->rol, 
             ]);
 
         return response()->json(['count' => $count, 'items' => $items]);
@@ -37,7 +37,7 @@ class NotificacionController extends Controller
     {
         $fechaParametro = null;
         
-        // Extraemos la fecha del mensaje (ej. "27 de noviembre") de forma segura
+        // fecha en el mensaje
         if (!empty($n->mensaje) && preg_match('/(\d{1,2}) de (enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)/i', $n->mensaje, $matches)) {
             $dia = str_pad($matches[1], 2, '0', STR_PAD_LEFT); // Asegura que el día tenga 2 dígitos (ej. 07)
             $meses = [
@@ -47,7 +47,7 @@ class NotificacionController extends Controller
             $mes = $meses[strtolower($matches[2])] ?? null;
             
             if ($mes) {
-                // Armamos la fecha en formato YYYY-MM-DD (Ej: 2026-11-27)
+                //formato de fecha
                 $fechaParametro = date('Y') . "-" . $mes . "-" . $dia;
             }
         }
@@ -56,7 +56,7 @@ class NotificacionController extends Controller
             'cita_cancelada', 'cita_confirmada', 'cita_en_curso', 'cita_completada', 'cita_nueva' => 
                 $user->rol === 'cliente' 
                     ? route('clientes.mis.reservas') 
-                    // Si encontramos fecha, se la pasamos a la agenda. Si no, va normal.
+                    
                     : ($fechaParametro ? route('agenda', ['fecha' => $fechaParametro]) : route('agenda')),
             
             'reembolso_por_definir' => route('pago.verificar'),

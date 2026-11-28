@@ -1,6 +1,4 @@
-/* ==========================================================================
-   IMPORTACIÓN DE FUENTES
-   ========================================================================== */
+/* importar fuentes*/
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
@@ -29,9 +27,7 @@
     --shadow-hover: 0 14px 32px rgba(45, 42, 38, 0.14);
 }
 
-/* ==========================================================================
-   BASE TIPOGRÁFICA (SCOPEADA AL MÓDULO AGENDA)
-   ========================================================================== */
+/* tipografia */
 .modulo-agenda,
 .modulo-agenda *,
 .modulo-agenda *::before,
@@ -39,9 +35,7 @@
     box-sizing: border-box;
 }
 
-/* ==========================================================================
-   MÓDULO AGENDA — CONTENEDOR PRINCIPAL
-   ========================================================================== */
+/*modulo de agenda*/
 .modulo-agenda {
     font-family: var(--font-body);
     color: var(--text-main);
@@ -82,9 +76,7 @@
     border: 0;
 }
 
-/* ==========================================================================
-   CABECERA
-   ========================================================================== */
+/* cabecera */
 .agenda-header {
     display: flex;
     justify-content: space-between;
@@ -162,9 +154,7 @@
     font-family: var(--font-body);
 }
 
-/* ==========================================================================
-   STATS — tarjetas de estados con color e icono
-   ========================================================================== */
+/* tarjetas de estado con color*/
 .stats-container {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -276,9 +266,6 @@
 .stat-completada  { background: linear-gradient(135deg, #ffffff 0%, #f3eefc 100%); }
 .stat-cancelada   { background: linear-gradient(135deg, #ffffff 0%, #fceceb 100%); }
 
-/* ==========================================================================
-   LAYOUT CON SIDEBAR DERECHA
-   ========================================================================== */
 .agenda-layout {
     display: grid;
     grid-template-columns: 1fr 320px;
@@ -325,9 +312,7 @@
     top: 1.5rem;
 }
 
-/* ==========================================================================
-   WIDGETS DE LA SIDEBAR
-   ========================================================================== */
+/* widgets */
 .widget-clima,
 .widget-tip,
 .widget-top {
@@ -499,9 +484,7 @@
     stroke-width: 1.5;
 }
 
-/* ==========================================================================
-   BLOQUE SEMANA ("Mi horario")
-   ========================================================================== */
+/*horario*/
 .bloque-semana-cabecera {
     display: flex;
     justify-content: space-between;
@@ -653,9 +636,7 @@
     color: #4ba3a3;
 }
 
-/* ==========================================================================
-   FILTROS
-   ========================================================================== */
+/* filtros */
 .agenda-filtros {
     display: grid;
     grid-template-columns: 1.5fr 1fr 1fr 1fr auto;
@@ -732,9 +713,7 @@
     white-space: nowrap;
 }
 
-/* ==========================================================================
-   BLOQUE DÍA
-   ========================================================================== */
+/* bloque dia */
 .bloque-dia {
     margin-top: 0.5rem;
 }
@@ -775,9 +754,7 @@
     letter-spacing: 0.03em;
 }
 
-/* ==========================================================================
-   LISTA DE CITAS
-   ========================================================================== */
+/* lista de citas */
 .lista-citas {
     list-style: none;
     margin: 0;
@@ -981,7 +958,7 @@
 
 .cita-acciones {
     display: flex;
-    flex-direction: row; /* Modificado para que los botones estén en fila horizontal */
+    flex-direction: row; /*botones en fila horizontal */
     gap: 0.75rem;
     align-items: center;
     justify-content: flex-end;
@@ -1049,9 +1026,7 @@
     height: 13px;
 }
 
-/* ==========================================================================
-   ESTADO VACÍO
-   ========================================================================== */
+/*estado vacio */
 .estado-vacio {
     text-align: center;
     padding: 4.5rem 2rem;
@@ -1084,9 +1059,7 @@
     color: var(--text-muted);
 }
 
-/* ==========================================================================
-   MODALES
-   ========================================================================== */
+/* modales */
 dialog.modal-agenda,
 dialog.modal-alerta-centro {
     border: none;
@@ -1350,9 +1323,7 @@ dialog::backdrop {
     stroke-width: 2.2;
 }
 
-/* ==========================================================================
-   ALERTA CENTRAL
-   ========================================================================== */
+/* alerta central*/
 .alerta-contenido {
     background: #ffffff;
     border-radius: 18px;
@@ -1397,9 +1368,7 @@ dialog::backdrop {
     line-height: 1.5;
 }
 
-/* ==========================================================================
-   NUEVOS ESTILOS: DESPLEGABLE DE LA TARJETA
-   ========================================================================== */
+/* despegable de la tarjeta */
 .cita-detalles {
     /* Obliga al desplegable a ocupar todas las columnas del Grid de la tarjeta */
     grid-column: 1 / -1; 
@@ -1510,9 +1479,7 @@ dialog::backdrop {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* ==========================================================================
-   RESPONSIVE
-   ========================================================================== */
+/*responsive */
 @media (max-width: 1024px) {
     .agenda-layout {
         grid-template-columns: 1fr;

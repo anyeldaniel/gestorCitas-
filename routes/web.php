@@ -16,9 +16,7 @@ use App\Http\Controllers\ResenaController;
 use App\Http\Controllers\NotificacionController;
 
 
-// ==========================================
-//   ACCESO PÚBLICO Y AUTENTICACIÓN
-// ==========================================
+// acceso publico
 
 Route::get('/', [LoginController::class, 'index']);
 Route::get('/login', [LoginController::class, 'index'])->name('login');
@@ -45,9 +43,7 @@ Route::get('/catalogo', [ServicioController::class, 'index'])->name('catalogo');
 Route::get('/terapeutas', [TerapeutaController::class, 'index'])->name('terapeutas.index');
 
 
-// ==========================================
-//   RUTAS COMPARTIDAS (CUALQUIER USUARIO AUTENTICADO)
-// ==========================================
+// rutas compartidas
 // Este grupo exige sesión, pero permite cualquier rol.
 Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
@@ -59,9 +55,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 
-// ==========================================
-//   AGENDA DE ADMINISTRACIÓN, RECEPCIÓN Y TRABAJADORES
-// ==========================================
+// agenda de administracio, recepcion y trabajadores
 // Agenda y cancelación: los tres roles pueden acceder; el controlador valida la asignación al cancelar.
 Route::middleware(['auth', 'role:admin,recepcion,trabajador'])->group(function () {
     Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda');
@@ -77,9 +71,7 @@ Route::middleware(['auth', 'role:admin,recepcion'])->group(function () {
 });
 
 
-// ==========================================
-//   RUTAS DEL CLIENTE
-// ==========================================
+// rutas del cliente
 // Estas operaciones de reserva y pago son exclusivas de clientes autenticados.
 Route::middleware(['auth', 'role:cliente'])->group(function () {
     Route::get('/reservas', [ReservaController::class, 'index'])->name('clientes.reserva');
@@ -101,9 +93,7 @@ Route::middleware(['auth', 'role:cliente'])->group(function () {
 });
 
 
-// ==========================================
-//   MÓDULO ADMINISTRADOR
-// ==========================================
+// modulo administrador
 // Todas las rutas bajo /admin requieren autenticación y rol admin.
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
@@ -132,9 +122,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 });
 
 
-// ==========================================
-//   VERIFICACIÓN Y GESTIÓN DE PAGOS
-// ==========================================
+// verificacion y gestion de pagos
 // Verificación, acciones de recepción y sala de espera: admin o recepción.
 Route::middleware(['auth', 'role:admin,recepcion'])->group(function () {
     Route::get('/verificar-pagos', [PagoController::class, 'index'])->name('pago.verificar');
@@ -152,9 +140,7 @@ Route::middleware(['auth', 'role:admin,recepcion'])->group(function () {
 });
 
 
-// ==========================================
-//   PANEL DE TRABAJADORES
-// ==========================================
+// panel de trabajadores
 // Ambos paneles bajo /especialista requieren una sesión de trabajador.
 Route::middleware(['auth', 'role:trabajador'])->prefix('especialista')->group(function () {
     Route::get('/tablero', [EspecialistaController::class, 'tablero'])->name('especialista.tablero');

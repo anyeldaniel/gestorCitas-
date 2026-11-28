@@ -11,7 +11,6 @@ class Cita extends Model
 
     protected $table = 'citas';
 
-    // Definimos los campos que se pueden asignar masivamente.
     protected $fillable = [
         'cliente_id',
         'trabajador_id',
@@ -34,23 +33,21 @@ class Cita extends Model
         'updated_at'   => 'datetime',
     ];
 
-    /* ==========================================================
-       RELACIONES
-       ========================================================== */
+    // relaciones
 
-    // Relación con el cliente (Tabla 'usuarios')
+    // cliente
     public function cliente()
     {
         return $this->belongsTo(User::class, 'cliente_id');
     }
 
-    // Relación con el trabajador/especialista (Tabla 'usuarios')
+    // trabajador/especialista
     public function trabajador()
     {
         return $this->belongsTo(User::class, 'trabajador_id');
     }
 
-    // Relación con el servicio (Tabla 'servicios')
+    // servicio
     public function servicio()
     {
         return $this->belongsTo(Servicio::class, 'servicio_id');
@@ -66,24 +63,17 @@ class Cita extends Model
         return $this->belongsTo(User::class, 'cancelada_por');
     }
 
-    // Relación con los pagos de la cita
+    // pagos de la cita
     public function pagos()
     {
         return $this->hasMany(Pago::class, 'cita_id');
     }
 
-    /**
-     * Relación: Una cita puede tener muchos servicios (Muchos a Muchos).
-     */
     public function servicios()
     {
         return $this->belongsToMany(Servicio::class, 'cita_servicio')
                     ->withPivot('trabajador_id');
     }
-
-    /* ==========================================================
-       HELPERS
-       ========================================================== */
 
     public function estaCancelada(): bool
     {
@@ -117,9 +107,7 @@ class Cita extends Model
         return 'estado-' . str_replace(' ', '-', $this->estado);
     }
 
-    /**
-     * Hora estimada de fin según duración del servicio.
-     */
+    // hora estimada de fin de la cita
     public function horaFin(): ?string
     {
         if (!$this->servicio || !$this->servicio->duracion_minutos) {
@@ -131,10 +119,6 @@ class Cita extends Model
             ->format('H:i');
     }
 
-    /**
-     * Tiempo restante formateado (ej. "en 25 min" o "hace 10 min").
-     * Se usa en las tarjetas de cita.
-     */
     public function tiempoRelativo(): ?string
     {
         try {

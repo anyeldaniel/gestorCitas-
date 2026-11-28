@@ -1,12 +1,8 @@
-/* ==========================================================================
-   IMPORTAR ESTILOS BASE DEL CATÁLOGO (para tener las variables de color y tipografía)
-   ========================================================================== */
+/* estilos base de ctalogo */
 @import './modal.css';
 
-/* --- ESTILOS DEL DASHBOARD --- */
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@300;400;600;700&display=swap');
 
-/* --- Variables de Marca --- */
 :root {
     --bg-crema: #fbf9f5;
     --color-marron-oscuro: #4a3728;
@@ -24,7 +20,7 @@ body {
     color: var(--color-texto);
     font-family: 'Inter', sans-serif;
     margin: 0;
-    -webkit-text-size-adjust: 100%; /* Evita que iOS agrande el texto automáticamente */
+    -webkit-text-size-adjust: 100%; 
 }
 
 .dashboard-admin {
@@ -34,10 +30,10 @@ body {
     box-sizing: border-box;
 }
 
-/* --- Títulos del Header (Ajustados a estilo Login) --- */
+/* titulos del header*/
 .encabezado-modulo h1 {
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(1.8rem, 5vw, 2.5rem); /* Fuente fluida */
+    font-size: clamp(1.8rem, 5vw, 2.5rem); 
     color: #2d2a26;
     font-weight: 700;
     margin-bottom: 0.5rem;
@@ -49,7 +45,7 @@ body {
     font-weight: 400;
 }
 
-/* --- Grid Superior --- */
+/* grid superior */
 .tarjetas-resumen-admin {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Grid auto-adaptable */
@@ -80,7 +76,7 @@ body {
     color: var(--color-texto);
 }
 
-/* --- Listas Doble Columna --- */
+/* listas doble columna */
 .contenedor-doble-columnas {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -103,7 +99,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap; /* Permite que los elementos salten de línea si no caben */
+    flex-wrap: wrap; 
     gap: 0.75rem;
 }
 
@@ -111,11 +107,11 @@ body {
     margin: 0; 
     font-size: clamp(1rem, 2.5vw, 1.1rem); 
     font-weight: 600; 
-    flex: 1; /* Toma el espacio disponible */
-    color: var(--blanco); /* 👈 LETRAS BLANCAS */
+    flex: 1; 
+    color: var(--blanco);
 }
 
-/* --- Tarjetas de Usuario (Filas) --- */
+/* tarjetas de usuarios */
 .tarjeta-fila {
     display: flex;
     align-items: center;
@@ -140,7 +136,7 @@ body {
 
 .info-usuario { 
     flex-grow: 1; 
-    min-width: 0; /* Permite que el texto se corte con elipsis si es muy largo */
+    min-width: 0; 
 }
 
 .info-usuario h4 { 
@@ -168,7 +164,7 @@ body {
     padding: 2px 8px; border-radius: 4px; border: 1px solid #e5e7eb;
 }
 
-/* --- Botones --- */
+/* botones */
 .btn-agregar-general {
     background: rgba(255, 255, 255, 0.2);
     color: var(--blanco);
@@ -178,7 +174,7 @@ body {
     font-weight: 600;
     cursor: pointer;
     font-size: clamp(0.7rem, 2vw, 0.85rem);
-    white-space: nowrap; /* Evita que el texto se rompa */
+    white-space: nowrap; 
     transition: all 0.2s ease;
     text-align: center;
     flex-shrink: 0;
@@ -204,7 +200,7 @@ body {
     border: 1px solid #fecdd3;
 }
 
-/* --- Paginación --- */
+/*paginacion */
 .paginacion-lista {
     padding: 1rem;
     text-align: center;
@@ -212,9 +208,7 @@ body {
     color: var(--gris-texto);
     border-top: 1px solid var(--color-borde);
 }
-/* ==========================================================================
-   LATERALES BOTÁNICOS EDITORIALES (DENTRO DEL CONTENEDOR, SIN LLEGAR AL FOOTER)
-   ========================================================================== */
+
 .dash-lateral {
     display: none;
 }
@@ -226,7 +220,6 @@ body {
         margin: 0 auto;
     }
 
-    /* Líneas divisorias sutiles que enmarcan el panel central (con position absolute para respetar el final del contenido) */
     .dashboard-admin::before,
     .dashboard-admin::after {
         content: "";
@@ -260,12 +253,12 @@ body {
     }
 
     .dash-lateral--izq {
-        left: -200px; /* Ubicado en el margen izquierdo fuera de la tarjeta */
+        left: -200px; 
         top: 90px;
     }
 
     .dash-lateral--der {
-        right: -200px; /* Ubicado en el margen derecho fuera de la tarjeta */
+        right: -200px;
         top: 60px;
     }
 
@@ -346,9 +339,7 @@ body {
         margin-top: 0.25rem;
     }
 }
-/* ============================================
-   ESTILOS TERAPEUTAS 
-   ============================================ */
+/* estilos de terapeutas*/
 
 :root {
     /* Terapeutas */
@@ -590,7 +581,7 @@ body {
     gap: 0.05rem;
 }
 
-/* 🆕 NUEVO: estrellas individuales (llenas, medias y vacías) */
+/* estrellas */
 .contenedor-estrellas .estrellas span {
     display: inline-block;
     line-height: 1;
@@ -653,13 +644,13 @@ body {
     display: flex;
     gap: 0.5rem;
     width: 100%;
-    flex-wrap: wrap; /* Permite que los botones se apilen si no caben */
+    flex-wrap: wrap; 
 }
 
 .btn-terapeuta-editar,
 .btn-terapeuta-eliminar {
     flex: 1;
-    min-width: 100px; /* Asegura un tamaño mínimo táctil */
+    min-width: 100px; 
     padding: 0.45rem 1rem;
     font-family: var(--font-sans-t);
     font-size: clamp(0.6rem, 1.5vw, 0.65rem);
@@ -702,9 +693,7 @@ body {
     font-size: 1rem;
 }
 
-/* ============================================
-   MODALES (terapeutas / dashboard)
-   ============================================ */
+/*modales */
 
 .modal-zen {
     position: fixed;
@@ -805,12 +794,11 @@ body {
     display: flex;
     gap: 0.5rem;
     align-items: center;
-    flex-wrap: wrap; /* Permite que el botón de remover baje si es necesario */
+    flex-wrap: wrap;
 }
-
 .fila-especialidad input { 
     flex: 1; 
-    min-width: 0; /* Evita desbordamiento */
+    min-width: 0; 
 }
 
 .btn-añadir-especialidad,
@@ -878,7 +866,7 @@ body {
     margin-top: 0.5rem;
     padding-top: 1rem;
     border-top: 1px solid var(--spa-border);
-    flex-wrap: wrap; /* Permite apilar botones en pantallas pequeñas */
+    flex-wrap: wrap; 
 }
 
 .btn-zen-modal {
@@ -893,7 +881,7 @@ body {
     transition: all 0.3s;
     font-family: var(--font-sans-t);
     text-align: center;
-    flex: 1; /* Hace que los botones compartan el ancho */
+    flex: 1; 
     min-width: 120px;
 }
 
@@ -940,9 +928,7 @@ body {
     border: 1px solid var(--spa-border);
 }
 
-/* ============================================
-   ALERTA DE CONFIRMACIÓN UNIFICADA para ELIMINAR TERAPEUTA
-   ============================================ */
+/* alerta de confirmacion */
 
 dialog.modal-contenedor-alerta-critica {
     border: none;
@@ -1128,10 +1114,6 @@ dialog[open] .icono-alerta-dinamico {
     box-shadow: 0 6px 16px rgba(45, 42, 38, 0.25);
 }
 
-/* ============================================
-   NUEVO DISEÑO DASHBOARD (COLORES EXACTOS IMAGEN 1)
-   ============================================ */
-
 /* --- Contenedor Principal --- */
 .dashboard-admin {
     width: 100%;
@@ -1139,7 +1121,7 @@ dialog[open] .icono-alerta-dinamico {
     margin: 0 auto;
     padding: 2.5rem 1.5rem;
     box-sizing: border-box;
-    background-color: #fdfbf7; /* Fondo crema muy claro, casi blanco */
+    background-color: #fdfbf7; 
     font-family: var(--font-body);
     color: #3d2b1f;
 }
@@ -1166,7 +1148,7 @@ dialog[open] .icono-alerta-dinamico {
 }
 
 .dash-header-info p {
-    color: #8c7a6b; /* Marrón grisáceo */
+    color: #8c7a6b; 
     font-size: 0.95rem;
     margin: 0;
     max-width: 600px;
@@ -1175,7 +1157,7 @@ dialog[open] .icono-alerta-dinamico {
 
 .dash-fecha-resumen {
     text-align: right;
-    border-left: 3px solid #4a3b32; /* Marrón oscuro */
+    border-left: 3px solid #4a3b32; 
     padding-left: 1.5rem;
 }
 
@@ -1224,7 +1206,7 @@ dialog[open] .icono-alerta-dinamico {
 }
 
 .dash-kpi-card--dark {
-    background: #4a3b32; /* Marrón oscuro profundo */
+    background: #4a3b32; 
     border-color: #4a3b32;
     color: #fff;
 }
@@ -1304,7 +1286,7 @@ dialog[open] .icono-alerta-dinamico {
 }
 
 .dash-panel-header {
-    background: #4a3b32; /* Marrón oscuro profundo */
+    background: #4a3b32; 
     color: #fff;
     padding: 1.25rem 1.75rem;
     display: flex;
@@ -1501,9 +1483,7 @@ dialog[open] .icono-alerta-dinamico {
     box-shadow: 0 4px 10px rgba(197, 48, 48, 0.25);
 }
 
-/* ============================================
-   🆕 PAGINADOR PROFESIONAL DEL DASHBOARD
-   ============================================ */
+/* paginador */
 .dash-paginador {
     display: flex;
     align-items: center;
@@ -1570,9 +1550,7 @@ dialog[open] .icono-alerta-dinamico {
     display: none;
 }
 
-/* ============================================
-    BUSCADOR DE TERAPEUTAS 
-   ============================================ */
+/* buscador de terapeutas */
 .terapeutas-buscador {
     position: relative;
     display: flex;
@@ -1717,9 +1695,7 @@ dialog[open] .icono-alerta-dinamico {
     display: none !important;
 }
 
-/* ============================================
-   RESPONSIVIDAD EXTREMA (TODO SE ADAPTA)
-   ============================================ */
+/*respionsive de todo */
 
 /* Tablets y pantallas medianas */
 @media (max-width: 1024px) {
@@ -1917,9 +1893,7 @@ dialog[open] .icono-alerta-dinamico {
         width: 32px;
         height: 32px;
     }
-/* ==========================================================================
-   MODAL DE RESEÑAS - DISEÑO EXACTO Y CENTRADO PERFECTO
-   ========================================================================== */
+/* modal de reseñas */
 
 #modal-resenas {
     position: fixed !important;
@@ -1966,7 +1940,7 @@ dialog[open] .icono-alerta-dinamico {
 
 /* Cabecera marrón oscuro con tipografía e icono de cierre exactos */
 #modal-resenas .resenas-header {
-    background-color: #8b5e3c !important; /* Marrón elegante idéntico al diseño */
+    background-color: #8b5e3c !important; 
     padding: 1.75rem 2rem !important;
     color: #ffffff !important;
     display: flex !important;
@@ -2071,7 +2045,7 @@ dialog[open] .icono-alerta-dinamico {
 }
 }
 
-/* --- Alertas de Error en Inputs del Modal --- */
+/* alerta de error */
 .input-error {
     border-color: #c53030 !important;
     background-color: #fdf2f2 !important;
@@ -2098,9 +2072,7 @@ dialog[open] .icono-alerta-dinamico {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* ==========================================================================
-   ALERTAS DINÁMICAS PERSONALIZADAS DASHBOARD PARA ALERTAS DE CONTRASEÑAS AL CREAR RECEPCIONISTA 
-   ========================================================================== */
+/* alertas pesonalizadas*/
 .swal2-popup.tbr-dash-popup {
     border-radius: 18px !important;
     padding: 2.2rem 1.8rem !important;
@@ -2156,9 +2128,7 @@ dialog[open] .icono-alerta-dinamico {
     background-color: #f4ece4 !important;
 }
 
-/* ============================================
-   PAGINADOR DE TERAPEUTAS
-   ============================================ */
+/* paginador de terapeutas */
 /* Ocultar tarjetas filtradas o fuera de la página actual */
 .grid-terapeutas .tarjeta-terapeuta.is-hidden {
     display: none;

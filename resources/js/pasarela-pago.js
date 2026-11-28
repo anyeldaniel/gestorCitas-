@@ -1,6 +1,4 @@
-/* ==========================================================================
-   PASARELA DE PAGO - Lógica del formulario
-   ========================================================================== */
+/* pasarela de pago*/
 
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('form-pago');
@@ -12,9 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnEnviar = document.getElementById('btn-enviar-pago');
     const modal = document.getElementById('modal-confirmar-pago');
 
-    /* ============================================================
-       1. Manejo del archivo (nombre + estado visual)
-       ============================================================ */
+    /* manejo de archivo */
     if (inputComprobante) {
         inputComprobante.addEventListener('change', (e) => {
             const file = e.target.files[0];
@@ -47,9 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /* ============================================================
-       2. Validación personalizada del formulario
-       ============================================================ */
+    /* validacion personalizada */
     form.addEventListener('submit', (e) => {
         e.preventDefault();
 
@@ -100,42 +94,10 @@ document.addEventListener('DOMContentLoaded', () => {
             form.reset();
             zonaArchivo?.classList.remove('archivo-cargado');
             if (nombreArchivo) nombreArchivo.textContent = 'Arrastra tu imagen o haz clic para subir';
-
-            /* ------------------------------------------------------
-               PARA CONECTAR CON TU BACKEND REAL, reemplaza el
-               setTimeout anterior por algo como:
-
-               const formData = new FormData(form);
-               fetch(form.action, {
-                   method: 'POST',
-                   body: formData,
-                   headers: {
-                       'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                       'Accept': 'application/json',
-                   },
-               })
-               .then(res => res.json())
-               .then(data => {
-                   if (data.success) {
-                       modal.showModal();
-                       form.reset();
-                   } else {
-                       alert(data.message || 'Error al enviar el pago.');
-                   }
-               })
-               .catch(() => alert('Error de conexión. Intenta de nuevo.'))
-               .finally(() => {
-                   btnEnviar.classList.remove('cargando');
-                   btnEnviar.disabled = false;
-                   btnEnviar.querySelector('span').textContent = 'Reportar pago';
-               });
-               ------------------------------------------------------ */
         }, 900);
     });
 
-    /* ============================================================
-       3. Formateo de cédula y teléfono en tiempo real
-       ============================================================ */
+    /* formateo de cedula */
     const inputCedula = document.getElementById('cedula');
     if (inputCedula) {
         inputCedula.addEventListener('input', (e) => {
@@ -159,9 +121,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /* ============================================================
-       4. Cerrar modal al hacer clic fuera
-       ============================================================ */
     if (modal) {
         modal.addEventListener('click', (e) => {
             const rect = modal.querySelector('.modal-pago__cuerpo')?.getBoundingClientRect();

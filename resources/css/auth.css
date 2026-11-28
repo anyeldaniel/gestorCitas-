@@ -1,8 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap');
 
-/* =========================================
-   ESTILOS GENERALES Y DE ESTRUCTURA
-========================================= */
+/* estilos generales y estructura */
 *, *::before, *::after {
     box-sizing: border-box !important;
 }
@@ -47,9 +45,7 @@ input:-webkit-autofill:active {
     transition: background-color 5000s ease-in-out 0s;
 }
 
-/* =========================================
-   CONTENEDOR PRINCIPAL (LOGIN / REGISTRO)
-========================================= */
+/* login y registro */
 .contenedor-formularios {
     display: flex; 
     flex-direction: row; 
@@ -59,14 +55,12 @@ input:-webkit-autofill:active {
     width: 1000px;
     max-width: 100%; 
     min-height: 550px;
-    max-height: calc(100vh - 50px); /* Tope máximo para pantallas de PC para que no rebase la ventana */
+    max-height: calc(100vh - 50px); /* esto es para que no rebase la pantalla andres */
     position: relative; 
-    overflow: hidden; /* Mantiene el panel deslizante limpio dentro de las esquinas */
+    overflow: hidden; /* y esto es para que se mantenga el dezlizante limpio */
 }
 
-/* =========================================
-   TARJETAS Y FORMULARIOS (LOGIN Y REGISTRO)
-========================================= */
+/*formularios*/
 .tarjeta-registro, .tarjeta-login { 
     position: absolute; 
     top: 0; 
@@ -255,9 +249,7 @@ form input:focus {
     border-color: #B59B74; 
 }
 
-/* =========================================
-   PANEL SUPERPUESTO (SLIDER)
-========================================= */
+/*panel superpuesto, slider */
 .panel-superpuesto { 
     position: absolute; 
     top: 0; 
@@ -372,9 +364,7 @@ form input:focus {
     transform: translateX(0); 
 }
 
-/* =========================================
-   ELEMENTOS ADICIONALES Y UTILS
-========================================= */
+/* cosas adicionales*/
 .caja-input-clave { 
     position: relative; 
     width: 100%; 
@@ -472,9 +462,7 @@ form input:focus {
 .panel-texto-registro button, .panel-texto-login button { pointer-events: auto !important; cursor: pointer !important; position: relative; z-index: 20; }
 
 
-/* =========================================
-   RESPONSIVE (MÓVILES Y TABLETS)
-========================================= */
+/*responsive para que se vea en tablets y tlf*/
 @media (max-width: 992px) { 
     .contenedor-formularios { 
         width: 90%; 
@@ -540,7 +528,7 @@ form input:focus {
         grid-template-columns: 1fr; 
         gap: 12px; 
     } 
-    /* --- AJUSTES PARA LA TARJETA DE RECUPERACIÓN EN TABLET/MÓVIL --- */
+    /*ajuste de la tarjeta de recuperacion*/
     .tarjeta-unica { 
         padding: 35px 25px; 
         width: 100%; 
@@ -556,7 +544,7 @@ form input:focus {
     .button-aceptar { padding: 13px; font-size: 13px; } 
     .caja-recaptcha > div { transform: scale(0.85); transform-origin: 0 0; } 
     
-    /* --- AJUSTES EXTRA PARA LA TARJETA DE RECUPERACIÓN EN MÓVILES PEQUEÑOS --- */
+    /* ajuste extra para lo mismo */
     .tarjeta-unica {
         padding: 30px 20px;
         border-radius: 12px;
@@ -575,9 +563,7 @@ form input:focus {
         margin-bottom: -10px; /* Compensa el espacio extra que deja el escalado */
     }
 }
-/* =========================================
-   FOOTER SYNCROSTYLE
-========================================= */
+/* footer */
 .footer-syncrostyle {
     position: fixed;
     bottom: 20px;
@@ -607,11 +593,9 @@ form input:focus {
     color: #FFFFFF !important;
 }
 
-/* =========================================
-   RESPONSIVE PARA EL FOOTER (Evitar superposición)
-========================================= */
+/* responsive del footer */
 @media (max-width: 768px) { 
-    /* En móviles, el footer pasa a ser relativo (fluye al final de la página) */
+    /*en tlf el footer pasa a ser relativo*/
     .footer-syncrostyle {
         position: relative;
         bottom: auto;
@@ -623,7 +607,7 @@ form input:focus {
         text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.9); 
     }
 
-    /* Ajuste específico para la vista de login en móvil */
+    /* Ajuste específico para la vista de login en tlf*/
     body {
         /* Aseguramos que el body sea flex en columna para que el footer baje */
         flex-direction: column; 
@@ -633,9 +617,7 @@ form input:focus {
     .contenedor-formularios {
         margin-bottom: 20px; /* Espacio antes del footer */
     }
-/* =========================================
-   ESTILOS ESPECÍFICOS PARA RESET PASSWORD
-========================================= */
+/* espacios para el reseteo de contraseña */
 
 .tarjeta-unica .logo-header {
     justify-content: center;
@@ -698,9 +680,7 @@ form input:focus {
 }
 }
 
-/* =========================================
-   ALERTAS DINÁMICAS PERSONALIZADAS PARA ERRORES EN CONTRASEÑAS
-========================================= */
+/* alertas dinamicas */
 .swal2-popup.tbr-alert-popup {
     border-radius: 18px !important;
     padding: 2.2rem 1.8rem !important;
