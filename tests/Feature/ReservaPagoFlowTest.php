@@ -121,6 +121,36 @@ class ReservaPagoFlowTest extends TestCase
         ]);
     }
 
+    public function test_agenda_rejects_manually_confirming_a_pending_appointment(): void
+    {
+        $admin = $this->crearUsuario('admin');
+        $cliente = $this->crearUsuario('cliente');
+        $trabajador = $this->crearUsuario('trabajador');
+        $servicio = $this->crearServicio();
+        $cita = Cita::create([
+            'cliente_id' => $cliente->id,
+            'trabajador_id' => $trabajador->id,
+            'servicio_id' => $servicio->id,
+            'monto_total' => 80,
+            'fecha' => now()->addDay()->toDateString(),
+            'hora' => '10:00',
+            'estado' => 'pendiente',
+        ]);
+
+        $this->actingAs($admin)
+            ->patchJson(route('agenda.cita.estado', $cita->id), [
+                'estado' => 'confirmada',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonPath('ok', false)
+            ->assertJsonPath('mensaje', 'Las citas pendientes se confirman exclusivamente desde Verificar Pagos; no puedes cambiar su estado desde Agenda.');
+
+        $this->assertDatabaseHas('citas', [
+            'id' => $cita->id,
+            'estado' => 'pendiente',
+        ]);
+    }
+
     public function test_checkout_rejects_cash_payment_method(): void
     {
         $cliente = $this->crearUsuario('cliente');

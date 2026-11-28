@@ -30,7 +30,6 @@
     @php
         $pendientes = $pagos->where('estado_pago', 'revision')->count();
         $montoPendiente = $pagos->where('estado_pago', 'revision')->sum('monto_anticipado');
-        $aprobadosHoy = $pagos->where('estado_pago', 'aprobado')->where('created_at', '>=', \Carbon\Carbon::today())->count();
     @endphp
 
     <!-- Tarjetas KPI -->
@@ -109,7 +108,7 @@
                 Pendiente <span class="tab-contador">{{ $pendientes }}</span>
             </button>
             <button type="button" class="tab-estado" data-filtro="aprobado">
-                Autorizado <span class="tab-contador">{{ $pagos->where('estado_pago', 'aprobado')->count() }}</span>
+                Autorizado <span class="tab-contador">{{ $pagosAutorizados->count() }}</span>
             </button>
             <button type="button" class="tab-estado" data-filtro="rechazado">
                 Rechazado <span class="tab-contador">{{ $pagos->where('estado_pago', 'rechazado')->count() }}</span>
@@ -148,6 +147,7 @@
                             if($pago->estado_pago === 'rechazado') { $estadoClass = 'estado-rechazado'; $estadoTexto = 'Rechazado'; }
                             if($pago->estado_reembolso === 'por_definir') { $estadoClass = 'estado-pendiente'; $estadoTexto = 'Reembolso por definir'; }
                             if($pago->estado_reembolso === 'pendiente') { $estadoClass = 'estado-pendiente'; $estadoTexto = 'Reembolso pendiente'; }
+                            if($pago->estado_reembolso === 'reembolsado') { $estadoClass = 'estado-autorizado'; $estadoTexto = 'Reembolsado'; }
                             $pagosAprobados = $pago->cita->pagos
                                 ->where('estado_pago', 'aprobado')
                                 ->where('estado_reembolso', '!=', 'pendiente')
@@ -190,8 +190,8 @@
                             
                             <td>
                                 <span class="{{ $estadoClass }}">{{ $estadoTexto }}</span>
-                                @if($pago->estado_reembolso === 'pendiente')
-                                    <small>${{ number_format($pago->monto_reembolso, 2) }}</small>
+                                @if(in_array($pago->estado_reembolso, ['pendiente', 'reembolsado'], true))
+                                    <small>{{ $pago->estado_reembolso === 'reembolsado' ? 'Monto devuelto:' : 'Monto pendiente:' }} ${{ number_format($pago->monto_reembolso, 2) }}</small>
                                 @endif
                                 @if($pago->motivo_reembolso)
                                     <small>{{ $pago->motivo_reembolso }}</small>
@@ -216,6 +216,11 @@
                                                 data-url="{{ route('recepcion.definir.reembolso', $pago->id) }}"
                                                 data-max="{{ $pago->monto_anticipado }}">
                                             Definir reembolso
+                                        </button>
+                                    @elseif($pago->estado_reembolso === 'pendiente')
+                                        <button type="button" class="btn-autorizar btn-marcar-reembolsado"
+                                                data-url="{{ route('recepcion.marcar.reembolsado', $pago->id) }}">
+                                            Marcar reembolsado
                                         </button>
                                     @else
                                         <span class="texto-procesado">Procesado</span>

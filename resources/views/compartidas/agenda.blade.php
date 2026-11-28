@@ -39,11 +39,9 @@
     };
 
     /* ============================================================
-       ESTADOS DISPONIBLES (para el modal de cambiar estado)
+       ESTADOS DISPONIBLES (transiciones posteriores al pago)
        ============================================================ */
     $estadosDisponibles = [
-        'pendiente'  => 'clock',
-        'confirmada' => 'check-circle-2',
         'en curso'   => 'play-circle',
         'completada' => 'check-check',
     ];
@@ -135,6 +133,20 @@
 
         {{-- COLUMNA PRINCIPAL --}}
         <div class="agenda-columna-principal">
+
+            @if(session('success') || session('error') || $errors->any())
+                <div role="{{ session('error') || $errors->any() ? 'alert' : 'status' }}" style="margin-bottom: 1rem;">
+                    @if(session('success'))
+                        <p>{{ session('success') }}</p>
+                    @endif
+                    @if(session('error'))
+                        <p>{{ session('error') }}</p>
+                    @endif
+                    @foreach($errors->all() as $error)
+                        <p>{{ $error }}</p>
+                    @endforeach
+                </div>
+            @endif
 
             {{-- CABECERA --}}
             <header class="agenda-header">
@@ -355,6 +367,11 @@
                                         'monto' => $pago->monto_anticipado,
                                     ])
                                     ->values();
+                                $transicionesEstado = match ($cita->estado) {
+                                    'confirmada' => ['en curso', 'completada'],
+                                    'en curso' => ['completada'],
+                                    default => [],
+                                };
                             @endphp
                             <li class="tarjeta-cita {{ $cita->claseEstado() }}" data-cita-id="{{ $cita->id }}">
                                 
@@ -403,10 +420,15 @@
                                         <i data-lucide="chevron-down" aria-hidden="true"></i>
                                     </button>
 
-                                    @if($puedeGestionar && !$cita->estaCancelada())
+                                    @if($puedeGestionar && $cita->estado === 'pendiente')
+                                        <a href="{{ route('pago.verificar') }}" class="btn-cambiar-estado btn-verificar-pago">
+                                            <i data-lucide="credit-card" aria-hidden="true"></i>
+                                            <span>Verificar pago →</span>
+                                        </a>
+                                    @elseif($puedeGestionar && !$cita->estaCancelada() && count($transicionesEstado) > 0)
                                         <button type="button" class="btn-cambiar-estado" data-cambiar-estado data-cita="{{ $cita->id }}" 
                                                 data-url="{{ route('agenda.cita.estado', $cita->id) }}" 
-                                                data-estado="{{ $cita->estado }}">
+                                                data-estados='@json($transicionesEstado)'>
                                             <i data-lucide="refresh-cw" aria-hidden="true"></i>
                                             <span>Estado</span>
                                         </button>

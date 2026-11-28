@@ -171,6 +171,14 @@ if (tabs.length) {
         });
     });
 
+    document.querySelectorAll('.btn-marcar-reembolsado').forEach(boton => {
+        boton.addEventListener('click', (e) => {
+            accionActual = 'marcar_reembolsado';
+            filaActual = e.target.closest('tr');
+            abrirModal();
+        });
+    });
+
     function poblarResumenFila() {
         if (!filaActual) return;
         const cliente = filaActual.querySelector('.cliente-info strong')?.textContent.trim() || 'Cliente';
@@ -227,7 +235,7 @@ if (tabs.length) {
                 `).join('');
                 camposReembolso.classList.remove('hidden');
             }
-        } else {
+        } else if (accionActual === 'definir_reembolso') {
             if (modalKicker) modalKicker.textContent = 'GESTIONAR REEMBOLSO';
             modalTitulo.textContent = 'Define el importe del reembolso';
             modalMensaje.textContent = 'El trabajador canceló la cita. Indica cuánto se reembolsará al cliente.';
@@ -239,6 +247,12 @@ if (tabs.length) {
             ).toFixed(2);
             campoMontoReembolso.classList.remove('hidden');
             inputMontoReembolso.required = true;
+        } else {
+            if (modalKicker) modalKicker.textContent = 'GESTIONAR REEMBOLSO';
+            modalTitulo.textContent = '¿Marcar reembolso como completado?';
+            modalMensaje.textContent = 'Confirma que el importe fue devuelto al cliente. Se le enviará una notificación.';
+            btnConfirmar.textContent = 'Marcar reembolsado';
+            btnConfirmar.className = 'btn-confirmar-accion btn-accion-autorizar';
         }
 
         modal.showModal();
@@ -277,7 +291,9 @@ if (tabs.length) {
                 ? filaActual.querySelector('.btn-autorizar').dataset.url
                 : accionActual === 'rechazar'
                     ? filaActual.querySelector('.btn-rechazar').dataset.url
-                    : filaActual.querySelector('.btn-definir-reembolso').dataset.url;
+                    : accionActual === 'definir_reembolso'
+                        ? filaActual.querySelector('.btn-definir-reembolso').dataset.url
+                        : filaActual.querySelector('.btn-marcar-reembolsado').dataset.url;
 
             const token = document.querySelector('meta[name="csrf-token"]').content;
             const body = {};
@@ -344,7 +360,9 @@ if (tabs.length) {
                 
                 btnConfirmar.textContent = accionActual === 'autorizar'
                     ? 'Autorizar pago'
-                    : accionActual === 'rechazar' ? 'Rechazar pago' : 'Guardar importe';
+                    : accionActual === 'rechazar'
+                        ? 'Rechazar pago'
+                        : accionActual === 'definir_reembolso' ? 'Guardar importe' : 'Marcar reembolsado';
             } catch (error) {
                 // Reemplazamos alert('Error de conexión.') por el toast centrado
                 mostrarToast('Error de conexión.', 'error', 0);

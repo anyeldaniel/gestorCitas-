@@ -7,7 +7,7 @@
    ESCALA BASE (Solución al zoom al 100%)
    ========================================================================== */
 .modulo-agenda {
-    font-size: 14px; /* Reduce la escala general del módulo un 12.5% */
+    font-size: 14px;
 }
 
 :root {
@@ -53,10 +53,10 @@
     font-family: var(--font-body);
     color: var(--text-main);
     background: var(--bg-page);
-    max-width: 1400px; /* Ajustado para no estirarse en exceso */
+    max-width: 1400px;
     width: 100%;
     margin: 0 auto;
-    padding: 1.5rem 2rem 3rem; /* Padding más compacto */
+    padding: 1.5rem 2rem 3rem;
     min-height: 100vh;
 }
 
@@ -117,7 +117,7 @@
 
 .titulo-agenda {
     font-family: var(--font-display);
-    font-size: clamp(1.8rem, 3vw, 2.4rem); /* Reducido */
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
     margin: 0 0 0.55rem 0;
     font-weight: 700;
     letter-spacing: -0.015em;
@@ -184,7 +184,7 @@
     display: flex;
     align-items: center;
     gap: 0.9rem;
-    padding: 1rem 1.1rem; /* Más compacto */
+    padding: 1rem 1.1rem;
     border-radius: 14px;
     border: 1px solid var(--border-color);
     background: #ffffff;
@@ -288,8 +288,8 @@
    ========================================================================== */
 .agenda-layout {
     display: grid;
-    grid-template-columns: 1fr 300px; /* Sidebar ajustada */
-    gap: 1.5rem; /* Gap reducido */
+    grid-template-columns: 1fr 300px;
+    gap: 1.5rem;
     align-items: start;
 }
 
@@ -309,7 +309,7 @@
 .agenda-columna-principal .agenda-filtros,
 .agenda-columna-principal .stats-container,
 .agenda-columna-principal .bloque-dia {
-    margin-bottom: 0; 
+    margin-bottom: 0;
     background: transparent;
     box-shadow: none;
     border: none;
@@ -801,8 +801,7 @@
     border-radius: var(--radius-card);
     padding: 1rem 1.25rem;
     display: grid;
-    /* Ajuste clave: Hora fija, Cliente flexible, Servicio flexible, Estado fijo, Acciones automático */
-    grid-template-columns: 90px 2fr 1.5fr 130px auto; 
+    grid-template-columns: 90px 2fr 1.5fr 130px auto;
     gap: 1rem;
     align-items: center;
     box-shadow: 0 4px 14px rgba(45, 42, 38, 0.06);
@@ -859,7 +858,7 @@
     display: flex;
     gap: 0.85rem;
     align-items: flex-start;
-    min-width: 0; /* Permite que el texto se corte con ... en lugar de aplastarse */
+    min-width: 0;
 }
 
 .cita-cliente-info {
@@ -908,7 +907,6 @@
     font-weight: 600;
     color: var(--text-main);
     line-height: 1.25;
-    /* Arreglo para que no se rompan las palabras letra por letra */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -937,24 +935,16 @@
     font-weight: 600;
     color: var(--text-main);
     line-height: 1.25;
-    /* Arreglo para que no se rompan las palabras letra por letra */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    
-}
-.tarjeta-cita:hover .cita-servicio-nombre {
-    white-space: normal; /* Permite que el texto baje de línea */
-    overflow: visible;
-    text-overflow: clip;
 }
 
 .tarjeta-cita:hover .cita-servicio-nombre {
     white-space: normal;
-    overflow: visible;   
-    text-overflow: clip; 
+    overflow: visible;
+    text-overflow: clip;
 }
-
 
 .cita-servicio-duracion {
     display: inline-flex;
@@ -974,7 +964,7 @@
 
 .cita-estado {
     display: flex;
-    justify-content: flex-start; /* Alineado a la izquierda de su columna */
+    justify-content: flex-start;
     align-items: center;
     width: 100%;
 }
@@ -1012,11 +1002,12 @@
 .cita-acciones {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
     gap: 0.75rem;
     align-items: center;
     justify-content: flex-end;
     width: 100%;
-    flex-shrink: 0; /* Evita que los botones se aplasten */
+    flex-shrink: 0;
 }
 
 .btn-cambiar-estado,
@@ -1038,6 +1029,13 @@
     transition: all 0.25s ease;
     white-space: nowrap;
     flex-shrink: 0;
+}
+
+.btn-cambiar-estado.btn-verificar-pago {
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
 }
 
 .btn-cambiar-estado:hover {
@@ -1070,7 +1068,7 @@
 .btn-expandir {
     background: transparent !important;
     border: none !important;
-    outline: none !important; 
+    outline: none !important;
     box-shadow: none !important;
     cursor: pointer !important;
     padding: 6px !important;
@@ -1468,9 +1466,9 @@ dialog::backdrop {
    DESPLEGABLE DE LA TARJETA
    ========================================================================== */
 .cita-detalles {
-    grid-column: 1 / -1; 
+    grid-column: 1 / -1;
     margin: 1rem -1.25rem -1rem -1.25rem;
-    background-color: #fcf9f9; 
+    background-color: #fcf9f9;
     border-top: 1px solid #f2e8e8;
     padding: 24px;
     box-sizing: border-box;
@@ -1710,14 +1708,14 @@ dialog::backdrop {
 
     .cita-acciones {
         flex-direction: row;
-        min-width: 0;
         flex-wrap: wrap;
+        min-width: 0;
     }
 
     .btn-cambiar-estado,
     .btn-declinar {
-        flex: 0 0 auto;
-        min-width: 120px;
+        flex: 1 1 8rem;
+        min-width: 8rem;
     }
 
     .lista-estados {

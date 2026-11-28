@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Mail\CitaCancelada;
 use App\Mail\ReembolsoDefinido;
 use App\Mail\ReembolsoPorDefinir;
+use App\Notifications\CitaCanceladaNotification;
 use App\Services\CancelacionCitaService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -109,6 +110,27 @@ class CancelacionPagoTest extends TestCase
         ]);
     }
 
+    public function test_cancelar_desde_formulario_redirige_a_la_agenda(): void
+    {
+        Mail::fake();
+        Notification::fake();
+
+        $admin = $this->crearUsuario('admin');
+        $cita = $this->crearCita();
+
+        $this->actingAs($admin)
+            ->from(route('agenda'))
+            ->post(route('agenda.cita.cancelar', $cita->id), [
+                'motivo' => 'No se podrá atender esta cita',
+            ])
+            ->assertRedirect(route('agenda'));
+
+        $this->assertDatabaseHas('citas', [
+            'id' => $cita->id,
+            'estado' => 'cancelada',
+        ]);
+    }
+
     public function test_cancelacion_por_trabajador_notifica_admin_y_recepcion_sobre_reembolso(): void
     {
         Mail::fake();
@@ -140,6 +162,139 @@ class CancelacionPagoTest extends TestCase
             User::whereIn('rol', ['admin', 'recepcion'])->count(),
             Mail::sent(ReembolsoPorDefinir::class)
         );
+        Notification::assertSentTo(
+            $cita->cliente,
+            CitaCanceladaNotification::class,
+            function (CitaCanceladaNotification $notification) use ($cita): bool {
+                $mensaje = $notification->toWebPush($cita->cliente, $notification)->toArray()['body'] ?? '';
+
+                return str_contains($mensaje, 'Motivo: No podré atender esta cita.')
+                    && str_contains($mensaje, 'Reembolso en revisión.');
+            }
+        );
+    }
+
+    public function test_cancelacion_con_pago_aprobado_mueve_reembolso_a_completado_y_se_muestra_al_cliente(): void
+    {
+        Mail::fake();
+        Notification::fake();
+
+        $admin = $this->crearUsuario('admin');
+        $cita = $this->crearCita();
+        $cliente = $cita->cliente;
+        $pago = $this->crearPago($cita, 'aprobado');
+
+        $this->actingAs($admin)
+            ->post(route('agenda.cita.cancelar', $cita->id), [
+                'motivo' => 'El cliente solicitó cancelar',
+                'reembolsos' => [$pago->id => '35.00'],
+            ])
+            ->assertRedirect(route('agenda'))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('pagos', [
+            'id' => $pago->id,
+            'estado_pago' => 'aprobado',
+            'estado_reembolso' => 'pendiente',
+            'monto_reembolso' => '35.00',
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('pago.verificar'))
+            ->assertOk()
+            ->assertSee('Autorizado <span class="tab-contador">0</span>', false)
+            ->assertSee('Reembolso <span class="tab-contador">1</span>', false)
+            ->assertSee('Reembolso pendiente')
+            ->assertSee('Marcar reembolsado');
+
+        Notification::assertSentTo(
+            $cliente,
+            CitaCanceladaNotification::class,
+            function (CitaCanceladaNotification $notification) use ($cliente): bool {
+                $mensaje = $notification->toWebPush($cliente, $notification)->toArray()['body'] ?? '';
+
+                return str_contains($mensaje, 'Motivo: El cliente solicitó cancelar.')
+                    && str_contains($mensaje, 'Reembolso pendiente por $35.00.');
+            }
+        );
+
+        $this->actingAs($admin)
+            ->postJson(route('recepcion.marcar.reembolsado', $pago->id))
+            ->assertOk()
+            ->assertJsonPath('ok', true);
+
+        $this->assertDatabaseHas('pagos', [
+            'id' => $pago->id,
+            'estado_reembolso' => 'reembolsado',
+            'monto_reembolso' => '35.00',
+        ]);
+        $this->assertDatabaseHas('notificaciones', [
+            'user_id' => $cliente->id,
+            'tipo' => 'reembolso_completado',
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('pago.verificar'))
+            ->assertOk()
+            ->assertSee('Reembolsado')
+            ->assertSee('Monto devuelto: $35.00');
+
+        $this->actingAs($cliente)
+            ->get(route('clientes.mis.reservas'))
+            ->assertOk()
+            ->assertSee('Cancelada')
+            ->assertSee('Motivo: El cliente solicitó cancelar')
+            ->assertSee('Reembolso completado: $35.00')
+            ->assertSee('No tienes citas próximas agendadas.');
+    }
+
+    public function test_rechazar_pago_en_revision_muestra_cancelacion_sin_prometer_reembolso(): void
+    {
+        Mail::fake();
+        Notification::fake();
+
+        $recepcion = $this->crearUsuario('recepcion');
+        $cita = $this->crearCita();
+        $cliente = $cita->cliente;
+        $pago = $this->crearPago($cita, 'revision');
+
+        $this->actingAs($recepcion)
+            ->postJson(route('recepcion.rechazar.pago', $pago->id), [
+                'motivo' => 'El comprobante no es válido',
+            ])
+            ->assertOk()
+            ->assertJsonPath('ok', true);
+
+        $this->assertDatabaseHas('citas', [
+            'id' => $cita->id,
+            'estado' => 'cancelada',
+            'motivo_cancelacion' => 'El comprobante no es válido',
+        ]);
+        $this->assertDatabaseHas('pagos', [
+            'id' => $pago->id,
+            'estado_pago' => 'rechazado',
+            'estado_reembolso' => null,
+        ]);
+
+        Notification::assertSentTo(
+            $cliente,
+            CitaCanceladaNotification::class,
+            function (CitaCanceladaNotification $notification) use ($cliente): bool {
+                $mensaje = $notification->toWebPush($cliente, $notification)->toArray()['body'] ?? '';
+
+                return str_contains($mensaje, 'Motivo: El comprobante no es válido.')
+                    && !str_contains($mensaje, 'Reembolso');
+            }
+        );
+
+        $this->actingAs($cliente)
+            ->get(route('clientes.mis.reservas'))
+            ->assertOk()
+            ->assertSee('Cancelada')
+            ->assertSee('Motivo: El comprobante no es válido')
+            ->assertDontSee('Reembolso pendiente:')
+            ->assertDontSee('Reembolso completado:')
+            ->assertSee('No tienes citas próximas agendadas.');
     }
 
     public function test_definir_reembolso_envia_al_cliente_el_importe_registrado(): void
