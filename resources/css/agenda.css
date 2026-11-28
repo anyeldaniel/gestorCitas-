@@ -982,10 +982,11 @@
 .cita-acciones {
     display: flex;
     flex-direction: row; /* Modificado para que los botones estén en fila horizontal */
+    flex-wrap: wrap;
     gap: 0.75rem;
     align-items: center;
     justify-content: flex-end;
-    min-width: 140px;
+    min-width: 0;
 }
 
 .btn-cambiar-estado,
@@ -1006,6 +1007,13 @@
     gap: 0.4rem;
     transition: all 0.25s ease;
     white-space: nowrap;
+}
+
+.btn-cambiar-estado.btn-verificar-pago {
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
 }
 
 .btn-cambiar-estado:hover {
@@ -1678,12 +1686,14 @@ dialog::backdrop {
 
     .cita-acciones {
         flex-direction: row;
+        flex-wrap: wrap;
         min-width: 0;
     }
 
     .btn-cambiar-estado,
     .btn-declinar {
-        flex: 1;
+        flex: 1 1 8rem;
+        min-width: 0;
     }
 
     .lista-estados {

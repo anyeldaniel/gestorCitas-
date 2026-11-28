@@ -417,7 +417,7 @@
                                     </button>
 
                                     @if($puedeGestionar && $cita->estado === 'pendiente')
-                                        <a href="{{ route('pago.verificar') }}" class="btn-cambiar-estado">
+                                        <a href="{{ route('pago.verificar') }}" class="btn-cambiar-estado btn-verificar-pago">
                                             <i data-lucide="credit-card" aria-hidden="true"></i>
                                             <span>Verificar pago →</span>
                                         </a>
