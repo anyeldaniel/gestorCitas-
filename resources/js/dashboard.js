@@ -43,6 +43,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const recepPasswordInput = document.getElementById('recep_password');
     const recepPasswordConfirmationInput = document.getElementById('recep_password_confirmation');
 
+    // ✅ FUNCIÓN AUXILIAR: Fuerza el ocultamiento del feedback de contraseña en recepcionistas
+    window.ocultarFeedbackPasswordRecepcionista = function() {
+        const feedbackBox = document.getElementById('password-feedback-recepcionista');
+        const strengthText = document.getElementById('recepcionista-strength-text');
+        
+        if (feedbackBox) feedbackBox.style.display = 'none';
+        if (strengthText) strengthText.style.display = 'none';
+        
+        // Limpiar los checks por si acaso
+        ['recepcionista-length-req', 'recepcionista-alpha-req', 'recepcionista-special-req'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = '';
+        });
+    };
+
     const actualizarRequisitosRecepcionista = () => {
         if (!recepPasswordInput) return true;
 
@@ -55,7 +70,27 @@ document.addEventListener("DOMContentLoaded", () => {
         const feedbackBox = document.getElementById('password-feedback-recepcionista');
         const strengthText = document.getElementById('recepcionista-strength-text');
 
-        if (feedbackBox) feedbackBox.style.display = pwd.length > 0 ? 'block' : 'none';
+        // ✅ CORRECCIÓN CLAVE: Detectar si el campo de contraseña es visible
+        const campoPass = document.getElementById('recep-campo-password');
+        const campoPasswordVisible = campoPass && campoPass.style.display !== 'none';
+
+        // ✅ Si el campo NO es visible (modo edición), ocultamos todo y salimos
+        if (!campoPasswordVisible) {
+            if (feedbackBox) feedbackBox.style.display = 'none';
+            if (strengthText) strengthText.style.display = 'none';
+            return true;
+        }
+
+        // Si el campo es visible pero está vacío, ocultamos el feedback
+        if (pwd.length === 0) {
+            if (feedbackBox) feedbackBox.style.display = 'none';
+            if (strengthText) strengthText.style.display = 'none';
+            return false;
+        }
+
+        // Si hay texto y el campo es visible, mostramos el feedback
+        if (feedbackBox) feedbackBox.style.display = 'block';
+        if (strengthText) strengthText.style.display = 'block';
 
         const updateRequirement = (elementId, isValid, text) => {
             const element = document.getElementById(elementId);
@@ -312,6 +347,9 @@ window.abrirModalRecepcionista = function() {
     const avatar = document.getElementById('previsualizacion-avatar-recepcionista');
     if (avatar) avatar.textContent = 'RE';
 
+    // ✅ LIMPIAR FEEDBACK AL ABRIR REGISTRO
+    if (typeof window.ocultarFeedbackPasswordRecepcionista === 'function') window.ocultarFeedbackPasswordRecepcionista();
+
     modal.showModal();
 };
 
@@ -357,6 +395,9 @@ window.editarRecepcionista = function(id, nombre, email, telefono) {
         passConfInput.placeholder = 'Dejar vacío para mantener';
         passConfInput.value = '';
     }
+
+    // ✅ OCULTAR FEEDBACK AL EDITAR
+    if (typeof window.ocultarFeedbackPasswordRecepcionista === 'function') window.ocultarFeedbackPasswordRecepcionista();
 
     modal.showModal();
 };
@@ -572,13 +613,6 @@ window.Syncro = {
     }
 };
 
-// ============================================
-// RE-INICIALIZAR PAGINADOR TRAS CAMBIOS DINÁMICOS
-// ============================================
-/**
- * Expone la función globalmente para que otros módulos
- * (ej. terapeutas.js tras eliminar) puedan refrescar el paginador.
- */
 window.refrescarPaginadoresDashboard = function() {
     initPaginadoresDashboard();
 };

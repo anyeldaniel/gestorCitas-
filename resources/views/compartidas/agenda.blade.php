@@ -371,7 +371,9 @@
                                     <span class="avatar-iniciales" aria-hidden="true">{{ $iniciales($cita->cliente->nombre ?? '') }}</span>
                                     <div class="cita-cliente-info">
                                         <span class="etiqueta-mini">Cliente</span>
-                                        <strong class="cita-nombre">{{ $cita->cliente->nombre ?? 'Cliente no disponible' }}</strong>
+                                        <strong class="cita-nombre" title="{{ $cita->cliente->apellido?? 'Cliente no disponible' }}">
+                                         {{ $cita->cliente->nombre ?? 'Cliente no disponible' }}
+                                        </strong>
                                         @if($cita->cliente?->descripcion)
                                             <small class="cita-nota">{{ $cita->cliente->descripcion }}</small>
                                         @endif
@@ -380,7 +382,9 @@
 
                                 <div class="cita-servicio">
                                     <span class="etiqueta-mini">Servicio</span>
-                                    <strong class="cita-servicio-nombre">{{ $cita->servicio->nombre_servicio ?? 'Servicio no disponible' }}</strong>
+                                    <strong class="cita-servicio-nombre" title="{{ $cita->servicio->nombre_servicio ?? 'Servicio no disponible' }}">
+                                     {{ $cita->servicio->nombre_servicio ?? 'Servicio no disponible' }}
+                                    </strong>
                                     <small class="cita-servicio-duracion">
                                         <i data-lucide="clock" aria-hidden="true"></i> {{ $cita->servicio->duracion_minutos ?? '—' }} min
                                     </small>
@@ -444,7 +448,8 @@
                                     <div class="detalles-grid">
                                         <div class="detalle-item">
                                             <span class="etiqueta-mini">Especialista asignado</span>
-                                            <strong>{{ $cita->terapeuta->nombre ?? 'Por asignar' }}</strong>
+                                         <strong>{{ $cita->trabajador->nombre ?? 'Por asignar' }}</strong>
+
                                         </div>
                                         
                                         <div class="detalle-item">
