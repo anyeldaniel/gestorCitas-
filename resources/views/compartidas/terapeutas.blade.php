@@ -109,16 +109,22 @@
                  data-orden-inicial="{{ $loop->index }}">
           <!-- FOTO / PLACEHOLDER -->
           <figure class="terapeuta-foto-contenedor">
-             @if($terapeuta->foto && file_exists(public_path('storage/' . $terapeuta->foto)))
-         <img src="{{ asset('storage/' . $terapeuta->foto) }}" 
-                   alt="Foto de {{ $terapeuta->nombre }}"
-                 style="cursor: zoom-in;"
-                 onclick="abrirVisorFoto('{{ asset('storage/' . $terapeuta->foto) }}', '{{ addslashes($terapeuta->nombre) }}')">
+                        @php
+                $tieneFoto = $terapeuta->foto && (
+                    \Illuminate\Support\Facades\Storage::disk('public')->exists($terapeuta->foto) ||
+                    file_exists(public_path('storage/' . $terapeuta->foto))
+                );
+            @endphp
+            @if($tieneFoto)
+                <img src="{{ asset('storage/' . $terapeuta->foto) }}"
+                    alt="Foto de {{ $terapeuta->nombre }}"
+                    style="cursor: zoom-in;"
+                    onclick="abrirVisorFoto('{{ asset('storage/' . $terapeuta->foto) }}', '{{ addslashes($terapeuta->nombre) }}')">
             @else
-        <div class="foto-avatar-simulado" aria-label="Sin imagen disponible">
-            <!-- ... tu svg y texto ... -->
-          </div>
-             @endif
+                <div class="foto-avatar-simulado" aria-label="Sin imagen disponible">
+                    <!-- ... tu svg y texto ... -->
+                </div>
+            @endif
                <span class="indicador-estado disponible"></span>
           </figure>
 
